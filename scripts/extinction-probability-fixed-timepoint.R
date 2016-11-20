@@ -24,6 +24,7 @@
 library(lme4)
 library(lsmeans)
 library(multcompView)
+library(tidyr)
 
 b <- read.csv("data/clean-establishment-data.csv")
 b$number <- as.factor(b$number)
@@ -308,6 +309,25 @@ text(x = 1:4, y = 1.02, labels = sig_letters)
 # dev.off()
 
 mtext(side=3, text="Effect of propagule number on extinction probability\nafter 6 generations", line = 2)
+
+##### Analysis 3: Extant/extinct assessment at each generation, include generation as a fixed effect, population ID as random effect #####
+
+head(b)
+bb <- subset(b, select = c("ID", "block", "number", "environment", "gap", paste0("extant", 1:9)))
+
+# Gather the extant/extinct assessments currently in short form across columns into a 2-column pair of keys and values.
+long_b <- gather(bb, key = generation, value = extant, -c(ID, block, number, environment, gap))
+# Convert the gathered "generation" column to a numeric value representing which filial generation the row refers to
+long_b$generation <- as.numeric(substr(long_b$generation, start = 7, stop = nchar(long_b$generation)))
+
+# We are only interested in generations 5 through 9, which represent time points with all introductions completed
+# long_b <- subset(long_b, generation >= 5)
+
+gap.potential <- subset(long_b, subset=(block!=3)&(number%in%c(2,4)))
+
+fm1 <- glmer(extant ~ number * environment * gap + (1 | ID) + (number + environment | block), data = gap.potential, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+
+fm2 <- update(fm1, . ~ . - number:environment:gap)
 
 
 #### Plots with simulation results ####
