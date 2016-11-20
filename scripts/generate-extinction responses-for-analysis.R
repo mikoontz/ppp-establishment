@@ -11,9 +11,7 @@
 # Clear your environment or restart R first
 # rm(list=ls())
 
-setwd('/Users/mikoontz/Documents/Research/Tribolium/Demography')
-
-source('Clean-Data/generate-tidy-data.R')
+source('scripts/generate-tidy-data.R')
 
 #-----------------------
 #-----------------------
