@@ -255,9 +255,23 @@ extant_x_after <- as.data.frame(!sapply(1:5, FUN = extinct.x.after.intro, N=b[,c
 names(extant_x_after) <- paste0("extant_", 1:5, "_after")
 b <- data.frame(b, extant_x_after)
 
+# Also include the relative abundance calculations in the final data set. These columns represent the abundance of the population 1, 2, 3, 4, or 5 generations after the final introduction event for a population's partiuclar introduction regime.
+# First convert NAs to 0's in the population size data.frame
+N_for_abundance <- b[, c(which(colnames(b) == "size"), census.columns)]
+N_for_abundance[is.na(N_for_abundance)] <- 0
+
+# Helper function to return just the vector of abundance from the N_x.after.intro() function result
+vector_N_x_after_intro <- function(x, ...) {
+  N_x.after.intro(x, ...)$abundance
+}
+
+abund_x_after <- as.data.frame(sapply(1:5, FUN = vector_N_x_after_intro, N = N_for_abundance, intro.regime = b$number, ID = b$ID, gap = as.numeric(b$gap), zeros = TRUE))
+names(abund_x_after) <- paste0("N_", 1:5, "_after")
+b <- data.frame(b, abund_x_after)
+
 bb <- subset(b, select= -c(block, color, number, size, environment, special, gap, notes, drought))
 
 clean_establishment_data <- merge(attributes, bb, by="ID")
 head(clean_establishment_data)
 
-write.csv(clean_establishment_data, 'data/clean-establishment-data.csv', row.names=FALSE)
+# write.csv(clean_establishment_data, 'data/clean-establishment-data.csv', row.names=FALSE)
