@@ -1,4 +1,4 @@
-### Title: Extinction probability analysis
+#### Title: Extinction probability analysis ####
 ###
 ### Author: Michael Koontz
 ### Email: mikoontz@gmail.com
@@ -7,7 +7,7 @@
 ### Penultimate Updated: 20160124 (Changed frame of reference from extinction to establishment)
 ### Last Updated: 20161120
 ###
-### Purpose: Use tidy extinction data to assess the probability of extinction depending on different covariates.
+#### Purpose: Use tidy extinction data to assess the probability of extinction depending on different covariates. ####
 ###
 ### There are 3 different analysis presented here. 
 
@@ -17,6 +17,7 @@
 
 ### The third analysis uses all generations after introductions are complete (5 through 9) and includes a random effect of population ID to account for the repeated measures.
 
+#### Load libraries, read data, and set it up for analysis ####
 # Clear environment if necessary
 # rm(list=ls())
 
@@ -27,6 +28,10 @@ b <- read.csv("data/clean-establishment-data.csv")
 b$number <- as.factor(b$number)
 b$block <- as.factor(b$block)
 b$gap <- as.factor(b$gap)
+
+
+##### Analysis 1: Extant/extinct assessment at generation 9 #####
+#### Analysis 1: Assessing effect of the introduction gap ####
 
 # Subset data to represent the only blocks and introduction treatments that COULD have experienced introduction gaps
 gap.potential <- subset(b, subset=(block!=3)&(number%in%c(2,4)))
@@ -52,6 +57,7 @@ m5 <- update(m4, formula= .~. -gap)
 anova(m4, m5) # LRT suggests that the model with an additive effect of gap is NOT more likely than the model without, so we drop the effect of gap. Note this is DIFFERENT than the analysis where extant/extinct is assessed relative to when introductions finish.
 
 #--------------------
+#### Analysis 1: Plot effect (if any) of introduction gap ####
 # Quick plot to show marginal effect of introduction gap (very overlapping CIs when looking at generation 9)
 #--------------------
 # Recall that plogis() has the effect of being an inverse logit function and qlogis() has the effect of being a logit function.
@@ -84,7 +90,8 @@ b.trim <- b
 
 
 #-------------------
-# Test whether there are interactions between the covariates and the random effect of block
+#### Analysis 1: Determining the random effects structure ####
+### Test whether there are interactions between the covariates and the random effect of block
 #-------------------
 
 # The 'keep it maximal' random effects structure; Possibly too many parameters to justify this approach.
@@ -105,7 +112,7 @@ anova(m5c, m5d) # No interaction between block and number
 # There appear to be no interactions between block and the fixed covariates, so we use a simple random intercept structure for the random effect of temporal block.
 
 #----------------
-# Influence of fixed effects
+#### Analysis 1: Influence of fixed effects ####
 #----------------
 
 # Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
@@ -125,10 +132,24 @@ anova(m8, m9) # Propagule number seems to be very important for extinction proba
 
 # The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period
 final <- m6
+#### Analysis 1: Interpretation and contrasts ####
 
-#-------------
-# Effect of temporary extinctions
-#-------------
+results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
+results
+posthoc <- summary(results$lsmeans)
+# cols <- c("dodgerblue", "brown1", "gold", "green")
+cols <- "black"
+
+# pdf("Clean-Plots/modeled-establishment-probability-dot-whisker.pdf", height=3.75, width=3.75)
+par(mar=c(3,4,2,1), xpd=NA)
+plot(x=1:4, y=plogis(posthoc$lsmean), ylim=c(0.7, 1.0), xlim=c(0.5,4.5), las=1, pch=19, xaxt="n", xlab="Introduction regime", ylab="Establishment probability", col=cols, bty="L")
+axis(side=1, at=1:4, labels=c("20x1","10x2","5x4","4x5"), tick=FALSE)
+arrows(x0=1:4, y0=plogis(posthoc$asymp.LCL), y1=plogis(posthoc$asymp.UCL), code=3, length=0.1, angle=90, lwd=2, col=cols)
+text(x=1:4, y=1.02, labels=c("a", "b", "c", "c"))
+# dev.off()
+
+mtext(side=3, text="Effect of propagule number on extinction probability\nfive generations after the final introduction")
+#### Analysis 1: Effect of temporary extinctions ####
 
 bb <- subset(b.trim, subset=number %in% c(2,4,5))
 bb$temp <- ifelse(bb$temp.extinctions > 0, yes=TRUE, no=FALSE)
@@ -164,9 +185,108 @@ summary(tempA)
 # Significant effect of AMOUNT of loss. More genetic inputs lost meant a higher extinction probability
 
 
-#--------------
-# Interpretation and contrasts
-#--------------
+##### Analysis 2: Extant/extinct assessment at generation 6 #####
+
+#### Analysis 2: Assessing effect of the introduction gap ####
+# Subset data to represent the only blocks and introduction treatments that COULD have experienced introduction gaps
+gap.potential <- subset(b, subset=(block!=3)&(number%in%c(2,4)))
+
+# We use a simple random effects structure here, because there is far less data in this subsetted dataset. Use extant assessment at generation 10 (9 full censuses after initial introduction).
+m1 <- glmer(extant6 ~ number*environment*gap + (1 | block), data=gap.potential, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+# Update the model fit to remove the 3-way interaction
+m2 <- update(m1, formula= .~. - number:environment:gap)
+
+anova(m1,m2) # LRT suggests model with 3-way interaction is not more likely than model with additive effect of gap. Drop 3-way interaction with gap.
+
+m3 <- update(m2, formula= .~. -gap:environment)
+
+anova(m2, m3) # LRT suggests model with interaction between gap and environment is not more likely than model without, so we drop the gap:environment interaction.
+
+m4 <- update(m3, formula= .~. -gap:number)
+
+anova(m3, m4) # LRT suggests model with interaction between gap and propagule number is not more likely than model without, so we drop the gap:number interaction.
+
+m5 <- update(m4, formula= .~. -gap)
+
+anova(m4, m5) # LRT suggests that the model with an additive effect of gap is NOT more likely than the model without, so we drop the effect of gap. Note this is DIFFERENT than the analysis where extant/extinct is assessed relative to when introductions finish.
+
+#--------------------
+#### Analysis 2: Plot effect (if any) of introduction gap ####
+# Quick plot to show marginal effect of introduction gap (very overlapping CIs when looking at generation 9)
+#--------------------
+# Recall that plogis() has the effect of being an inverse logit function and qlogis() has the effect of being a logit function.
+
+ls <- summary(lsmeans::lsmeans(m4, pairwise ~ as.factor(gap), adjust="none")$lsmeans)
+
+cont <- lsmeans::lsmeans(m4, pairwise ~ as.factor(gap), adjust="none")$contrasts
+cont.mu <- plogis(summary(cont)$estimate)
+cont.SE <- c(plogis(summary(cont)$estimate - summary(cont)$SE), plogis(summary(cont)$estimate + summary(cont)$SE))
+cont.SE
+
+mu <- plogis(ls$lsmean)
+CI <- rbind(plogis(ls$asymp.LCL), plogis(ls$asymp.UCL))
+
+# pdf("Clean Plots/introduction gap effect.pdf", height=3.75, width=3.75)
+par(mar=c(3,4,1,1))
+plot(x=c(1,2), y=mu, ylim=c(0.45, 1), xlim=c(0.5,2.5), las=1, pch=19, xaxt="n", xlab=NA, ylab="Probability of Establishment")
+axis(side=1, at=c(1,2), labels=c("No gap", "Gap"), tick=FALSE)
+arrows(x0=c(1,2), y0=CI[1,], y1=CI[2,], code=3, length=0.1, angle=90, lwd=2)
+# dev.off()
+
+mtext(side=3, text="Effect of introduction gap on establishment probability\nafter 10 generations")
+
+#-----------------------
+# No need to trim the data to exclude those populations that experienced an introduction gap.
+#-----------------------
+
+# Subset to remove populations with an introduction gap
+b.trim <- b
+
+
+#-------------------
+#### Analysis 2: Determining the random effects structure ####
+# Test whether there are interactions between the covariates and the random effect of block
+#-------------------
+
+# The 'keep it maximal' random effects structure; Possibly too many parameters to justify this approach.
+m5a <- glmer(extant6 ~ number*environment + (number*environment | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+m5b <- update(m5a, formula= .~ number*environment + (number + environment | block))
+
+anova(m5a, m5b) # Doesn't appear to be a three way interaction bw number, environment, and block.
+
+m5c <- update(m5b, formula= . ~ number*environment + (number | block))
+
+anova(m5b, m5c) # No interaction between block and environment
+
+m5d <- update(m5c, formula= . ~ number*environment + (environment | block))
+
+anova(m5c, m5d) # No interaction between block and number
+
+# There appear to be no interactions between block and the fixed covariates, so we use a simple random intercept structure for the random effect of temporal block.
+
+#----------------
+#### Analysis 2: Influence of fixed effects ####
+
+# Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
+m6 <- glmer(extant6 ~ number*environment + (1 | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+m7 <- update(m6, formula= .~. - number:environment)
+
+anova(m6, m7) # Doesn't appear to be an interaction between propagule number and environmental stability
+
+m8 <- update(m7, formula= .~. -environment)
+
+anova(m7, m8) # Environment doesn't seem to affect extinction probability
+
+m9 <- update(m8, formula= .~. -number)
+
+anova(m8, m9) # Propagule number seems to be very important for extinction probability
+
+# The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period
+final <- m6
+#### Analysis 2: Interpretation and contrasts ####
 
 results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
 results
@@ -184,26 +304,24 @@ text(x=1:4, y=1.02, labels=c("a", "b", "c", "c"))
 
 mtext(side=3, text="Effect of propagule number on extinction probability\nfive generations after the final introduction")
 
-#-----------------
-# Plot with simulation results
-#-----------------
 
-simResults <- read.csv("Clean-Analyses/simulations/establishment_abundance_table_5_50.csv")
-
-extant <- simResults[, 1]
-
-pdf("/Users/mikoontz/Documents/Research/Tribolium/Demography/Clean-Plots/modeled-establishment-probability-with-simulations-dot-whisker.pdf", height=3.75, width=3.75)
-
-par(mar=c(3,4,2,1), xpd=NA, oma=c(2,0,0,0))
-plot(x=1:4, y=plogis(posthoc$lsmean), ylim=c(0.7, 1.0), xlim=c(0.5,4.5), las=1, pch=19, xaxt="n", xlab=NA, ylab="Establishment probability", col=cols, bty="L")
-axis(side=1, at=1:4, labels=c("20x1", "10x2", "5x4", "4x5"), tick=FALSE)
-arrows(x0=1:4, y0=plogis(posthoc$asymp.LCL), y1=plogis(posthoc$asymp.UCL), code=3, length=0.05, angle=90, lwd=2, col=cols)
-text(x=1:4, y=plogis(posthoc$asymp.UCL)+0.02, labels=c("a", "b", "c", "c"), cex=0.5)
-
-segments(x0=(1:4)-0.3, x1=(1:4)+0.3, y0=extant, lwd=4)
-mtext(side=1, text="Introduction regime", line=3)
-
-dev.off()
+#### Plots with simulation results ####
+# simResults <- read.csv("Clean-Analyses/simulations/establishment_abundance_table_5_50.csv")
+# 
+# extant <- simResults[, 1]
+# 
+# pdf("/Users/mikoontz/Documents/Research/Tribolium/Demography/Clean-Plots/modeled-establishment-probability-with-simulations-dot-whisker.pdf", height=3.75, width=3.75)
+# 
+# par(mar=c(3,4,2,1), xpd=NA, oma=c(2,0,0,0))
+# plot(x=1:4, y=plogis(posthoc$lsmean), ylim=c(0.7, 1.0), xlim=c(0.5,4.5), las=1, pch=19, xaxt="n", xlab=NA, ylab="Establishment probability", col=cols, bty="L")
+# axis(side=1, at=1:4, labels=c("20x1", "10x2", "5x4", "4x5"), tick=FALSE)
+# arrows(x0=1:4, y0=plogis(posthoc$asymp.LCL), y1=plogis(posthoc$asymp.UCL), code=3, length=0.05, angle=90, lwd=2, col=cols)
+# text(x=1:4, y=plogis(posthoc$asymp.UCL)+0.02, labels=c("a", "b", "c", "c"), cex=0.5)
+# 
+# segments(x0=(1:4)-0.3, x1=(1:4)+0.3, y0=extant, lwd=4)
+# mtext(side=1, text="Introduction regime", line=3)
+# 
+# dev.off()
 
 
 
