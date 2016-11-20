@@ -8,6 +8,14 @@
 ### Last Updated: 20161120
 ###
 ### Purpose: Use tidy extinction data to assess the probability of extinction depending on different covariates.
+###
+### There are 3 different analysis presented here. 
+
+### The first uses generation 9 (the end of the experiment) as the fixed point where we assess whether or not a population has established.
+
+### The second analysis uses generation 6 as the fixed point where we assess whether or not a population has established. Generation 6 is after all introductions have completed, but before we see the rapid decline in population abundance that may indicate an additional biological process is at work.
+
+### The third analysis uses all generations after introductions are complete (5 through 9) and includes a random effect of population ID to account for the repeated measures.
 
 # Clear environment if necessary
 # rm(list=ls())
@@ -19,7 +27,6 @@ b <- read.csv("data/clean-establishment-data.csv")
 b$number <- as.factor(b$number)
 b$block <- as.factor(b$block)
 b$gap <- as.factor(b$gap)
-# b$extant5after <- !b$extinct5after
 
 # Subset data to represent the only blocks and introduction treatments that COULD have experienced introduction gaps
 gap.potential <- subset(b, subset=(block!=3)&(number%in%c(2,4)))
@@ -45,7 +52,7 @@ m5 <- update(m4, formula= .~. -gap)
 anova(m4, m5) # LRT suggests that the model with an additive effect of gap is NOT more likely than the model without, so we drop the effect of gap. Note this is DIFFERENT than the analysis where extant/extinct is assessed relative to when introductions finish.
 
 #--------------------
-# Quick plot to show marginal effect of introduction gap (very overlapping CIs)
+# Quick plot to show marginal effect of introduction gap (very overlapping CIs when looking at generation 9)
 #--------------------
 # Recall that plogis() has the effect of being an inverse logit function and qlogis() has the effect of being a logit function.
 
