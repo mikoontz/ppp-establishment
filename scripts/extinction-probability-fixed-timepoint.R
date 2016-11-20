@@ -325,9 +325,14 @@ long_b$generation <- as.numeric(substr(long_b$generation, start = 7, stop = ncha
 
 gap.potential <- subset(long_b, subset=(block!=3)&(number%in%c(2,4)))
 
-fm1 <- glmer(extant ~ number * environment * gap + (1 | ID) + (number + environment | block), data = gap.potential, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+str(gap.potential)
+fm1 <- glmer(extant ~ number * environment + generation + gap + (1 | as.factor(ID)) + (number + environment | block), data = gap.potential, family = "binomial", control=glmerControl(optimizer="bobyqa"))
 
-fm2 <- update(fm1, . ~ . - number:environment:gap)
+fm2 <- update(fm1, . ~ . - gap)
+anova(fm1, fm2) # Looks like model with gap is more likely than the model without, so we'll drop those populations that experienced an introduction gap.
+
+b_trim <- long_b[long_b$gap == "FALSE", ]
+
 
 
 #### Plots with simulation results ####
