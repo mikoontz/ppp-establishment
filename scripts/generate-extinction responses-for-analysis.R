@@ -178,6 +178,7 @@ Nt <- tidyb$Nt
 b <- merge(N, attributes, by="ID")
 census.columns <- which(colnames(b) %in% as.character(1:10))
 
+
 col <- as.numeric(b$gap) + b$number
 b$temp.extinctions <- 0
 b$latest.extinct <- 0
@@ -241,16 +242,22 @@ for (i in which(tidyb$migrants[, 2] != 20))
 # Example function run to determine when extinctions occurred
 when.extinct <- determine.when.extinct(N=b[,census.columns], intro.regime=b$number, gap=b$gap)
 
-b$when.extinct <- when.extinct
-established <- as.data.frame(!sapply(1:9, FUN = extinct.after.x, N=b[,census.columns], intro.regime=b$number, gap=b$gap))
+# Change names of abundance columns to be more descriptive and not be just a number.
 names(b)[2:11] <- paste0("N", names(b[2:11]))
-names(established) <- paste0("established", 1:9)
 
-b <- head(data.frame(b, established))
+b$when.extinct <- when.extinct
+extant <- as.data.frame(!sapply(1:9, FUN = extinct.after.x, N=b[,census.columns], intro.regime=b$number, gap=b$gap))
+names(extant) <- paste0("extant", 1:9)
+b <- data.frame(b, extant)
 
+# Also include the relative extinction calculation in the final data set. These columns represent whether the population was extant or not 1, 2, 3, 4, or 5 generations after the introduction regime completed.
+extant_x_after <- as.data.frame(!sapply(1:5, FUN = extinct.x.after.intro, N=b[,census.columns], intro.regime=b$number, gap=b$gap))
+names(extant_x_after) <- paste0("extant_", 1:5, "_after")
+b <- data.frame(b, extant_x_after)
 
-bb <- subset(b, select=c(ID, when.extinct, extinct5after, extinctafter9, temp.extinctions, latest.extinct, loss, abundance))
+bb <- subset(b, select= -c(block, color, number, size, environment, special, gap, notes, drought))
 
-log.regression <- merge(attributes, bb, by="ID")
+clean_establishment_data <- merge(attributes, bb, by="ID")
+head(clean_establishment_data)
 
-# write.csv(log.regression, 'figshare/extinctions.csv', row.names=FALSE)
+write.csv(clean_establishment_data, 'data/clean-establishment-data.csv', row.names=FALSE)
