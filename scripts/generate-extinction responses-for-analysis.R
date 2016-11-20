@@ -168,8 +168,8 @@ N_x.after.intro <- function(x=1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow
 # b$block <- as.factor(b$block)
 # b$gap <- as.factor(b$gap)
 
-attributes <- read.csv('Clean-Data/attributes.csv')
-beetles <- read.csv('Clean-Data/Tribolium-propagule-pressure-data.csv')
+attributes <- read.csv('data/attributes.csv')
+beetles <- read.csv('data/Tribolium-propagule-pressure-data.csv')
 
 tidyb <- tidy.beetles(beetles = beetles)
 
@@ -210,31 +210,44 @@ for (i in which(tidyb$migrants[, 2] != 20))
 # b[is.na(b$loss), "loss"] <- 0
 #-------------------------------------
 
-# Example function run to determine when extinctions occurred
-when.extinct <- determine.when.extinct(N=b[,census.columns], intro.regime=b$number, gap=b$gap)
+#-------------------------------------
+# Original code to get the abundance and establishment at a single time point, 5 generations after the final introduction event for each introduction regime
+#--------------------------------------
 
 # Example function run to determine which populations went extinct within 5 generations after their final introduction
-extinct5 <- extinct.x.after.intro(x=5, N=b[,census.columns], intro.regime=b$number, gap=b$gap)
+# extinct5 <- extinct.x.after.intro(x=5, N=b[,census.columns], intro.regime=b$number, gap=b$gap)
 
 # Example function run to determine which populations went extinct before the 9th generation of the experiment (this is the last generation that all populations were censused)
-extinct.after9 <- extinct.after.x(x=9, N=b[,census.columns], intro.regime=b$number, gap=b$gap)
+# extinct.after9 <- extinct.after.x(x=9, N=b[,census.columns], intro.regime=b$number, gap=b$gap)
 
 # Example function run to get population abundance 5 generations after final introduction event.
 # First convert NAs to 0's in the population size data.frame
-N_for_abundance <- b[, c(which(colnames(b) == "size"), census.columns)]
-N_for_abundance[is.na(N_for_abundance)] <- 0
+# N_for_abundance <- b[, c(which(colnames(b) == "size"), census.columns)]
+# N_for_abundance[is.na(N_for_abundance)] <- 0
 
-abund <- N_x.after.intro(x=5, N=N_for_abundance, intro.regime=b$number, ID=b$ID, gap=as.numeric(b$gap), zeros=TRUE)
-abund <- subset(abund, select=c(ID, abundance))
+# abund <- N_x.after.intro(x=5, N=N_for_abundance, intro.regime=b$number, ID=b$ID, gap=as.numeric(b$gap), zeros=TRUE)
+# abund <- subset(abund, select=c(ID, abundance))
 
-extinction.stats(extinct5, INDEX=list(number=b$number))
-extinction.stats(extinct5, INDEX=list(env=b$env))
-extinction.stats(extinct5, INDEX=list(number=b$number, env=b$env))
+# b$extinct5after <- extinct5
+# b$extinctafter9 <- extinct.after9
+# b <- merge(b, abund, by="ID")
+
+# extinction.stats(extinct5, INDEX=list(number=b$number))
+# extinction.stats(extinct5, INDEX=list(env=b$env))
+# extinction.stats(extinct5, INDEX=list(number=b$number, env=b$env))
+
+#-----------------------------------------
+
+# Example function run to determine when extinctions occurred
+when.extinct <- determine.when.extinct(N=b[,census.columns], intro.regime=b$number, gap=b$gap)
 
 b$when.extinct <- when.extinct
-b$extinct5after <- extinct5
-b$extinctafter9 <- extinct.after9
-b <- merge(b, abund, by="ID")
+established <- as.data.frame(!sapply(1:9, FUN = extinct.after.x, N=b[,census.columns], intro.regime=b$number, gap=b$gap))
+names(b)[2:11] <- paste0("N", names(b[2:11]))
+names(established) <- paste0("established", 1:9)
+
+b <- head(data.frame(b, established))
+
 
 bb <- subset(b, select=c(ID, when.extinct, extinct5after, extinctafter9, temp.extinctions, latest.extinct, loss, abundance))
 
