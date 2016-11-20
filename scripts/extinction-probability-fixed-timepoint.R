@@ -4,32 +4,28 @@
 ### Email: mikoontz@gmail.com
 ###
 ### Date Created: 20150502
-### Last Updated: 20160124 (Changed frame of reference from extinction to establishment)
+### Penultimate Updated: 20160124 (Changed frame of reference from extinction to establishment)
+### Last Updated: 20161120
 ###
 ### Purpose: Use tidy extinction data to assess the probability of extinction depending on different covariates.
 
-rm(list=ls())
+# Clear environment if necessary
+# rm(list=ls())
 
-if (!require("lme4"))
-  {install.packages("lme4"); library(lme4)}
-if (!require("lsmeans"))
-{install.packages("lsmeans"); library(lsmeans)}
+library(lme4)
+library(lsmeans)
 
-setwd('/Users/mikoontz/Documents/Research/Tribolium/Demography')
-
-# b <- read.csv("Clean-Data/extinctions.csv")
-b <- read.csv("Clean-Data/extinctions3.csv")
+b <- read.csv("data/clean-establishment-data.csv")
 b$number <- as.factor(b$number)
 b$block <- as.factor(b$block)
 b$gap <- as.factor(b$gap)
-b$extant5after <- !b$extinct5after
-b$extantafter9 <- !b$extinctafter9
+# b$extant5after <- !b$extinct5after
 
 # Subset data to represent the only blocks and introduction treatments that COULD have experienced introduction gaps
 gap.potential <- subset(b, subset=(block!=3)&(number%in%c(2,4)))
 
 # We use a simple random effects structure here, because there is far less data in this subsetted dataset. Use extant assessment at generation 10 (9 full censuses after initial introduction).
-m1 <- glmer(extantafter9 ~ number*environment*gap + (1 | block), data=gap.potential, family=binomial, control=glmerControl(optimizer="bobyqa"))
+m1 <- glmer(extant9 ~ number*environment*gap + (1 | block), data=gap.potential, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
 # Update the model fit to remove the 3-way interaction
 m2 <- update(m1, formula= .~. - number:environment:gap)
@@ -85,7 +81,7 @@ b.trim <- b
 #-------------------
 
 # The 'keep it maximal' random effects structure; Possibly too many parameters to justify this approach.
-m5a <- glmer(extantafter9 ~ number*environment + (number*environment | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
+m5a <- glmer(extant9 ~ number*environment + (number*environment | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
 m5b <- update(m5a, formula= .~ number*environment + (number + environment | block))
 
@@ -106,7 +102,7 @@ anova(m5c, m5d) # No interaction between block and number
 #----------------
 
 # Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
-m6 <- glmer(extantafter9 ~ number*environment + (1 | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
+m6 <- glmer(extant9 ~ number*environment + (1 | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
 m7 <- update(m6, formula= .~. - number:environment)
 
@@ -146,13 +142,13 @@ sum(b.trim$temp.extinctions > 2) / nrow(bb)
 dim(bb)
 
 # Proportion extant at end of experiment
-aggregate(extantafter9 ~ temp + number, FUN=mean, data=bb) 
+aggregate(extant9 ~ temp + number, FUN=mean, data=bb) 
 aggregate(loss ~ number, FUN=mean, data=bb)
 aggregate(temp.extinctions ~ number, FUN=sum, data=bb)
 
-tempA <- glmer(extantafter9 ~ number*environment + loss + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+tempA <- glmer(extant9 ~ number*environment + loss + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
-tempB <- glmer(extantafter9 ~ number*environment + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+tempB <- glmer(extant9 ~ number*environment + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
 anova(tempA, tempB)
 summary(tempA)
