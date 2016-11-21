@@ -187,9 +187,9 @@ bb <- subset(b.trim, subset=number %in% c(2,4,5))
 bb$temp <- ifelse(bb$temp.extinctions > 0, yes=TRUE, no=FALSE)
 bb$temp <- as.factor(bb$temp)
 
-sum(b.trim$extinctafter9) / nrow(b.trim)
+(nrow(b.trim) - sum(b.trim$extant9)) / nrow(b.trim)
 # Total extinct through 9 generations: 150/917 = 0.164
-sum(b.trim$extinct5after) / nrow(b.trim)
+(nrow(b.trim) - sum(b.trim$extant_5_after)) / nrow(b.trim)
 # Total extinct 5 generations after final intro: 108/917 = 0.1178
 
 sum(b.trim$temp.extinctions > 0) / nrow(bb)
@@ -199,22 +199,25 @@ sum(b.trim$temp.extinctions > 1) / nrow(bb)
 sum(b.trim$temp.extinctions > 2) / nrow(bb)
 # Temporarily extinct thrice before new introduction: 1/677 = 0.00148
 
-dim(bb)
-
 # Proportion extant at end of experiment
 aggregate(extant_5_after ~ temp + number, FUN=mean, data=bb) 
 aggregate(loss ~ number, FUN=mean, data=bb)
 aggregate(temp.extinctions ~ number, FUN=sum, data=bb)
 
-tempA <- glmer(extant_5_after ~ number*environment + loss + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+tempA <- glmer(extant9 ~ number*environment + temp + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
-tempB <- glmer(extant_5_after ~ number*environment + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+reducedModel <- glmer(extant9 ~ number*environment + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
-anova(tempA, tempB)
-summary(tempA)
+anova(tempA, reducedModel) # Significant effect of temporary extinction versus not
 
-# No significant effect of temporary extinction versus not
-# Significant effect of AMOUNT of loss. More genetic inputs lost meant a higher extinction probability
+lossA <- glmer(extant9 ~ number*environment + loss + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+anova(lossA, reducedModel) # Significant effect of AMOUNT of loss. More genetic inputs lost meant a higher extinction probability
+summary(lossA) # One more potential beetle lost means a decrease in 0.11 log odds of establishment.
+# plogis(0.92) # Mean probability of establishment
+# plogis(0.92 - 0.11) # Approximate probability of establishment with 1 fewer individual
+# plogis(0.92 - .11*5) # Approximate probability of establishment with 5 fewer individuals
+
 
 
 ##### Analysis 2: Extant/extinct assessment at generation 6 #####
