@@ -312,7 +312,7 @@ mtext(side=3, text="Effect of propagule number on extinction probability\nafter 
 
 ##### Analysis 3: Extant/extinct assessment at each generation, include generation as a fixed effect, population ID as random effect #####
 
-head(b)
+#### Analysis 3: Assessing effect of the introduction gap ####
 bb <- subset(b, select = c("ID", "block", "number", "environment", "gap", paste0("extant", 1:9)))
 
 # Gather the extant/extinct assessments currently in short form across columns into a 2-column pair of keys and values.
@@ -332,6 +332,11 @@ fm2 <- update(fm1, . ~ . - gap)
 anova(fm1, fm2) # Looks like model with gap is more likely than the model without, so we'll drop those populations that experienced an introduction gap.
 
 b_trim <- long_b[long_b$gap == "FALSE", ]
+#### Analysis 3: Determining the random effects structure ####
+head(b_trim)
+# Even the simplest possible model that we'd be interested in won't fit using this framework. Let's abandon it.
+fm1 <- glmer(extant ~ number * generation + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+summary(fm1)
 
 
 
