@@ -140,21 +140,45 @@ final <- m6
 
 results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
 results
-sig_letters <- letters[as.numeric(lsmeans::cld(results)$.group)]
-
 posthoc <- summary(results$lsmeans)
+
+sig_letters <- lsmeans::cld(results, Letters = letters)$.group
+xvals <- 1:length(posthoc$lsmean)
+min_y <- min(plogis(posthoc$asymp.LCL))
+
+plot(x = xvals, y=plogis(posthoc$lsmean), 
+     ylim=c(min_y, 1.0), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las=1, 
+     pch=19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Establishment probability", 
+     col=cols, 
+     bty="L")
+
 # cols <- c("dodgerblue", "brown1", "gold", "green")
 cols <- "black"
 
-# pdf("Clean-Plots/modeled-establishment-probability-dot-whisker.pdf", height=3.75, width=3.75)
-par(mar=c(3,4,2,1), xpd=NA)
-plot(x=1:4, y=plogis(posthoc$lsmean), ylim=c(0.7, 1.0), xlim=c(0.5,4.5), las=1, pch=19, xaxt="n", xlab="Introduction regime", ylab="Establishment probability", col=cols, bty="L")
-axis(side=1, at=1:4, labels=c("20x1","10x2","5x4","4x5"), tick=FALSE)
-arrows(x0=1:4, y0=plogis(posthoc$asymp.LCL), y1=plogis(posthoc$asymp.UCL), code=3, length=0.1, angle=90, lwd=2, col=cols)
-text(x=1:4, y=1.02, labels = sig_letters)
-# dev.off()
+axis(side=1, 
+     at = xvals, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
 
-mtext(side=3, text="Effect of propagule number on extinction probability\nfive generations after the final introduction")
+arrows(x0 = xvals, 
+       y0 = plogis(posthoc$asymp.LCL), 
+       y1 = plogis(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2,
+       col = cols)
+
+text(x = 1:4, y = 1.02, labels = sig_letters)
+
+mtext(side=3, 
+      text="Effect of propagule number on extinction probability\nafter 9 filial generations", 
+      line = 2)
 #### Analysis 1: Effect of temporary extinctions ####
 
 bb <- subset(b.trim, subset=number %in% c(2,4,5))
@@ -296,21 +320,44 @@ final <- m6
 
 results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
 results
-sig_letters <- letters[as.numeric(lsmeans::cld(results)$.group)]
-
 posthoc <- summary(results$lsmeans)
+
+sig_letters <- lsmeans::cld(results, Letters = letters)$.group
+xvals <- 1:length(posthoc$lsmean)
+
+plot(x = xvals, y=plogis(posthoc$lsmean), 
+     ylim=c(0.7, 1.0), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las=1, 
+     pch=19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Establishment probability", 
+     col=cols, 
+     bty="L")
+
 # cols <- c("dodgerblue", "brown1", "gold", "green")
 cols <- "black"
 
-# pdf("Clean-Plots/modeled-establishment-probability-dot-whisker.pdf", height=3.75, width=3.75)
-par(mar=c(3,4,4,1), xpd=NA)
-plot(x=1:4, y=plogis(posthoc$lsmean), ylim=c(0.7, 1.0), xlim=c(0.5,4.5), las=1, pch=19, xaxt="n", xlab="Introduction regime", ylab="Establishment probability", col=cols, bty="L")
-axis(side=1, at = 1:4, labels = c("20x1","10x2","5x4","4x5"), tick = FALSE)
-arrows(x0 = 1:4 , y0 = plogis(posthoc$asymp.LCL), y1 = plogis(posthoc$asymp.UCL), code = 3, length = 0.1, angle = 90, lwd = 2, col = cols)
-text(x = 1:4, y = 1.02, labels = sig_letters)
-# dev.off()
+axis(side=1, 
+     at = xvals, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
 
-mtext(side=3, text="Effect of propagule number on extinction probability\nafter 6 generations", line = 2)
+arrows(x0 = xvals, 
+       y0 = plogis(posthoc$asymp.LCL), 
+       y1 = plogis(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2,
+       col = cols)
+
+text(x = 1:4, y = 1.02, labels = sig_letters)
+
+mtext(side=3, 
+      text="Effect of propagule number on extinction probability\nafter 6 generations", 
+      line = 2)
 
 ##### Analysis 3: Extant/extinct assessment at each generation, include generation as a fixed effect, population ID as random effect #####
 
@@ -365,7 +412,6 @@ anova(m3, m4) # LRT suggests model with interaction between gap and propagule nu
 m5 <- update(m4, formula= .~. -gap)
 
 anova(m4, m5) # LRT suggests that the model with an additive effect of gap is NOT more likely than the model without, so we drop the effect of gap.
-
 #### Analysis 4: Plot effect (if any) of introduction gap ####
 # Quick plot to show marginal effect of introduction gap (very overlapping CIs when looking at generation 9)
 #--------------------
@@ -397,7 +443,88 @@ mtext(side=3, text="Effect of introduction gap on establishment probability\naft
 
 # Subset to remove populations with an introduction gap
 b.trim <- b
+#### Analysis 4: Determining the random effects structure ####
+# Test whether there are interactions between the covariates and the random effect of block
+#-------------------
 
+# The 'keep it maximal' random effects structure; Possibly too many parameters to justify this approach.
+m5a <- glmer(extant5 ~ number*environment + (number*environment | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa")) # This model doesn't converge
+
+m5b <- update(m5a, formula= .~ number*environment + (number + environment | block)) # This model doesn't converge
+
+anova(m5a, m5b) # Doesn't appear to be a three way interaction bw number, environment, and block based on LRT, but we had trouble fitting the m5a model.
+
+m5c <- update(m5b, formula= . ~ number*environment + (number | block)) # This model doesn't converge
+
+anova(m5b, m5c) # No interaction between block and environment
+
+m5d <- update(m5c, formula= . ~ number*environment + (environment | block)) # This is the most complicated random effects structure whose model converges
+
+anova(m5c, m5d) # No interaction between block and number
+# There appear to be no interactions between block and the fixed covariates, so we use a simple random intercept structure for the random effect of temporal block.
+# m6 <- update(m5d, formula = . ~ number * environment + (1 | block))
+#### Analysis 4: Influence of fixed effects ####
+# Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
+m6 <- glmer(extant5 ~ number + environment + number:environment + (1 | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa")) # Model fails to converge. Problem is that the 4x5 introduction regime has NO extinctions yet at generation 5
+
+m7 <- update(m6, formula= .~. - number:environment) # Model fails to converge
+
+anova(m6, m7) # Doesn't appear to be an interaction between propagule number and environmental stability
+
+m8 <- update(m7, formula= .~. -environment) # This model does converge
+
+anova(m7, m8) # Environment doesn't seem to affect extinction probability
+
+m9 <- update(m8, formula= .~. -number) # This model also converges
+
+anova(m8, m9) # Propagule number seems to be very important for extinction probability
+
+# The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period. Note though that this model didn't converge.
+
+final <- m6
+#### Analysis 4: Interpretation and contrasts ####
+
+results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
+results
+posthoc <- summary(results$lsmeans)
+
+sig_letters <- lsmeans::cld(results, Letters = letters)$.group
+xvals <- 1:length(posthoc$lsmean)
+min_y <- min(plogis(posthoc$asymp.LCL))
+
+plot(x = xvals, y=plogis(posthoc$lsmean), 
+     ylim=c(min_y, 1.0), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las=1, 
+     pch=19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Establishment probability", 
+     col=cols, 
+     bty="L")
+
+# cols <- c("dodgerblue", "brown1", "gold", "green")
+cols <- "black"
+
+axis(side=1, 
+     at = xvals, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
+
+arrows(x0 = xvals, 
+       y0 = plogis(posthoc$asymp.LCL), 
+       y1 = plogis(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2,
+       col = cols)
+
+text(x = 1:4, y = 1.02, labels = sig_letters)
+
+mtext(side=3, 
+      text="Effect of propagule number on extinction probability\nafter 5 filial generations", 
+      line = 2)
 
 #### Plots with simulation results ####
 # simResults <- read.csv("Clean-Analyses/simulations/establishment_abundance_table_5_50.csv")
