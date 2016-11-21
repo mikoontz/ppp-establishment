@@ -321,12 +321,12 @@ long_b <- gather(bb, key = generation, value = extant, -c(ID, block, number, env
 long_b$generation <- as.numeric(substr(long_b$generation, start = 7, stop = nchar(long_b$generation)))
 
 # We are only interested in generations 5 through 9, which represent time points with all introductions completed
-# long_b <- subset(long_b, generation >= 5)
+long_b <- subset(long_b, generation >= 5)
 
 gap.potential <- subset(long_b, subset=(block!=3)&(number%in%c(2,4)))
 
 str(gap.potential)
-fm1 <- glmer(extant ~ number * environment + generation + gap + (1 | as.factor(ID)) + (number + environment | block), data = gap.potential, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+fm1 <- glmer(extant ~ number * environment * generation + gap + (1 | ID) + (1 | block), data = gap.potential, family = "binomial", control=glmerControl(optimizer="bobyqa"))
 
 fm2 <- update(fm1, . ~ . - gap)
 anova(fm1, fm2) # Looks like model with gap is more likely than the model without, so we'll drop those populations that experienced an introduction gap.
@@ -334,10 +334,10 @@ anova(fm1, fm2) # Looks like model with gap is more likely than the model withou
 b_trim <- long_b[long_b$gap == "FALSE", ]
 #### Analysis 3: Determining the random effects structure ####
 head(b_trim)
+
 # Even the simplest possible model that we'd be interested in won't fit using this framework. Let's abandon it.
 fm1 <- glmer(extant ~ number * generation + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
 summary(fm1)
-
 
 
 #### Plots with simulation results ####
