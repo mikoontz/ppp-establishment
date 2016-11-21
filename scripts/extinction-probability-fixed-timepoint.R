@@ -335,9 +335,8 @@ b_trim <- long_b[long_b$gap == "FALSE", ]
 #### Analysis 3: Determining the random effects structure ####
 head(b_trim)
 
-# Even the simplest possible model that we'd be interested in won't fit using this framework. Let's abandon it.
-fm1 <- glmer(extant ~ number * generation + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
-summary(fm1)
+# Even the simplest possible model that we'd be interested in won't fit using this framework. Let's abandon it in favor of fitting models for each generation that we care about.
+fm1 <- glmer(extant ~ number * environment + generation + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
 
 
 #### Plots with simulation results ####
