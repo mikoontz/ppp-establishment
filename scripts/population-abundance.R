@@ -23,6 +23,7 @@
 
 library(lme4)
 library(lsmeans)
+library(multcompView)
 
 b <- read.csv("data/clean-establishment-data.csv")
 
