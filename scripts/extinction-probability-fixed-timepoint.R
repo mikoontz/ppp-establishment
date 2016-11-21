@@ -711,7 +711,7 @@ anova(tempA, reducedModel)
 lossA <- glmer(extant_5_after ~ number*environment + loss + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
 anova(lossA, reducedModel)
-# No significant effect of AMOUNT of loss. 
+# No significant effect of AMOUNT of loss. Check this against the amount of loss at different time points (up to generation 6, for instance)
 
 
 #### Plots with simulation results ####
