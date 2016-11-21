@@ -55,7 +55,7 @@ anova(m1,m2) # LRT suggests model with 3-way interaction is WAY more likely than
 
 bb <- subset(b, subset=gap==FALSE)
 
-#### Analysis 3: Influence of fixed effects
+#### Analysis 3: Influence of fixed effects ####
 # We'll use the same random effects structure as we did for the establishment probability analysis
 # There are not as many data points in this dataset, so we keep the random effects structure simple with just a random intercept of temporal block
 #---------------
@@ -72,15 +72,13 @@ anova(m6, m7) # Significant interaction of number of introductions and environme
 final <- m6
 #### Analysis 3: Interpretation and contrasts ####
 
-results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
+results <- lsmeans::lsmeans(final, pairwise ~ environment + number, adjust="none")
 results
 posthoc <- summary(results$lsmeans)
 
-sig_letters <- lsmeans::cld(results, Letters = letters)$.group[order(cld(results)$number)]
+sig_letters <- lsmeans::cld(results, Letters = letters)$.group[order(cld(results)$number, cld(results)$environment)]
 xvals <- 1:length(posthoc$lsmean)
-min_y <- min(plogis(posthoc$asymp.LCL))
-
-xvals <- c(0.9, 1.1, 1.9, 2.1, 2.9, 3.1, 3.9, 4.1)
+min_y <- min(exp(posthoc$asymp.LCL))
 
 par(mar=c(4,4,3,1))
 
