@@ -3,24 +3,34 @@
 ### Author: Michael Koontz
 ###
 ### Date Created: 20160124
-### Last Updated: 20160711 
+### Last Updated: 20161121 
 ###
-### Purpose: Executes a generalized linear mixed model to assess whether treatments have different times to  extinction. First determines if it is appropriate to pool the two environment treatments (stable vs. fluctuating) and if we can ignore the drought.
+#### Purpose: Executes a generalized linear mixed model to assess whether treatments have different times to  extinction. First determines if it is appropriate to pool the two environment treatments (stable vs. fluctuating) and if we can ignore the drought. ####
 
-rm(list=ls())
-setwd('/Users/mikoontz/Documents/Research/Tribolium/Demography')
+# There are 3 analyses in this script that parallel the 3 analyses from the establishment-probability.R script that are most likely to end up in the final paper.
 
-if (!require("lme4"))
-{install.packages("lme4"); library(lme4)}
-if (!require("lsmeans"))
-{install.packages("lsmeans"); library(lsmeans)}
+### Analysis 1 assesses population abundance at the end of the experiment, in generation F9
 
-b <- read.csv("figshare/extinctions.csv")
+### Analysis 2 assesses population abundance at generation 6, a couple of generations after all introduction events have completed and prior to suspected major influences of other biological processes
+
+### Analysis 3 assesses population abundance 5 generations after the final introduction event for each introduction regime (generation F5 for 20x1, F6 for 10x2, F8 for 5x4, and F9 for 4x5)
+
+### Possible analysis 4 woiuld assess population abundance at generation 7, which allows 1 more generation of accumulated biological processes, but still appears to be before the major decline in population sizes which could be hinting that other biological processes begin to donimate the dynamics.
+
+#### Load packages, set up data for analysis ####
+# Clear environment if necessary
+# rm(list=ls())
+
+library(lme4)
+library(lsmeans)
+
+b <- read.csv("data/clean-establishment-data.csv")
 
 b$number <- as.factor(b$number)
 b$block <- as.factor(b$block)
 b$gap <- as.factor(b$gap)
 
+#### Analysis 1: Population abundance in generation 9 ####
 #-------------------
 # First test the effect of introduction gap on the time to extinction
 # We proceed the exact same way as we do with the extinction probability analysis, except we use a Poisson likelihood instead of a binomial likelihood.
