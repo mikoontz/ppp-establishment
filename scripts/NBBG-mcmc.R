@@ -109,7 +109,6 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		mu.star[idx] <- 0
 		mu.star[idx2] <- 1/p * F.migrants[idx2] * RE[idx2] * exp(-alpha.star * data$Nt[idx2])
 		
-		
 		# Calculate mh ratio
 		
 		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu.star, size=kD * F, log=TRUE), na.rm=TRUE) + dgamma(alpha.star, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
@@ -159,6 +158,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		# Proposal
 		
 		RE.star <- rnorm(reps, mean=RE, sd=tune["RE"])
+		RE.star[which(RE.star < 0)] <- NA # Any proposals of RE that are less than 0 (impossible values) are instead NA. This will propagate the nothingness through the mu.star calculations, the likelihoods, and the mh ratios such that none of them throw errors or warnings. We also need to ensure that none of those proposals get accepted by chance, which is done by making sure to use the which() function when determining for which of the populations to accept or reject the proposal RE. Because the RE proposals that were negative are now NA, they will be excluded from the candidate set of proposals to accept or reject. Thus, the only updates will be to proposals that meet 2 criteria: They're mh.ratio > runif(1) AND their mh.ratio is NOT NA.
 		
 		# Because RE changes mu, we need to recalculate
 		

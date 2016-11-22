@@ -43,11 +43,6 @@ burned.df <- burn.in.df(mcmc[c("RE", "F.migrants", "F.residents")], 2000)
 
 # mcmc[["accept"]]
 
-dnbinom(x = 1, mu = 1, size = 1, log = TRUE)
-dnbinom(x = 0, mu = 1, size = 1, log = TRUE)
-dnbinom(x = 1, mu = 0, size = 1, log = TRUE)
-dnbinom(x = 1, mu = 1, size = 0, log = TRUE)
-
 #### Write the samples data file for my data ####
 # samples <- data.frame(R0=burned[["R0"]], kE=burned[["kE"]], kD=burned[["kD"]], alpha=burned[["alpha"]])
 # write.csv(samples, 'NBBg samples.csv', row.names=FALSE)
