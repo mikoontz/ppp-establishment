@@ -19,15 +19,13 @@ source("scripts/NBBg-mcmc.R")
 
 data <- read.csv("data/initial-density-dependence.csv")
 
+# Set up data for analysis. Ensures column titles from actual data match the column titles that the MCMC code uses.
 colnames(data)[colnames(data)=="census"] <- "Ntplus1"
 colnames(data)[colnames(data)=="N0"] <- "migrants"
 data$residents <- 0
 data$Nt <- data$migrants + data$residents
 
-
-#--------------
-# For my data
-#--------------
+# Setup MCMC parameters
 n.mcmc <- 1000
 inits <- c(R0=2, kE=22, kD=10, alpha=0.005)
 priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
