@@ -1,0 +1,344 @@
+### MCMC Code for NBBG model of Tribolium population growth
+###
+### Author: Michael Koontz
+###
+### Date Created: 20141103
+### Next to last update: 20141114
+### Last Updated: 20150604 (changed proposals of discrete latent variables (number of resident females, number of migrant females) to sampling from a discrete uniform rather than rounding a sample from a continuous uniform)
+
+### The purpose of this code is to generate a chain of MCMC samples to estimate the posterior distributions for parameters in a population dynamics model. By estimating what variables might be at play in the system, we can hope to isolate the role of environmental stochasticity and then manipulate it during simulations.
+
+###
+### Parameters to estimate:
+###
+### R0: per capita population growth rate in an average environment
+### alpha: adult search rate for eggs (the density dependent parameter)
+### kD: shape parameter for gamma distribution for demographic heterogeneity (higher number means it matters less)
+### kE: shape parameter for gamma distribution for environmental stochasticity (higher number means it matters less)
+
+###
+### Parameters:
+###
+### RE: per capita population growth rate across all environments (incorporates kE value)
+### F.migrants: the number of female migrants
+### F.residents: the number of female residents
+
+
+### Data:
+###
+### Ntplus1: Population size at time t+1
+### Nt: Population size at time t
+### 
+###
+
+NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0.5)
+{
+	reps <- nrow(data)
+
+	### Set up storage variables for parameters and hyperparameters
+	
+	R0.save <- rep(0,n.mcmc)
+	R0.save[1] <- inits["R0"]
+	R0 <- inits["R0"]
+	
+	kE.save <- rep(0,n.mcmc)
+	kE.save[1] <- inits["kE"]
+	kE <- inits["kE"]
+	
+	kD.save <- rep(0,n.mcmc)
+	kD.save[1] <- inits["kD"]
+	kD <- inits["kD"]
+	
+	alpha.save <- rep(0,n.mcmc)
+	alpha.save[1] <- inits["alpha"]
+	alpha <- inits["alpha"]
+	
+	RE.save <- matrix(0, nrow=reps, ncol=n.mcmc)
+	RE.save[, 1] <- inits["R0"]
+	RE <- RE.save[, 1]
+
+	names(RE) <- "RE"
+	
+	F.save <- matrix(0, nrow=reps, ncol=n.mcmc)
+	F.migrants.save <- matrix(0, nrow=reps, ncol=n.mcmc)
+	F.residents.save <- matrix(0, nrow=reps, ncol=n.mcmc)
+	
+	# Set initial conditions for Female migrants (half of all migrants)
+	F.migrants <- ceiling(data$migrants * p)
+	F.migrants.save[, 1] <- F.migrants
+	
+	# Set initial conditions for Female residents (half of all residents)
+	F.residents <- ceiling(data$residents * p)
+	F.residents.save[, 1] <- F.residents
+	
+	F.save[ , 1] <- F.migrants + F.residents
+	F <- F.save[, 1]
+	
+	# Index for populations that should deterministically go extinct
+	idx <- (F.residents == data$Nt) | (F == 0)
+	# Index for populations whose mean population size at time t+1 should be based only on migrant females
+	idx2 <- (F == data$Nt) & (F.migrants != data$Nt)
+	
+	mu <- 1/p * F * RE * exp(-alpha * data$Nt)
+	mu[idx] <- 0
+	mu[idx2] <- 1/p * F.migrants[idx2] * RE[idx2] * exp(-alpha * data$Nt[idx2])
+	
+	accept <- c(R0=0, alpha=0, kE=0, kD=0, RE=0, F.migrants=0, F.residents=0)
+	
+		
+	### Begin MCMC loop
+		
+	for (i in 2:n.mcmc)
+	{
+		### Print progress
+		
+		if(i%%100==0) cat(i," "); flush.console()
+		
+		###
+		### Update alpha
+		###
+	
+		# Proposal
+		
+		alpha.star <- rnorm(1, mean=alpha, sd=tune["alpha"])
+		
+		if (alpha >= 0)
+		{
+		# Because alpha.star changes mu, we need to recalculate
+		mu.star <- 1/p * F * RE * exp(-alpha.star * data$Nt)
+		mu.star[idx] <- 0
+		mu.star[idx2] <- 1/p * F.migrants[idx2] * RE[idx2] * exp(-alpha.star * data$Nt[idx2])
+		
+		
+		# Calculate mh ratio
+		
+		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu.star, size=kD * F, log=TRUE), na.rm=TRUE) + dgamma(alpha.star, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
+		
+		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE), na.rm=TRUE) + dgamma(alpha, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
+					
+		mh <- exp(mh1 - mh2)
+		
+		if (mh > runif(1))
+		{
+			alpha <- alpha.star
+			mu <- mu.star
+			accept["alpha"] <- accept["alpha"] + 1
+		}
+		} # End the 'if alpha is non-negative' statement
+
+		###
+		### Update kD
+		###
+		
+		# Proposal
+		
+		kD.star <- rnorm(1, mean=kD, sd=tune["kD"])
+		
+		if (kD.star >= 0)
+		{
+		
+		# Calculate mh ratio
+		
+		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD.star * F, log=TRUE), na.rm=TRUE) + dgamma(kD.star, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
+			
+		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE), na.rm=TRUE) + dgamma(kD, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
+		
+		mh <- exp(mh1 - mh2)
+		
+		if (mh > runif(1))
+		{
+			kD <- kD.star
+			accept["kD"] <- accept["kD"] + 1
+		}
+		} # End if kD is non-negative
+		
+		###
+		### Update RE
+		###
+	
+		# Proposal
+		
+		RE.star <- rnorm(reps, mean=RE, sd=tune["RE"])
+		
+		# Because RE changes mu, we need to recalculate
+		
+		mu.star <- 1/p * F * RE.star * exp(-alpha * data$Nt)
+		mu.star[idx] <- 0
+		mu.star[idx2] <- 1/p * F.migrants[idx2] * RE.star[idx2] * exp(-alpha * data$Nt[idx2])
+		
+###### Calculate mh ratio #####
+		
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F, log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
+		
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE) + dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)
+		
+		mh <- exp(mh1 - mh2)
+		mh.idx <- which(mh > runif(n=reps) )
+		
+		RE[mh.idx] <- RE.star[mh.idx]
+		mu[mh.idx] <- mu.star[mh.idx]
+		accept["RE"] <- accept["RE"] + (length(mh.idx) / reps)
+
+
+		###
+		### Update R0
+		###
+		
+		# Proposal
+
+		R0.star <- rnorm(1, mean=R0, sd=tune["R0"])
+		
+		if (R0.star >= 0)
+		{
+		
+		mh1 <- sum(dgamma(RE, shape=kE, scale=R0.star/kE, log=TRUE)) + dgamma(R0.star, shape=priors.shape["R0"], scale=priors.scale["R0"], log=TRUE) 
+		
+		mh2 <- sum(dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)) + dgamma(R0, shape=priors.shape["R0"], scale=priors.scale["R0"], log=TRUE)
+		
+		mh <- exp(mh1 - mh2)
+	
+		# Decide whether to accept or reject proposal
+		if (mh > runif(1))
+		{
+			R0 <- R0.star
+			accept["R0"] <- accept["R0"] + 1
+		}
+		} # End if R0 proposal is non-negative statement
+		
+		###
+		### Update kE
+		###
+		
+		# Proposal
+	
+		kE.star <- rnorm(1, mean=kE, sd=tune["kE"])
+				
+		if (kE.star >= 0)
+		{
+
+		# Calculate mh ratio
+	
+		mh1 <- sum(dgamma(RE, shape=kE.star, scale=R0/kE.star, log=TRUE)) + dgamma(kE.star, shape=priors.shape["kE"], scale=priors.scale["kE"], log=TRUE)
+		
+		mh2 <- sum(dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)) + dgamma(kE, shape=priors.shape["kE"], scale=priors.scale["kE"], log=TRUE) 
+		
+		mh <- exp(mh1 - mh2)
+		
+		# Decide whether to accept or reject proposal
+		if (mh > runif(1))
+		{
+			kE <- kE.star
+			accept["kE"] <- accept["kE"] + 1
+		}
+		} # End if kE proposal is non-negative
+		
+		###
+		### Update F.migrants
+		###
+
+		# Discrete uniform proposal distribution
+		
+# 		F.migrants.star <- round(data$migrants * runif(reps))
+    F.migrants.star <- sapply(data$migrants, FUN=function(x) sample(x, size=1))
+    F.star <- F.migrants.star + F.residents
+		
+		# Index for populations that should deterministically go extinct
+		idx.star <- which( (F.residents == data$Nt) | (F.star == 0) )
+	# Index for populations whose mean population size at time t+1 should be based only on migrant females
+		idx2.star <- which( (F.star == data$Nt) & (F.migrants.star != data$Nt) )
+	
+		mu.star <- 1/p * F.star * RE * exp(-alpha * data$Nt)
+		mu.star[idx.star] <- 0
+		mu.star[idx2.star] <- 1/p * F.migrants.star[idx2.star] * RE[idx2.star] * exp(-alpha * data$Nt[idx2.star])
+
+		# Calculate mh ratio
+		
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size= kD * F.star, log=TRUE) + dbinom(F.migrants.star, size=data$migrants, prob=p, log=TRUE) 
+			
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE) + dbinom(F.migrants, size=data$migrants, prob=p, log=TRUE)
+	
+		mh <- exp(mh1 - mh2)
+		mh.idx <- which(mh > runif(reps))
+		
+		F.migrants[mh.idx] <- F.migrants.star[mh.idx]
+		F[mh.idx] <- F.star[mh.idx]
+		mu[mh.idx] <- mu.star[mh.idx]
+		idx <- which( (F.residents == data$Nt) | (F == 0) )
+		idx2 <- which( (F == data$Nt) & (F.migrants != data$Nt) )
+		accept["F.migrants"] <- accept["F.migrants"] + length(mh.idx)/reps
+		
+		###
+		### Update F.residents
+		###
+	
+# 		F.residents.star <- round(data$residents*runif(reps))
+    F.residents.star <- sapply(data$residents, FUN=function(x) sample(x, size=1))
+    F.star <- F.migrants + F.residents.star
+		
+		# Index for populations that should deterministically go extinct
+		idx.star <- which( (F.residents.star == data$Nt) | (F.star == 0) )
+	# Index for populations whose mean population size at time t+1 should be based only on migrant females
+		idx2.star <- which( (F.star == data$Nt) & (F.migrants != data$Nt) )
+	
+		mu.star <- 1/p * F.star * RE * exp(-alpha * data$Nt)
+		mu.star[idx.star] <- 0
+		mu.star[idx2.star] <- 1/p * F.migrants[idx2.star] * RE[idx2.star] * exp(-alpha * data$Nt[idx2.star])
+
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.star, log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
+		
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE) + dbinom(F.residents, size=data$residents, prob=p, log=TRUE)
+	
+		mh <- exp(mh1 - mh2)
+		mh.idx <- which(mh > runif(reps))
+		
+		F.residents[mh.idx] <- F.residents.star[mh.idx]
+		F[mh.idx] <- F.star[mh.idx]
+		mu[mh.idx] <- mu.star[mh.idx]
+		idx <- which( (F.residents == data$Nt) | (F == 0) )
+		idx2 <- which( (F == data$Nt) & (F.migrants != data$Nt) )
+		accept["F.residents"] <- accept["F.residents"] + length(mh.idx)/reps
+	
+					
+		###
+		### Save samples
+		###
+		
+		R0.save[i] <- R0
+		kE.save[i] <- kE
+		kD.save[i] <- kD
+		alpha.save[i] <- alpha
+		RE.save[, i] <- RE
+		F.migrants.save[, i] <- F.migrants
+		F.residents.save[, i] <- F.residents
+		F.save[, i] <- F
+		
+	}
+	
+	list(R0=R0.save, kE=kE.save, kD=kD.save, alpha=alpha.save, RE=RE.save, F.migrants=F.migrants.save, F.residents=F.residents.save, F=F.save, accept=accept)
+	
+}
+
+burn.in <- function(mcmc, burn.in)
+{
+	to.return <- lapply(mcmc, FUN=function(x) x[-(1:burn.in)])
+	names(to.return) <- names(mcmc)
+	to.return
+}
+
+burn.in.df <- function(mcmc, burn.in)
+{
+	to.return <- lapply(mcmc, FUN=function(x) x[ , -(1:burn.in)])
+	names(to.return) <- names(mcmc)
+	to.return
+}
+
+
+
+
+
+
+
+
+
+
+
