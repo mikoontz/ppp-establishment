@@ -30,7 +30,7 @@ n.mcmc <- 10000
 inits <- c(R0=2, kE=22, kD=10, alpha=0.005)
 priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
 priors.scale <- c(R0=1, kE=1, kD=1, alpha=1)
-tune <- c(R0=0.1, kE=10, kD=1, alpha=0.0004, RE=1)
+tune <- c(R0=0.1, kE=10, kD=1, alpha=0.005, RE=1)
 
 head(data)
 
