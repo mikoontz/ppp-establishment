@@ -26,7 +26,7 @@ data$residents <- 0
 data$Nt <- data$migrants + data$residents
 
 # Setup MCMC parameters
-n.mcmc <- 10000
+n.mcmc <- 100000
 inits <- c(R0=2, kE=22, kD=10, alpha=0.005)
 priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
 priors.scale <- c(R0=1, kE=1, kD=1, alpha=1)
@@ -56,13 +56,11 @@ plot(burned[["kD"]], type="l", main="kD")
 plot(burned[["alpha"]], type="l", main=expression(alpha))
 plot(burned.df[["RE"]][2, ], type="l", main="RE")
 
-str(burned)
-str(x)
-x <- mcmc(as.data.frame(burned))
-x <- as.matrix(x)
-spec <- spectrum0.ar(x)$spec
-ans <- ifelse(spec == 0, 0, nrow(x) * apply(x, 2, var)/spec)
-ans
+# Effective number of parameters for a single chain using method in coda package
+burned_matrix <- as.matrix(as.data.frame(burned))
+spec <- spectrum0.ar(burned_matrix)$spec
+Neff <- ifelse(spec == 0, 0, nrow(burned_matrix) * apply(burned_matrix, 2, var) / spec)
+Neff
 
 
 #### Write the samples data file for my data ####
