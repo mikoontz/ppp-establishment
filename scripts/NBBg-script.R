@@ -56,6 +56,14 @@ plot(burned[["kD"]], type="l", main="kD")
 plot(burned[["alpha"]], type="l", main=expression(alpha))
 plot(burned.df[["RE"]][2, ], type="l", main="RE")
 
+str(burned)
+str(x)
+x <- mcmc(as.data.frame(burned))
+x <- as.matrix(x)
+spec <- spectrum0.ar(x)$spec
+ans <- ifelse(spec == 0, 0, nrow(x) * apply(x, 2, var)/spec)
+ans
+
 
 #### Write the samples data file for my data ####
 # samples <- data.frame(R0=burned[["R0"]], kE=burned[["kE"]], kD=burned[["kD"]], alpha=burned[["alpha"]])
