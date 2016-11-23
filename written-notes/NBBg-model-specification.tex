@@ -37,16 +37,22 @@ We introduced 20 \emph{Tribolium} flour beetles to novel environments that were 
 \subsection*{The Data Model}
 
 \begin{align*}
-N_{(t+1)i} & \sim NegBinom(\mu_i, k_DF_{ti}) \\
+N_{(t+1), i} & \sim NegBinom(\mu_i, k_DF_{{mated}_{(t,i)}}) \\
 \end{align*}
 
 Where $N_{(t+1)i}$ is the population size in the next generation for the $i^{th}$ population, $\mu_i$ is the expected per capita population growth rate (births minus density independent deaths) for the $i^{th}$ population in the $E$ environment, $\alpha$ is the adult search rate for eggs, $N_{ti}$ is the population size in the current generation for the $i^{th}$ population, $k_D$ is the shape parameter of the gamma distribution for demographic stochasticity, and $F_{ti}$ is the expected number of females in the $i^{th}$ population.
 
 \subsection*{The Process Model}
 
-\[
-\mu_i = \frac{1}{p}F_iR_ie^{-\alpha N_{ti}}
-\]
+\begin{align*}
+\mu_{(t + 1), i} & = \frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i}e^{-\alpha N_{t, i}} \\
+p & = 0.5 \\
+N_{t, i} & = N_{{migrants}_{(t, i)}} + N_{{residents}_{(t, i)}} \\
+F_{{mated}_{t,i}} & = \begin{cases}
+	F_{{migrants}_{t, i}} & \text{when } F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} = N_{t, i}  \\
+	F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} & \text{when } F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} < N_{t, i}
+	\end{cases} \\
+\end{align*}
 
 Where $p$ is the probability of an individual being female ($p=0.5$), $F_i$ is the number of adult females in the $i^{th}$ population, and $R_E$ is the per-capita population growth rate for the $E$ environment assuming an even sex ratio.
 
@@ -55,8 +61,9 @@ Where $p$ is the probability of an individual being female ($p=0.5$), $F_i$ is t
 \subsubsection*{Parameters}
 
 \begin{align*}
-F_i & \sim Binom(N_{ti}, p) \\
-R_E & \sim Gamma(k_E, \frac{R_0}{k_E})
+F_{{migrants}_{(t, i)}} & \sim Binom(N_{{migrants}_{(t, i)}}, p) \\
+F_{{residents}_{(t, i)}} & \sim Binom(N_{{residents}_{(t, i)}}, p) \\
+R_{E_i} & \sim Gamma(k_E, \frac{R_0}{k_E}) \\
 \end{align*}
 
 Where $k_E$ is the shape parameter of the gamma distribution for environmental stochasticity and $R_0$ is the expectation of per-capita population growth rate in the average environment assuming an even sex ratio.
@@ -73,15 +80,21 @@ k_D & \sim Gamma(1.07, 1) \\
 \subsection*{All Together}
 
 \begin{align*}
-N_{(t+1)i} & \sim NegBinom(\mu_i, k_DF_{ti}) \\
-\mu_i & = \frac{1}{p}F_iR_ie^{-\alpha N_{ti}} \\
-F_i & \sim Binom(N_{ti}, p) \\
-R_E & \sim Gamma(k_E, \frac{R_0}{k_E}) \\
+N_{(t+1)i} & \sim NegBinom(\mu_i, k_DF_{{mated}_{(t, i)}}) \\
+\mu_i & = \frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i} e^{-\alpha N_{t, i}} \\
+p & = 0.5 \\
+N_{t, i} & = N_{{migrants}_{(t, i)}} + N_{{residents}_{(t, i)}} \\
+F_{{mated}_{(t, i)}} & = \begin{cases}
+	F_{{migrants}_{(t, i)}} & \text{when } F_{{migrants}_{(t, i)}} + F_{{residents}_{(t, i)}} = N_{t, i}  \\
+	F_{{migrants}_{(t, i)}} + F_{{residents}_{(t, i)}} & \text{when } F_{{migrants}_{(t, i)}} + F_{{residents}_{(t, i)}} < N_{t, i}
+	\end{cases} \\
+F_{{migrants}_{(t, i)}} & \sim Binom(N_{{migrants}_{(t, i)}}, p) \\
+F_{{residents}_{(t,i )}} & \sim Binom(N_{{residents}_{(t, i)}}, p) \\
+R_{E_i} & \sim Gamma(k_E, \frac{R_0}{k_E}) \\
 R_0 & \sim  Gamma(2.6, 1) \\
 k_E & \sim Gamma(17.6, 1) \\
 k_D & \sim Gamma(1.07, 1) \\
 \alpha & \sim Gamma(0.0037, 1) \\
-p & = 0.5
 \end{align*}
 
 
@@ -89,24 +102,23 @@ p & = 0.5
 
 
 \subsection*{The Posterior Distribution}
-\begin{align*}
-[R_0, k_E, k_D, \alpha , \boldsymbol{R_E}, \boldsymbol{F} | \boldsymbol{N_t}, \boldsymbol{N_{t+1}}] \propto & \\ 
-& \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}][F_i|N_{ti},p]\right)[R_0][k_E][k_D][\alpha]
-\end{align*}
+\begin{multline*}
+\left[R_0, k_E, k_D, \alpha , R_{E_i}, F_{{migrants}_{(t, i)}}, F_{{residents}_{(t, i)}} \middle | N_{t, i}, N_{(t + 1), i} \right] \propto \\
+ \prod_{i=1}^{n}\left( \left[N_{(t+1), i} \middle | \left(\frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{(t, i)}} \right] \left[ R_{E_i} \middle | k_{E}, \frac{R_{0}}{k_E} \right]   \left[F_{{mated}_{(t, i)}} \middle | N_{(t, i)},p \right] \right) \\
+\left[F_{{migrants}_{(t, i)}} \middle | N_{{migrants}_{(t, i)}},p \right] \\
+\left[F_{{residents}_{(t, i)}} \middle | N_{{residents}_{(t, i)}},p \right] \\
+[R_0][k_E][k_D][\alpha]
+\end{multline*}
 
 \subsection*{Full Conditional Distributions}
 \begin{align*}
-	[R_0 | \cdot] & \propto \prod_{i=1}^{n} \left( \left[ N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right) e^{-\alpha N_{t, i}}, k_D F_{{mated}_{t,i}}\right] \right)[R_0] \\
-	[k_E | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \right) \left[k_E \right] \\
-	[k_D | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \right) \left[k_D \right] \\
-	[\alpha | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \right) \left [\alpha \right] \\
-	[R_{E_i} | \cdot] & \propto \left[ N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i}\right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}}\right] \left[R_{E_i}\right] \\
-	[F_{{migrants}_{t,i}} | \cdot] & \propto \left[N_{(t+1), i}|\left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \left[F_{{migrants}_{t,i}} | N_{{migrants}_{(t, i)}},p \right] \\
-	[F_{{residents}_{t,i}} | \cdot] & \propto \left[N_{(t+1), i}|\left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \left[F_{{residents}_{t,i}} | N_{{residents}_{(t, i)}},p \right] \\
-F_{{mated}_{t,i}} & = \begin{cases}
-	F_{{migrants}_{t, i}} & \text{when } F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} = N_{t, i}  \\
-	F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} & \text{when } F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} < N_{t, i}
-	\end{cases}
+	[R_0 | \cdot] & \propto \prod_{i=1}^{n} \left( \left[ R_{E_i} \middle | k_{E}, \frac{R_{0}}{k_E} \right] \right)[R_0] \\
+	[k_E | \cdot] & \propto \prod_{i=1}^{n}\left( \left[ R_{E_i} \middle | k_{E}, \frac{R_{0}}{k_E} \right] \right) \left[k_E \right] \\
+	[k_D | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} \middle | \left(\frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{(t, i)}} \right] \right) \left[k_D \right] \\
+	[\alpha | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} \middle | \left(\frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{(t, i)}} \right] \right) \left [\alpha \right] \\
+	[R_{E_i} | \cdot] & \propto \left[ N_{(t+1), i} \middle | \left(\frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i}\right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{(t, i)}}\right] \left[R_{E_i}\right] \\
+	[F_{{migrants}_{(t, i)}} | \cdot] & \propto \left[N_{(t+1), i} \middle | \left(\frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{(t, i)}} \right] \left[F_{{migrants}_{(t, i)}}  \middle | N_{{migrants}_{(t, i)}},p \right] \\
+	[F_{{residents}_{(t, i)}}  | \cdot] & \propto \left[N_{(t+1), i} \middle | \left(\frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{(t, i)}} \right] \left[F_{{residents}_{(t, i)}} \middle | N_{{residents}_{(t, i)}},p \right] 
 \end{align*}
 
 
