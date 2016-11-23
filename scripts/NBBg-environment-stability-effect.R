@@ -21,14 +21,14 @@ N1 <- d$Ntp1[, 1:2]
 b <- merge(N0, N1, by = "ID")
 b <- merge(b, attributes, "ID")
 b <- subset(b, select = c("ID", "0", "1", "environment"))
-colnames(b) <- c("ID", "Nt", "Ntp1", "env")
+colnames(b) <- c("ID", "Nt", "Ntplus1", "env")
 b$residents <- 0
 b$migrants <- b$Nt
 
 fluc <- subset(b, subset=env=="fluctuating")
 stab <- subset(b, subset=env=="stable")
 
-n.mcmc <- 10000
+n.mcmc <- 1000
 inits <- c(R0=2, kE=22, kD=10, alpha=0.005)
 priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
 priors.scale <- c(R0=1, kE=1, kD=1, alpha=1)
@@ -38,9 +38,9 @@ stab.tune <- c(R0=0.08, kE=8, kD=1, alpha=0.008, RE=1)
 
 mcmc.fluc <- NBBG.mcmc(fluc, priors.shape, priors.scale, inits, fluc.tune, n.mcmc)
 mcmc.stab <- NBBG.mcmc(stab, priors.shape, priors.scale, inits, stab.tune, n.mcmc)
-# 
-# mcmc.fluc[["accept"]]
-# mcmc.stab[["accept"]]
+
+mcmc.fluc[["accept"]]
+mcmc.stab[["accept"]]
 
 # Fluctuating environment first
 # x <- 1:20
