@@ -1,0 +1,115 @@
+\documentclass{article}[12pt]
+\usepackage[margin=1in]{geometry}
+
+\usepackage{graphicx}
+\usepackage{epsfig}
+\usepackage{amsmath,amsthm,amssymb,amsfonts}
+
+%Citation styles-- comment out the one you don't want
+%\usepackage[numbers,square]{natbib}
+\usepackage[authoryear]{natbib}
+
+\usepackage[colorlinks,citecolor=blue,urlcolor=blue,linkcolor=blue]{hyperref}
+\usepackage{hyperref}
+\usepackage{bm}
+\usepackage{verbatim}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{csquotes}
+\MakeOuterQuote{"}
+\usepackage[parfill]{parskip}
+
+\begin{document}
+
+\title{Specification of NBBG model for propagule pressure simulation experiment}
+\author{Michael Koontz} 
+\date{\today}
+
+\maketitle
+\pagestyle {plain}
+
+\vspace{-4em}
+
+\section*{Introduction}
+
+We introduced 20 \emph{Tribolium} flour beetles to novel environments that were either stable or randomly fluctuating through time, varying the number of introduction events used to distribute them (1, 2, 4, or 5 events). We want to simulate the exercise using reasonable choices for different kinds of stochasticity that may affect the population (demographic stochasticity, environmental stochasticity, and demographic heterogeneity including sex ratio). The goal is to see whether we see similar results with simulations as we do with the manipulative experiment, and to determine what factors may drive any divergence in observations (\emph{e.g.} how big does environmental stochasticity need to be in order to change the outcome of the simulated experiment?). The first step is to estimate the parameters corresponding to stochasticity using a Negative binomial-binomial-gamma stochastic model built on a Ricker skeleton of density dependent population growth.
+
+\subsection*{The Data Model}
+
+\begin{align*}
+N_{(t+1)i} & \sim NegBinom(\mu_i, k_DF_{ti}) \\
+\end{align*}
+
+Where $N_{(t+1)i}$ is the population size in the next generation for the $i^{th}$ population, $\mu_i$ is the expected per capita population growth rate (births minus density independent deaths) for the $i^{th}$ population in the $E$ environment, $\alpha$ is the adult search rate for eggs, $N_{ti}$ is the population size in the current generation for the $i^{th}$ population, $k_D$ is the shape parameter of the gamma distribution for demographic stochasticity, and $F_{ti}$ is the expected number of females in the $i^{th}$ population.
+
+\subsection*{The Process Model}
+
+\[
+\mu_i = \frac{1}{p}F_iR_ie^{-\alpha N_{ti}}
+\]
+
+Where $p$ is the probability of an individual being female ($p=0.5$), $F_i$ is the number of adult females in the $i^{th}$ population, and $R_E$ is the per-capita population growth rate for the $E$ environment assuming an even sex ratio.
+
+\subsection*{The Parameter Model}
+
+\subsubsection*{Parameters}
+
+\begin{align*}
+F_i & \sim Binom(N_{ti}, p) \\
+R_E & \sim Gamma(k_E, \frac{R_0}{k_E})
+\end{align*}
+
+Where $k_E$ is the shape parameter of the gamma distribution for environmental stochasticity and $R_0$ is the expectation of per-capita population growth rate in the average environment assuming an even sex ratio.
+
+\subsubsection*{Priors}
+
+\begin{align*}
+R_0 & \sim  Gamma(2.6, 1) \\
+k_E & \sim Gamma(17.6, 1) \\
+k_D & \sim Gamma(1.07, 1) \\
+\alpha & \sim Gamma(0.0037, 1)
+\end{align*}
+
+\subsection*{All Together}
+
+\begin{align*}
+N_{(t+1)i} & \sim NegBinom(\mu_i, k_DF_{ti}) \\
+\mu_i & = \frac{1}{p}F_iR_ie^{-\alpha N_{ti}} \\
+F_i & \sim Binom(N_{ti}, p) \\
+R_E & \sim Gamma(k_E, \frac{R_0}{k_E}) \\
+R_0 & \sim  Gamma(2.6, 1) \\
+k_E & \sim Gamma(17.6, 1) \\
+k_D & \sim Gamma(1.07, 1) \\
+\alpha & \sim Gamma(0.0037, 1) \\
+p & = 0.5
+\end{align*}
+
+
+
+
+
+\subsection*{The Posterior Distribution}
+\begin{align*}
+[R_0, k_E, k_D, \alpha , \boldsymbol{F} | \boldsymbol{N_t}, \boldsymbol{N_{t+1}}] \propto & \\ 
+& \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}][F_i|N_{ti},p]\right)[R_0][k_E][k_D][\alpha]
+\end{align*}
+
+\subsection*{Full Conditional Distributions}
+\begin{align*}
+[R_0|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[R_0] \\
+[k_E|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[k_E] \\
+[k_D|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[k_D] \\
+[\alpha | \cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[\alpha] \\
+[\boldsymbol{F}|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}][F_i|N_{ti},p]\right)
+\end{align*}
+
+
+\bibliographystyle{/Users/mikoontz/Desktop/Bibliography_Format/ecology} %Uses Ecology format for citations
+\bibliography{/Users/mikoontz/Desktop/BibTeX_Library/library} %Uses my Mendeley generated .bib library
+
+\end{document}
+
+
+%\section{First Section} How to do a numbered section
+%\citet{Schluter2009} only the year is wrapped in parentheses
+%\citep{Schluter2009} citation is entirely wrapped in parentheses
