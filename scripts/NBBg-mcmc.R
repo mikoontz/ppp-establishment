@@ -59,7 +59,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 
 	names(RE) <- "RE"
 	
-	F.save <- matrix(0, nrow=reps, ncol=n.mcmc)
+	F.mated.save <- matrix(0, nrow=reps, ncol=n.mcmc)
 	F.migrants.save <- matrix(0, nrow=reps, ncol=n.mcmc)
 	F.residents.save <- matrix(0, nrow=reps, ncol=n.mcmc)
 	
@@ -71,18 +71,13 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 	F.residents <- ceiling(data$residents * p)
 	F.residents.save[, 1] <- F.residents
 	
-	F.save[ , 1] <- F.migrants + F.residents
-	F <- F.save[, 1]
-	
-	# Index for populations that should deterministically go extinct
-	idx <- (F.residents == data$Nt) | (F == 0)
-	# Index for populations whose mean population size at time t+1 should be based only on migrant females
-	idx2 <- (F == data$Nt) & (F.migrants != data$Nt)
-	
-	mu <- 1/p * F * RE * exp(-alpha * data$Nt)
-	mu[idx] <- 0
-	mu[idx2] <- 1/p * F.migrants[idx2] * RE[idx2] * exp(-alpha * data$Nt[idx2])
-	
+	F.mated <- F.migrants + F.residents # Default number of mated females is all females
+	F.mated.idx <- which((F.migrants + F.residents) == data$Nt) # Indices where population is all females
+	F.mated[F.mated.idx] <- F.migrants[F.mated.idx] # Populations with all females use only the migrant females for the number of mated females (because we assume they arrive mated from the large external source)
+	F.mated.save[ , 1] <- F.mated
+
+	mu <- 1/p * F.mated * RE * exp(-alpha * data$Nt)
+
 	accept <- c(R0=0, alpha=0, kE=0, kD=0, RE=0, F.migrants=0, F.residents=0)
 	
 		
@@ -105,15 +100,13 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		if (alpha >= 0)
 		{
 		# Because alpha.star changes mu, we need to recalculate
-		mu.star <- 1/p * F * RE * exp(-alpha.star * data$Nt)
-		mu.star[idx] <- 0
-		mu.star[idx2] <- 1/p * F.migrants[idx2] * RE[idx2] * exp(-alpha.star * data$Nt[idx2])
-		
+		mu.star <- 1/p * F.mated * RE * exp(-alpha.star * data$Nt)
+
 		# Calculate mh ratio
 		
-		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu.star, size=kD * F, log=TRUE), na.rm=TRUE) + dgamma(alpha.star, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
+		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated, log=TRUE), na.rm=TRUE) + dgamma(alpha.star, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
 		
-		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE), na.rm=TRUE) + dgamma(alpha, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
+		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE), na.rm=TRUE) + dgamma(alpha, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
 					
 		mh <- exp(mh1 - mh2)
 		
@@ -138,9 +131,9 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		
 		# Calculate mh ratio
 		
-		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD.star * F, log=TRUE), na.rm=TRUE) + dgamma(kD.star, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
+		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD.star * F.mated, log=TRUE), na.rm=TRUE) + dgamma(kD.star, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
 			
-		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE), na.rm=TRUE) + dgamma(kD, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
+		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE), na.rm=TRUE) + dgamma(kD, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
 		
 		mh <- exp(mh1 - mh2)
 		
@@ -162,15 +155,13 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		
 		# Because RE changes mu, we need to recalculate
 		
-		mu.star <- 1/p * F * RE.star * exp(-alpha * data$Nt)
-		mu.star[idx] <- 0
-		mu.star[idx2] <- 1/p * F.migrants[idx2] * RE.star[idx2] * exp(-alpha * data$Nt[idx2])
-		
+		mu.star <- 1/p * F.mated * RE.star * exp(-alpha * data$Nt)
+
 ###### Calculate mh ratio #####
 		
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F, log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated, log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
 		
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE) + dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE) + dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)
 		
 		mh <- exp(mh1 - mh2)
 		mh.idx <- which(mh > runif(n=reps) )
@@ -238,33 +229,28 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 
 		# Discrete uniform proposal distribution
 		
-# 		F.migrants.star <- round(data$migrants * runif(reps))
     F.migrants.star <- sapply(data$migrants, FUN=function(x) sample(x, size=1))
-    F.star <- F.migrants.star + F.residents
-		
-		# Index for populations that should deterministically go extinct
-		idx.star <- which( (F.residents == data$Nt) | (F.star == 0) )
-	# Index for populations whose mean population size at time t+1 should be based only on migrant females
-		idx2.star <- which( (F.star == data$Nt) & (F.migrants.star != data$Nt) )
-	
-		mu.star <- 1/p * F.star * RE * exp(-alpha * data$Nt)
-		mu.star[idx.star] <- 0
-		mu.star[idx2.star] <- 1/p * F.migrants.star[idx2.star] * RE[idx2.star] * exp(-alpha * data$Nt[idx2.star])
+    F.mated.star <- F.migrants.star + F.residents
+
+    F.mated.idx.star <- which((F.migrants.star + F.residents) == data$Nt) # Indices where proposal number of migrant females makes the population be all females
+    
+    F.mated.star[F.mated.idx.star] <- F.migrants.star[F.mated.idx.star]
+    		
+		mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
 
 		# Calculate mh ratio
 		
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size= kD * F.star, log=TRUE) + dbinom(F.migrants.star, size=data$migrants, prob=p, log=TRUE) 
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size= kD * F.mated.star, log=TRUE) + dbinom(F.migrants.star, size=data$migrants, prob=p, log=TRUE) 
 			
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE) + dbinom(F.migrants, size=data$migrants, prob=p, log=TRUE)
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE) + dbinom(F.migrants, size=data$migrants, prob=p, log=TRUE)
 	
 		mh <- exp(mh1 - mh2)
 		mh.idx <- which(mh > runif(reps))
 		
 		F.migrants[mh.idx] <- F.migrants.star[mh.idx]
-		F[mh.idx] <- F.star[mh.idx]
+		F.mated[mh.idx] <- F.mated.star[mh.idx]
 		mu[mh.idx] <- mu.star[mh.idx]
-		idx <- which( (F.residents == data$Nt) | (F == 0) )
-		idx2 <- which( (F == data$Nt) & (F.migrants != data$Nt) )
+
 		accept["F.migrants"] <- accept["F.migrants"] + length(mh.idx)/reps
 		
 		###
@@ -273,29 +259,23 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 	
 # 		F.residents.star <- round(data$residents*runif(reps))
     F.residents.star <- sapply(data$residents, FUN=function(x) sample(x, size=1))
-    F.star <- F.migrants + F.residents.star
+    F.mated.star <- F.migrants + F.residents.star
 		
-		# Index for populations that should deterministically go extinct
-		idx.star <- which( (F.residents.star == data$Nt) | (F.star == 0) )
-	# Index for populations whose mean population size at time t+1 should be based only on migrant females
-		idx2.star <- which( (F.star == data$Nt) & (F.migrants != data$Nt) )
-	
-		mu.star <- 1/p * F.star * RE * exp(-alpha * data$Nt)
-		mu.star[idx.star] <- 0
-		mu.star[idx2.star] <- 1/p * F.migrants[idx2.star] * RE[idx2.star] * exp(-alpha * data$Nt[idx2.star])
+    F.mated.idx.star <- which((F.migrants + F.residents.star) == data$Nt) # Indices where proposal number of resident females makes the population be all females
+    
+    mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
 
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.star, log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated.star, log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
 		
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F, log=TRUE) + dbinom(F.residents, size=data$residents, prob=p, log=TRUE)
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE) + dbinom(F.residents, size=data$residents, prob=p, log=TRUE)
 	
 		mh <- exp(mh1 - mh2)
 		mh.idx <- which(mh > runif(reps))
 		
 		F.residents[mh.idx] <- F.residents.star[mh.idx]
-		F[mh.idx] <- F.star[mh.idx]
+		F.mated[mh.idx] <- F.mated.star[mh.idx]
 		mu[mh.idx] <- mu.star[mh.idx]
-		idx <- which( (F.residents == data$Nt) | (F == 0) )
-		idx2 <- which( (F == data$Nt) & (F.migrants != data$Nt) )
+	
 		accept["F.residents"] <- accept["F.residents"] + length(mh.idx)/reps
 	
 					
@@ -310,11 +290,11 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		RE.save[, i] <- RE
 		F.migrants.save[, i] <- F.migrants
 		F.residents.save[, i] <- F.residents
-		F.save[, i] <- F
+		F.mated.save[, i] <- F.mated
 		
 	}
 	
-	list(R0=R0.save, kE=kE.save, kD=kD.save, alpha=alpha.save, RE=RE.save, F.migrants=F.migrants.save, F.residents=F.residents.save, F=F.save, accept=accept)
+	list(R0=R0.save, kE=kE.save, kD=kD.save, alpha=alpha.save, RE=RE.save, F.migrants=F.migrants.save, F.residents=F.residents.save, F.mated=F.mated.save, accept=accept)
 	
 }
 
