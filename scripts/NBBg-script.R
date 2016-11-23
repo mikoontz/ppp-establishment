@@ -47,6 +47,21 @@ alpha <- mean(burned[["alpha"]])
 x <- 1:200
 mu_Ntp1 <- x * R0 * exp(-alpha * x)
 
+#### Trace plots and a sample trace plot for RE (1st population) of unburned samples ####
+
+par(mfrow=c(3,2))
+plot(data$Nt, data$Ntplus1, pch=19)
+lines(x = x, y = mu_Ntp1, col="red")
+plot(mcmc[["R0"]], type="l", main="R0")
+plot(mcmc[["kE"]], type="l", main="kE")
+plot(mcmc[["kD"]], type="l", main="kD")
+plot(mcmc[["alpha"]], type="l", main=expression(alpha))
+plot(mcmc[["RE"]][2, ], type="l", main="RE")
+burned <- burn.in(mcmc[c("R0", "kE", "kD", "alpha")], 2000)
+burned.df <- burn.in.df(mcmc[c("RE", "F.migrants", "F.residents")], 2000)
+
+#### Trace plots and a sample trace plot for RE (1st population) of burned samples ####
+
 par(mfrow=c(3,2))
 plot(data$Nt, data$Ntplus1, pch=19)
 lines(x = x, y = mu_Ntp1, col="red")
@@ -56,7 +71,7 @@ plot(burned[["kD"]], type="l", main="kD")
 plot(burned[["alpha"]], type="l", main=expression(alpha))
 plot(burned.df[["RE"]][2, ], type="l", main="RE")
 
-# Effective number of parameters for a single chain using method in coda package
+#### Effective number of parameters for a single chain using method in coda package ####
 burned_matrix <- as.matrix(as.data.frame(burned))
 spec <- spectrum0.ar(burned_matrix)$spec
 Neff <- ifelse(spec == 0, 0, nrow(burned_matrix) * apply(burned_matrix, 2, var) / spec)
@@ -67,20 +82,9 @@ Neff
 # samples <- data.frame(R0=burned[["R0"]], kE=burned[["kE"]], kD=burned[["kD"]], alpha=burned[["alpha"]])
 # write.csv(samples, 'NBBg samples.csv', row.names=FALSE)
 
-#### Trace plots and a sample trace plot for RE (1st population) ####
 
-# pdf('test.pdf')
-# par(mfrow=c(3,2))
-# plot(data$Nt, data$Ntplus1, pch=19)
-# # lines(x=x, y=x * R0 * exp(-alpha*x), col="red")
-# plot(mcmc[["R0"]], type="l", main="R0")
-# plot(mcmc[["kE"]], type="l", main="kE")
-# plot(mcmc[["kD"]], type="l", main="kD")
-# plot(mcmc[["alpha"]], type="l", main=expression(alpha))
-# plot(mcmc[["RE"]][2, ], type="l", main="RE")
-# burned <- burn.in(mcmc[c("R0", "kE", "kD", "alpha")], 2000)
-# burned.df <- burn.in.df(mcmc[c("RE", "F.migrants", "F.residents")], 2000)
-# dev.off()
+
+
 #### Figuring out the modes and 95% credible intervals ####
 # parameters <- c("R0", "kE", "kD", "alpha")
 # results <- data.frame(parameter=c(parameters, "RE"), mean=0, mode=0, lowerCI=0, upperCI=0)
