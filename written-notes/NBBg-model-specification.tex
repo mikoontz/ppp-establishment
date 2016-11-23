@@ -90,17 +90,19 @@ p & = 0.5
 
 \subsection*{The Posterior Distribution}
 \begin{align*}
-[R_0, k_E, k_D, \alpha , \boldsymbol{F} | \boldsymbol{N_t}, \boldsymbol{N_{t+1}}] \propto & \\ 
+[R_0, k_E, k_D, \alpha , \boldsymbol{R_E}, \boldsymbol{F} | \boldsymbol{N_t}, \boldsymbol{N_{t+1}}] \propto & \\ 
 & \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}][F_i|N_{ti},p]\right)[R_0][k_E][k_D][\alpha]
 \end{align*}
 
 \subsection*{Full Conditional Distributions}
 \begin{align*}
-[R_0|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[R_0] \\
-[k_E|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[k_E] \\
-[k_D|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[k_D] \\
-[\alpha | \cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}]\right)[\alpha] \\
-[\boldsymbol{F}|\cdot] & \propto \prod_{i=1}^{n}\left([N_{(t+1)i}|\left(\frac{1}{p}F_iR_E\right)e^{-\alpha N_{ti}}, k_DF_{ti}][F_i|N_{ti},p]\right)
+[R_0 | \cdot] & \propto \prod_{i=1}^{n} \left( \left[ N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right) e^{-\alpha N_{t, i}}, k_D F_{{mated}_{t,i}}\right] \right)[R_0] \\
+[k_E | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \right) \left[k_E \right] \\
+[k_D | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \right) \left[k_D \right] \\
+[\alpha | \cdot] & \propto \prod_{i=1}^{n}\left( \left[N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \right) \left [\alpha \right] \\
+[R_{E_i} | \cdot] & \propto \left[ N_{(t+1), i} | \left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i}\right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}}\right] \left[R_{E_i}\right] \\
+[F_{{migrants}_{t,i}} | \cdot] & \propto \left[N_{(t+1), i}|\left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \left[F_{{migrants}_{t,i}} | N_{(t, i)},p \right] \\
+[F_{{residents}_{t,i}} | \cdot] & \propto \left[N_{(t+1), i}|\left(\frac{1}{p}F_{{mated}_{t,i}}R_{E_i} \right)e^{-\alpha N_{t, i}}, k_DF_{{mated}_{t,i}} \right] \left[F_{{residents}_{t,i}} | N_{(t, i)},p \right]
 \end{align*}
 
 
