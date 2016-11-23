@@ -5,19 +5,19 @@
 ### Date Created: 20141103
 ### Last Updated: 20161122
 ###
-### The purpose of this code is to get data into a format that can be analyzed using a hierarchical Bayesian model, analyze those data using MCMC methods, and then present posterior distributions of the parameters of interest
+### The purpose of this code is to validate the MCMC algorithm used to calculate NBBg parameters on the Parsing Propagule Pressure initial density dependence side experiment. We use known values of the parameters and simulate an NBBg model, then fit our hierarchical model to those simulated data to see if we can reobtain the known parameter values. We then fit our hierarchical model to data from Melbourne and Hastings (2008) to see if we can reobtain the parameter values they estimated from their analysis.
 
 #### Simulated data to validate the MCMC algorithm ####
 ### Simulate data
-
 # df <- data.frame(residents=rep(0,2600), migrants=c(rep(4,500), rep(5, 500), rep(10, 500), rep(20, 500), rep(50, 200), rep(100,200), rep(200, 100), rep(1000, 100)) )
-# df <- data.frame(residents=rep(0,250), migrants=c(rep(seq(2,100), times=2), rep(seq(125, 500, by=25), times=2), rep(seq(550, 1000, by=50), times=2)) )
-# 
-# R0 <- 2.6
-# kE <- 17.6
-# kD <- 1.07
-# alpha <- 0.0037
-# 
+df <- data.frame(residents=rep(0,250), migrants=c(rep(seq(2,100), times=2), rep(seq(125, 500, by=25), times=2), rep(seq(550, 1000, by=50), times=2)) )
+
+# Known parameter values 
+R0 <- 2.6
+kE <- 17.6
+kD <- 1.07
+alpha <- 0.0037
+
 # test <- Tribolium.NBBG(data=df, R0=R0, kE=kE, kD=kD, alpha=alpha)
 # x <- 1:1000
 # 
