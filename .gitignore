@@ -2,6 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+readme.Rmd
 written-notes/*.aux
 written-notes/*.log
 written-notes/*.out
