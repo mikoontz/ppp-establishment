@@ -5,8 +5,6 @@ date: "11/27/2016"
 output: 
   md_document: 
   variant: markdown_github
-  toc: true
-  toc_depth: 4
 ---
 
 
