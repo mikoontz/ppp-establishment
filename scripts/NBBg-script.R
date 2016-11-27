@@ -29,10 +29,10 @@ data$residents <- 0
 data$Nt <- data$migrants + data$residents
 
 # Setup MCMC parameters
-n.mcmc <- 10000
+n.mcmc <- 20000
 inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
-              c(R0=5, kE=2, kD=25, alpha=0.01),
-              c(R0=0.5, kE=10, kD=10, alpha=0.0005))
+              c(R0=5, kE=2, kD=25, alpha=0.015),
+              c(R0=0.5, kE=35, kD=1, alpha=0.0005))
 
 priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
 priors.scale <- c(R0=1, kE=1, kD=1, alpha=1)
@@ -40,7 +40,6 @@ tune <- c(R0=0.1, kE=10, kD=1.5, alpha=0.001, RE=1)
 
 #### Run MCMC algorithm ####
 mcmc_output <- lapply(inits, FUN = function(x) NBBG.mcmc(data, priors.shape, priors.scale, x, tune, n.mcmc))
-mcmc.list
 
 # Percent of proposals accepted
 num_accepted <- lapply(mcmc_output, FUN = function(x) x[["accept"]])
@@ -58,23 +57,27 @@ key <- lapply(samples_list, function(x) x[, c("R0", "alpha", "kE", "kD")])
 
 #### Trace plots of unburned samples for key parameters ####
 
-plot(key)
+plot(key[[1]])
 
 #### Effective number of parameters for chains ####
-effectiveSize(key)
+Neff <- lapply(key, effectiveSize)
+names(Neff) <- paste0("chain_", 1:length(key))
+Neff
+
 
 #### Convergence diagnostics for MCMC chains ####
 
 converge <- gelman.diag(x = key) # Should be at or *very* near 1 to indicate convergence.
+converge
 gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
 
 #### Burn in 20% of samples
-burned <- lapply(samples_list, FUN = function(x) burn.in(x, n.mcmc*0.2))
+burned <- lapply(samples_list, FUN = function(x) burn.in(x, n.mcmc*0.05))
 burned_key <- lapply(burned, FUN = function(x) x[, c("R0", "alpha", "kE", "kD")])
 
 #### Trace plots of burned in samples ####
 
-plot(burned_key)
+plot(burned_key[[1]])
 
 #### Plot the best fit curve for the estimated expectation of Ntplus1 given Nt
 R0 <- mean(burned[[1]][, "R0"])
