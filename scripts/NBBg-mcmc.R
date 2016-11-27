@@ -3,8 +3,9 @@
 ### Author: Michael Koontz
 ###
 ### Date Created: 20141103
-### Next to last update: 20141114
-### Last Updated: 20150604 (changed proposals of discrete latent variables (number of resident females, number of migrant females) to sampling from a discrete uniform rather than rounding a sample from a continuous uniform)
+### Antepenultimate Update: 20141114
+### Penultimate Update: 20150604 (changed proposals of discrete latent variables (number of resident females, number of migrant females) to sampling from a discrete uniform rather than rounding a sample from a continuous uniform)
+### Last Update: 20161123 and now using version control (see result of diff call to see changes)
 
 ### The purpose of this code is to generate a chain of MCMC samples to estimate the posterior distributions for parameters in a population dynamics model. By estimating what variables might be at play in the system, we can hope to isolate the role of environmental stochasticity and then manipulate it during simulations.
 
@@ -31,56 +32,58 @@
 ### 
 ###
 
+library(coda)
+
 NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0.5)
 {
 	reps <- nrow(data)
 
 	### Set up storage variables for parameters and hyperparameters
 	
-	R0.save <- rep(0,n.mcmc)
+	R0.save <- rep(0, n.mcmc)
 	R0.save[1] <- inits["R0"]
 	R0 <- inits["R0"]
 	
-	kE.save <- rep(0,n.mcmc)
+	kE.save <- rep(0, n.mcmc)
 	kE.save[1] <- inits["kE"]
 	kE <- inits["kE"]
 	
-	kD.save <- rep(0,n.mcmc)
+	kD.save <- rep(0, n.mcmc)
 	kD.save[1] <- inits["kD"]
 	kD <- inits["kD"]
 	
-	alpha.save <- rep(0,n.mcmc)
+	alpha.save <- rep(0, n.mcmc)
 	alpha.save[1] <- inits["alpha"]
 	alpha <- inits["alpha"]
 	
-	RE.save <- matrix(0, nrow=reps, ncol=n.mcmc)
-	RE.save[, 1] <- inits["R0"]
-	RE <- RE.save[, 1]
+	RE.save <- matrix(0, nrow = n.mcmc, ncol = reps, dimnames = list(NULL, paste0("RE_Pop", data$ID)))
+	RE.save[1, ] <- inits["R0"]
+	RE <- RE.save[1, ]
 
 	names(RE) <- "RE"
 	
-	F.mated.save <- matrix(0, nrow=reps, ncol=n.mcmc)
-	F.migrants.save <- matrix(0, nrow=reps, ncol=n.mcmc)
-	F.residents.save <- matrix(0, nrow=reps, ncol=n.mcmc)
+	F.mated.save <- matrix(0, nrow = n.mcmc, ncol = reps, dimnames = list(NULL, paste0("F_mated_Pop", data$ID)))
+	F.migrants.save <- matrix(0, nrow = n.mcmc, ncol = reps, dimnames = list(NULL, paste0("F_migrants_Pop", data$ID)))
+	F.residents.save <- matrix(0, nrow = n.mcmc, ncol = reps, dimnames = list(NULL, paste0("F_residents_Pop", data$ID)))
 	
 	# Set initial conditions for Female migrants (half of all migrants)
 	F.migrants <- ceiling(data$migrants * p)
-	F.migrants.save[, 1] <- F.migrants
-	
+	F.migrants.save[1, ] <- F.migrants
+	print(str(F.migrants.save))
+
 	# Set initial conditions for Female residents (half of all residents)
 	F.residents <- ceiling(data$residents * p)
-	F.residents.save[, 1] <- F.residents
-	
+	F.residents.save[1, ] <- F.residents
+
 	F.mated <- F.migrants + F.residents # Default number of mated females is all females
 	F.mated.idx <- which((F.migrants + F.residents) == data$Nt) # Indices where population is all females
 	F.mated[F.mated.idx] <- F.migrants[F.mated.idx] # Populations with all females use only the migrant females for the number of mated females (because we assume they arrive mated from the large external source)
-	F.mated.save[ , 1] <- F.mated
-
+	F.mated.save[1, ] <- F.mated
+	
 	mu <- 1/p * F.mated * RE * exp(-alpha * data$Nt)
 
 	accept <- c(R0=0, alpha=0, kE=0, kD=0, RE=0, F.migrants=0, F.residents=0)
 	
-		
 	### Begin MCMC loop
 		
 	for (i in 2:n.mcmc)
@@ -257,7 +260,6 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		### Update F.residents
 		###
 	
-# 		F.residents.star <- round(data$residents*runif(reps))
     F.residents.star <- sapply(data$residents, FUN=function(x) sample(x, size=1))
     F.mated.star <- F.migrants + F.residents.star
 		
@@ -287,14 +289,17 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		kE.save[i] <- kE
 		kD.save[i] <- kD
 		alpha.save[i] <- alpha
-		RE.save[, i] <- RE
-		F.migrants.save[, i] <- F.migrants
-		F.residents.save[, i] <- F.residents
-		F.mated.save[, i] <- F.mated
+		RE.save[i, ] <- RE
+		F.migrants.save[i, ] <- F.migrants
+		F.residents.save[i, ] <- F.residents
+		F.mated.save[i, ] <- F.mated
 		
 	}
 	
-	list(R0=R0.save, kE=kE.save, kD=kD.save, alpha=alpha.save, RE=RE.save, F.migrants=F.migrants.save, F.residents=F.residents.save, F.mated=F.mated.save, accept=accept)
+	# list(R0=R0.save, kE=kE.save, kD=kD.save, alpha=alpha.save, RE=RE.save, F.migrants=F.migrants.save, F.residents=F.residents.save, F.mated=F.mated.save, accept=accept)
+	samps <- cbind(R0 = R0.save, kE = kE.save, kD = kD.save, alpha = alpha.save, F.migrants.save, F.residents.save, F.mated.save)
+	
+	list(samps = mcmc(samps), accept = accept)
 	
 }
 
