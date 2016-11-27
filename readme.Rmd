@@ -1,0 +1,12 @@
+---
+title: "Table of Contents for ppp-establishment"
+author: "Michael Koontz"
+date: "11/27/2016"
+output: 
+  html_document:
+  toc: yes
+---
+
+
+## Introduction
+We introduced 20 \emph{Tribolium} flour beetles to novel environments that were either stable or randomly fluctuating through time, varying the number of introduction events used to distribute them (1, 2, 4, or 5 events). 
