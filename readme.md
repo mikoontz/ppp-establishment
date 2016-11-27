@@ -11,6 +11,7 @@ Michael Koontz
             -   [generate-tidy-data.R](#generate-tidy-data.r)
         -   [simulations](#simulations)
             -   [NBBg-population-dynamics-function.R](#nbbg-population-dynamics-function.r)
+        -   [environmental-stochasticity.R](#environmental-stochasticity.r)
         -   [establishment-probability.R](#establishment-probability.r)
         -   [population-abundance.R](#population-abundance.r)
         -   [temporary-extinctions.R](#temporary-extinctions.r)
@@ -58,6 +59,10 @@ Converts long form census data (one row represents the census for each populatio
 #### NBBg-population-dynamics-function.R
 
 Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, \(\alpha\), kE, and kD).
+
+### environmental-stochasticity.R
+
+Calculates total stochasticity through time using lambda values for each population that remained extant throughout entire experiment. Uses a linear mixed effects model to assess the effect of environmental treatment (stable or fluctuating) on this total stochasticity value. We'd expect our fluctuating treatment to impose more variation in lambda values.
 
 ### establishment-probability.R
 

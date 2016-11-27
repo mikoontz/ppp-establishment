@@ -32,6 +32,9 @@ Converts long form census data (one row represents the census for each populatio
 #### NBBg-population-dynamics-function.R
 Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, $\alpha$, kE, and kD).
 
+### environmental-stochasticity.R
+Calculates total stochasticity through time using lambda values for each population that remained extant throughout entire experiment. Uses a linear mixed effects model to assess the effect of environmental treatment (stable or fluctuating) on this total stochasticity value. We'd expect our fluctuating treatment to impose more variation in lambda values.
+
 ### establishment-probability.R
 Mixed effects logistic regression analyses with establishment as response (1 or 0) with introduction regime and environmental stability as covariates. The script includes several analyses, all with a check to see whether the introduction gap in generation F2 was important. 
 
