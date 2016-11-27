@@ -1,6 +1,33 @@
+---
+title: "Table of Contents for ppp-establishment"
+author: "Michael Koontz"
+date: "11/27/2016"
+output: 
+  md_document:
+  toc: true
+  toc_depth: 4
+---
+
+
 ## Introduction
 We introduced 917 populations of *Tribolium* flour beetles comprising 20 individuals apiece to novel environments that were either stable or randomly fluctuating through time, varying the number of introduction events used to distribute them (1, 2, 4, or 5 events). Thus, there were 4 levels of "introduction regime" (20 individuals introduced in the 1st generation, 10 individuals introduced in the first 2 generations, 5 individuals introduced in the first 4 generations, and 4 individuals introduced in the first 5 generations), and 2 levels of "environmental stability" (stable or randomly fluctuating through time).
 
 Our goal was to investigate how the introduction regime and environmental stability of the recipient environment might affect establishment probability and the population abundance of the established populations.
 
 This repository (`mikoontz\ppp-establishment`) represents the data and analysis from the experiment.
+
+## File Structure in Repository
+Files are stored in 1 of 3 directories. "scripts" houses all `R` scripts for analysis and data carpentry. "data" houses all raw and cleaned data. "written-notes" houses any extra documentation that aids the interpretation of the data or scripts (*e.g.* the specification for the NBBg stochastic hierarchical population dynamics model).
+
+## Table of Contents
+### scripts
+#### establishment-probability.R
+#### population-abundance.R
+#### temporary-extinctions.R
+#### NBBg-mcmc.R
+#### NBBg-script.R
+#### NBBg-script-validation.R
+#### NBBg-environment-stability-effect.R
+### data
+
+### written-notes
