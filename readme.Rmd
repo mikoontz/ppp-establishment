@@ -2,8 +2,10 @@
 title: "Table of Contents for ppp-establishment"
 author: "Michael Koontz"
 date: "11/27/2016"
-output: github_document
+output: 
+  github_document:
     toc: true
+    toc_depth: 3
 ---
 
 
