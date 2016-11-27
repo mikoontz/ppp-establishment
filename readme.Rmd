@@ -5,7 +5,6 @@ date: "11/27/2016"
 output: 
   github_document:
     toc: true
-    toc_depth: 3
 ---
 
 
