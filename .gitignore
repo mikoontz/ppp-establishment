@@ -1,0 +1,8 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+written-notes/*.aux
+written-notes/*.log
+written-notes/*.out
+written-notes/*.gz
