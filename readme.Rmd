@@ -2,10 +2,7 @@
 title: "Table of Contents for ppp-establishment"
 author: "Michael Koontz"
 date: "11/27/2016"
-output: 
-  md_document: 
-    variant: markdown_github
-    preserve_yaml: false
+output: github_document
     toc: true
 ---
 
