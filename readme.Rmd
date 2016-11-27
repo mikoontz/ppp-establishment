@@ -4,7 +4,10 @@ author: "Michael Koontz"
 date: "11/27/2016"
 output: 
   md_document:
+<<<<<<< HEAD
   variant: markdown_github
+=======
+>>>>>>> 0979c8c0a77afcd133e7e23222ec96cc535222f5
   toc: true
   toc_depth: 4
 ---
