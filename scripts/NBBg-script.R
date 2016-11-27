@@ -19,6 +19,9 @@ source("scripts/NBBg-mcmc.R")
 
 data <- read.csv("data/initial-density-dependence.csv")
 
+# Data collected for initial density dependence side experiment didn't use a unique identifier for each population, so set that now
+data$ID <- 1:nrow(data)
+
 # Set up data for analysis. Ensures column titles from actual data match the column titles that the MCMC code uses.
 colnames(data)[colnames(data)=="census"] <- "Ntplus1"
 colnames(data)[colnames(data)=="N0"] <- "migrants"
@@ -26,79 +29,68 @@ data$residents <- 0
 data$Nt <- data$migrants + data$residents
 
 # Setup MCMC parameters
-n.mcmc <- 100000
-inits <- c(R0=2, kE=22, kD=10, alpha=0.005)
+n.mcmc <- 10000
+inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
+              c(R0=5, kE=2, kD=25, alpha=0.01),
+              c(R0=0.5, kE=10, kD=10, alpha=0.0005))
+
 priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
 priors.scale <- c(R0=1, kE=1, kD=1, alpha=1)
 tune <- c(R0=0.1, kE=10, kD=1.5, alpha=0.001, RE=1)
 
-head(data)
-
-mcmc <- NBBG.mcmc(data, priors.shape, priors.scale, inits, tune, n.mcmc)
-
-burned <- burn.in(mcmc[c("R0", "kE", "kD", "alpha")], 2000)
-burned.df <- burn.in.df(mcmc[c("RE", "F.migrants", "F.residents")], 2000)
+#### Run MCMC algorithm ####
+mcmc_output <- lapply(inits, FUN = function(x) NBBG.mcmc(data, priors.shape, priors.scale, x, tune, n.mcmc))
+mcmc.list
 
 # Percent of proposals accepted
-(mcmc[["accept"]] / n.mcmc) * 100
+num_accepted <- lapply(mcmc_output, FUN = function(x) x[["accept"]])
+names(num_accepted) <- paste0("chain_", 1:length(num_accepted))
 
-R0 <- mean(burned[["R0"]])
-alpha <- mean(burned[["alpha"]])
+percent_accepted <- lapply(num_accepted, FUN = function(x) x / n.mcmc * 100)
+percent_accepted
+
+# Pull out samples of parameters
+samples <- lapply(mcmc_output, FUN = function(x) x[["samps"]])
+samples_list <- mcmc.list(samples)
+
+# Pull out key parameters
+key <- lapply(samples_list, function(x) x[, c("R0", "alpha", "kE", "kD")])
+
+#### Trace plots of unburned samples for key parameters ####
+
+plot(key)
+
+#### Effective number of parameters for chains ####
+effectiveSize(key)
+
+#### Convergence diagnostics for MCMC chains ####
+
+converge <- gelman.diag(x = key) # Should be at or *very* near 1 to indicate convergence.
+gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
+
+#### Burn in 20% of samples
+burned <- lapply(samples_list, FUN = function(x) burn.in(x, n.mcmc*0.2))
+burned_key <- lapply(burned, FUN = function(x) x[, c("R0", "alpha", "kE", "kD")])
+
+#### Trace plots of burned in samples ####
+
+plot(burned_key)
+
+#### Plot the best fit curve for the estimated expectation of Ntplus1 given Nt
+R0 <- mean(burned[[1]][, "R0"])
+alpha <- mean(burned[[1]][, "alpha"])
 x <- 1:200
 mu_Ntp1 <- x * R0 * exp(-alpha * x)
 
-#### Trace plots and a sample trace plot for RE (1st population) of unburned samples ####
-
-par(mfrow=c(3,2))
 plot(data$Nt, data$Ntplus1, pch=19)
 lines(x = x, y = mu_Ntp1, col="red")
-plot(mcmc[["R0"]], type="l", main="R0")
-plot(mcmc[["kE"]], type="l", main="kE")
-plot(mcmc[["kD"]], type="l", main="kD")
-plot(mcmc[["alpha"]], type="l", main=expression(alpha))
-plot(mcmc[["RE"]][2, ], type="l", main="RE")
-burned <- burn.in(mcmc[c("R0", "kE", "kD", "alpha")], 2000)
-burned.df <- burn.in.df(mcmc[c("RE", "F.migrants", "F.residents")], 2000)
-
-#### Trace plots and a sample trace plot for RE (1st population) of burned samples ####
-
-par(mfrow=c(3,2))
-plot(data$Nt, data$Ntplus1, pch=19)
-lines(x = x, y = mu_Ntp1, col="red")
-plot(burned[["R0"]], type="l", main="R0")
-plot(burned[["kE"]], type="l", main="kE")
-plot(burned[["kD"]], type="l", main="kD")
-plot(burned[["alpha"]], type="l", main=expression(alpha))
-plot(burned.df[["RE"]][2, ], type="l", main="RE")
-
-#### Effective number of parameters for a single chain using method in coda package ####
-burned_matrix <- as.matrix(as.data.frame(burned))
-spec <- spectrum0.ar(burned_matrix)$spec
-Neff <- ifelse(spec == 0, 0, nrow(burned_matrix) * apply(burned_matrix, 2, var) / spec)
-Neff
-
 
 #### Write the samples data file for my data ####
 # samples <- data.frame(R0=burned[["R0"]], kE=burned[["kE"]], kD=burned[["kD"]], alpha=burned[["alpha"]])
 # write.csv(samples, 'NBBg samples.csv', row.names=FALSE)
 
-
-
-
 #### Figuring out the modes and 95% credible intervals ####
-# parameters <- c("R0", "kE", "kD", "alpha")
-# results <- data.frame(parameter=c(parameters, "RE"), mean=0, mode=0, lowerCI=0, upperCI=0)
-# 
-# for (k in 1:length(parameters) )
-# {
-#   results$mean[results$parameter==parameters[k]] <- mean(burned[[parameters[k]]])
-#   results$mode[results$parameter==parameters[k]] <- density(burned[[parameters[k]]])$x[which.max(density(burned[[parameters[k]]])$y)]
-#   results[results$parameter==parameters[k], 4:5] <- quantile(burned[[parameters[k]]], prob=c(0.025, 0.975))
-# }
-# 
-# results$mean[results$parameter=="RE"] <- mean(burned.df[["RE"]])
-# results$mode[results$parameter=="RE"] <- density(burned.df[["RE"]])$x[which.max(density(burned.df[["RE"]])$y)]
-# results[results$parameter=="RE", 4:5] <- quantile(burned.df[["RE"]], prob=c(0.025, 0.975))
+report <- lapply(burned_key, FUN = summary)
 
 # results using MJK Parsing Propagule Pressure data
 # parameter         mode      lowerCI      upperCI
@@ -122,18 +114,18 @@ Neff
 ###
 ###
 ### Randomly sample 10 population ID's and plot the predicted and known number of migrant females
-
-get.mode <- function(x)
-{
-	names(sort(-table(x)))[1]
-}
-
-par(mfrow=c(2, 5))
-for (i in 1:length(ids))
-{
-	plot(table(mcmc[["F.migrants"]][ids[i], ]), ylab="Frequency", main=paste("Expected Female Migrants:", test$Nt[ids[i]]/2, "\nEstimated Female Migrants:", get.mode(mcmc[["F.migrants"]][ids[i], ]), "\nActual Female Migrants:", test$F.migrants[ids[i]] ) )
-	
-	abline(v=test$F.migrants[ids[i]], col="blue", lwd=4)	
-	abline(v=get.mode(mcmc[["F.migrants"]][ids[i], ]), col="red", lwd=4)	
-
-}
+# 
+# get.mode <- function(x)
+# {
+# 	names(sort(-table(x)))[1]
+# }
+# 
+# par(mfrow=c(2, 5))
+# for (i in 1:length(ids))
+# {
+# 	plot(table(mcmc[["F.migrants"]][ids[i], ]), ylab="Frequency", main=paste("Expected Female Migrants:", test$Nt[ids[i]]/2, "\nEstimated Female Migrants:", get.mode(mcmc[["F.migrants"]][ids[i], ]), "\nActual Female Migrants:", test$F.migrants[ids[i]] ) )
+# 	
+# 	abline(v=test$F.migrants[ids[i]], col="blue", lwd=4)	
+# 	abline(v=get.mode(mcmc[["F.migrants"]][ids[i], ]), col="red", lwd=4)	
+# 
+# }
