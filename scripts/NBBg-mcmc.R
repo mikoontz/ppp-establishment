@@ -69,7 +69,6 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 	# Set initial conditions for Female migrants (half of all migrants)
 	F.migrants <- ceiling(data$migrants * p)
 	F.migrants.save[1, ] <- F.migrants
-	print(str(F.migrants.save))
 
 	# Set initial conditions for Female residents (half of all residents)
 	F.residents <- ceiling(data$residents * p)
@@ -296,27 +295,16 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		
 	}
 	
-	# list(R0=R0.save, kE=kE.save, kD=kD.save, alpha=alpha.save, RE=RE.save, F.migrants=F.migrants.save, F.residents=F.residents.save, F.mated=F.mated.save, accept=accept)
 	samps <- cbind(R0 = R0.save, kE = kE.save, kD = kD.save, alpha = alpha.save, F.migrants.save, F.residents.save, F.mated.save)
 	
 	list(samps = mcmc(samps), accept = accept)
 	
 }
 
-burn.in <- function(mcmc, burn.in)
+burn.in <- function(chain, burn.in)
 {
-	to.return <- lapply(mcmc, FUN=function(x) x[-(1:burn.in)])
-	names(to.return) <- names(mcmc)
-	to.return
+  return(chain[-1:burn.in, ])
 }
-
-burn.in.df <- function(mcmc, burn.in)
-{
-	to.return <- lapply(mcmc, FUN=function(x) x[ , -(1:burn.in)])
-	names(to.return) <- names(mcmc)
-	to.return
-}
-
 
 
 
