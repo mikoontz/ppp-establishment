@@ -303,7 +303,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 
 burn.in <- function(chain, burn.in)
 {
-  return(chain[-1:burn.in, ])
+  return(mcmc(chain[-(1:burn.in), ]))
 }
 
 
