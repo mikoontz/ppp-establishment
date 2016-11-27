@@ -387,10 +387,21 @@ anova(fm1, fm2) # Looks like model with gap is more likely than the model withou
 
 b_trim <- long_b[long_b$gap == "FALSE", ]
 #### Analysis 3: Determining the random effects structure ####
-head(b_trim)
-
 # Even the simplest possible model that we'd be interested in won't fit using this framework. Let's abandon it in favor of fitting models for each generation that we care about.
 fm1 <- glmer(extant ~ number * environment + generation + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+
+# What about ensuring ID is a factor?
+b_trim$ID <- as.factor(b_trim$ID)
+fm2 <- glmer(extant ~ number * environment + generation + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+#No convergence.
+
+# What about making generation a factor?
+fm3 <- glmer(extant ~ number * environment + as.factor(generation) + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
+# Still no convergence.
+
+# What kind of variation is in the data?
+aggregate(extant ~ number + environment + generation, FUN = mean, data = b_trim)
+# Some, but not a lot when broken down by generation like this. Perhaps that's why the model won't converge?
 
 ##### Analysis 4: Extant/extinct assessment at generation 5 #####
 ## This analysis may not prove useful, as no populations in the 4x5 introduction regime went extinct by this time.
