@@ -277,9 +277,6 @@ names(extant_x_after) <- paste0("extant_", 1:5, "_after")
 b <- data.frame(b, extant_x_after)
 
 # Also include the relative abundance calculations in the final data set. These columns represent the abundance of the population 1, 2, 3, 4, or 5 generations after the final introduction event for a population's partiuclar introduction regime.
-# First convert NAs to 0's in the population size data.frame
-N_for_abundance <- b[, c(which(colnames(b) == "size"), census.columns)]
-N_for_abundance[is.na(N_for_abundance)] <- 0
 
 abund_x_after <- as.data.frame(sapply(1:5, 
                                       FUN = N_x.after.intro, 
