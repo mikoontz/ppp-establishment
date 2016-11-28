@@ -11,6 +11,7 @@ Michael Koontz
             -   [generate-tidy-data.R](#generate-tidy-data.r)
         -   [simulations](#simulations)
             -   [NBBg-population-dynamics-function.R](#nbbg-population-dynamics-function.r)
+            -   [NBBg-simulation-functions.R](#nbbg-simulation-functions.r)
         -   [environmental-stochasticity.R](#environmental-stochasticity.r)
         -   [establishment-probability.R](#establishment-probability.r)
         -   [experiment-time-series-population-abundance-plot.R](#experiment-time-series-population-abundance-plot.r)
@@ -21,6 +22,7 @@ Michael Koontz
         -   [NBBg-script-validation.R](#nbbg-script-validation.r)
         -   [NBBg-environment-stability-effect.R](#nbbg-environment-stability-effect.r)
     -   [data](#data)
+        -   [simulations](#simulations-1)
         -   [attributes.csv](#attributes.csv)
         -   [clean-establishment-data.csv](#clean-establishment-data.csv)
         -   [initial-density-dependence.csv](#initial-density-dependence.csv)
@@ -62,6 +64,10 @@ Converts long form census data (one row represents the census for each populatio
 #### NBBg-population-dynamics-function.R
 
 Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, \(\alpha\), kE, and kD).
+
+#### NBBg-simulation-functions.R
+
+Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, \(\alpha\), kE, and kD) and also allows incorporation of model uncertainty.
 
 ### environmental-stochasticity.R
 
@@ -105,6 +111,10 @@ Uses the NBBg MCMC code to estimate parameters of the NBBg model fit to the raw 
 
 data
 ----
+
+### simulations
+
+Data that arise from simulations.
 
 ### attributes.csv
 
