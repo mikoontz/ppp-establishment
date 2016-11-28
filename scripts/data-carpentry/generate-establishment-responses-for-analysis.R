@@ -157,37 +157,36 @@ extinct.after.x <- function(x=9, N, intro.regime, gap, gens.censused=c(rep(10, 4
 # Function returns a dataframe containing the unique ID, the introduction regime of the population, and the population size x generations after the final introduction.
 # Function will break and return an error if x is too big (i.e. there weren't x generations of data past the final introdution event)
 # This function will work on simulated data or on microcosm data as long as the IDs and gap (1 or 0) are specified.
+# The 'zeroes' argument lets 0's be included instead of NAs. Default is FALSE so they don't affect population mean calculations
 #### function definition ####
-N_x.after.intro <- function(x = 1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow(N)), zeros=TRUE, return_df = TRUE)
+N_x.after.intro <- function(x = 1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow(N)), zeros = FALSE)
 {
   if (x > (ncol(N) - max(intro.regime) + 1))
     stop("You are looking too far after the final introduction scenario. Can't look this far for all treatments. Try decreasing x.")
   
   numbers <- unique(intro.regime)
   mat <- N*0 # Data frame of 0's the same dimensions as N
-  
   # Iterate through the unique values of propagule number
+  
   for (i in numbers)
   {
     # For population time series where the introduction regime is the current propagule number AND there's no introduction gap, the correct time point is i+x
-    mat[(intro.regime == i & gap == 0), i+x] <- 1
+    mat[(intro.regime == i), i + x ] <- 1
     # For population time series where the introduction regime is the current propagule number AND there WAS an introduction gap, the correct time point is offset by 1 (i.e., i+x+1)
     if (any(intro.regime == i & gap == 1))
       mat[(intro.regime == i & gap == 1), i+x+1] <- 1
   }
   
   
-  abundance <- apply(mat * N, 1, sum)
-  df <- data.frame(ID, intro.regime, abundance)
-  idx <- df$abundance == 0 | is.na(df$abundance)
+  abundance <- apply(mat * N, 1, sum, na.rm = TRUE)
+  idx <- abundance == 0
+  abundance_no_zeroes <- abundance
+  abundance_no_zeroes[idx] <- NA 
   
-  if (return_df) {
-    if (zeros)
-      return(df)
+  if (zeros)
+      return(abundance)
     else
-      return(df[!idx, ])
-  }
-  return(abundance)
+      return(abundance_no_zeroes)
 }
 
 #### Main script ####
@@ -284,18 +283,16 @@ b <- data.frame(b, extant_x_after)
 N_for_abundance <- b[, c(which(colnames(b) == "size"), census.columns)]
 N_for_abundance[is.na(N_for_abundance)] <- 0
 
-# Helper function to return just the vector of abundance from the N_x.after.intro() function result
-vector_N_x_after_intro <- function(x, ...) {
-  N_x.after.intro(x, ...)$abundance
-}
+N = b[, cencus.columns]
 
 abund_x_after <- as.data.frame(sapply(1:5, 
-                                      FUN = vector_N_x_after_intro, 
+                                      FUN = N_x.after.intro, 
                                       N = N_for_abundance, 
                                       intro.regime = b$number, 
                                       ID = b$ID, 
                                       gap = as.numeric(b$gap), 
-                                      zeros = TRUE))
+                                      zeros = TRUE,
+                                      return_df = FALSE))
 
 names(abund_x_after) <- paste0("N_", 1:5, "_after")
 
