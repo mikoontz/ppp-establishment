@@ -48,7 +48,7 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10,
 }
 
 #### simulation_stats() ####
-#### function definition ####
+#### function description ####
 # Convenience wrapper for getting establishment and population size response variables from experiment data or simulation
 #### function definition ####
 simulation_stats <- function(time_points, FUN, col_names, ...) {
@@ -60,7 +60,8 @@ simulation_stats <- function(time_points, FUN, col_names, ...) {
                           MARGIN = 2, 
                           FUN = function(x) tapply(X = x, 
                                                    INDEX = intro.regime, 
-                                                   FUN = mean))
+                                                   FUN = mean,
+                                                   na.rm = TRUE))
   
   mean_by_regime <- as.data.frame(mean_by_regime)
   colnames(mean_by_regime) <- col_names
