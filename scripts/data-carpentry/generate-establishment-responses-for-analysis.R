@@ -56,8 +56,9 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10,
 #   N: the population census data (Ntp1)
 #   intro.regime: the number of introduction events
 #   gap: whether there was a gap in the introduction events in generation 2
+#   gens.censused: The final generation of census for each population
 
-extinct.x.after.intro <- function(x=5, N, intro.regime, gap)
+extinct.x.after.intro <- function(x=5, N, intro.regime, gap, gens.censused=c(rep(10, 480), rep(9, 437)))
 {
   Tf <- ncol(N)
   # When did introductions finish for each rep?
