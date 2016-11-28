@@ -12,6 +12,7 @@ Michael Koontz
         -   [simulations](#simulations)
             -   [NBBg-population-dynamics-function.R](#nbbg-population-dynamics-function.r)
             -   [NBBg-simulation-functions.R](#nbbg-simulation-functions.r)
+            -   [NBBg-simulation-script.R](#nbbg-simulation-script.r)
         -   [environmental-stochasticity.R](#environmental-stochasticity.r)
         -   [establishment-probability.R](#establishment-probability.r)
         -   [experiment-time-series-population-abundance-plot.R](#experiment-time-series-population-abundance-plot.r)
@@ -23,6 +24,11 @@ Michael Koontz
         -   [NBBg-environment-stability-effect.R](#nbbg-environment-stability-effect.r)
     -   [data](#data)
         -   [simulations](#simulations-1)
+        -   [NBBg-samples](#nbbg-samples)
+            -   [NBBg-samples-combined.csv](#nbbg-samples-combined.csv)
+            -   [NBBg-samples-chain1.csv](#nbbg-samples-chain1.csv)
+            -   [NBBg-samples-chain2.csv](#nbbg-samples-chain2.csv)
+            -   [NBBg-samples-chain3.csv](#nbbg-samples-chain3.csv)
         -   [attributes.csv](#attributes.csv)
         -   [clean-establishment-data.csv](#clean-establishment-data.csv)
         -   [initial-density-dependence.csv](#initial-density-dependence.csv)
@@ -67,7 +73,11 @@ Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters
 
 #### NBBg-simulation-functions.R
 
-Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, \(\alpha\), kE, and kD) and also allows incorporation of model uncertainty.
+Functions to simulate N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, \(\alpha\), kE, and kD) and also allows incorporation of model uncertainty.
+
+#### NBBg-simulation-script.R
+
+Script runs the simulation functions and summarizes output.
 
 ### environmental-stochasticity.R
 
@@ -115,6 +125,24 @@ data
 ### simulations
 
 Data that arise from simulations.
+
+### NBBg-samples
+
+#### NBBg-samples-combined.csv
+
+Samples from parameter posterior distribution from NBBg model fit. All converged chains combined into a single matrix-like object.
+
+#### NBBg-samples-chain1.csv
+
+Chain 1 samples from parameter posterior distribution from NBBg model fit. Separate chains could be retrieved and diagnostics run.
+
+#### NBBg-samples-chain2.csv
+
+Chain 2 samples from parameter posterior distribution from NBBg model fit.
+
+#### NBBg-samples-chain3.csv
+
+Chain 3 samples from parameter posterior distribution from NBBg model fit.
 
 ### attributes.csv
 

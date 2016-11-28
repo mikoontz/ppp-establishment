@@ -75,11 +75,14 @@ Data that arise from simulations.
 
 ### NBBg-samples
 #### NBBg-samples-combined.csv
-Samples from parameter posterior distribution from NBBg model fit. All converged chains combined into a single matrix-like object
+Samples from parameter posterior distribution from NBBg model fit. All converged chains combined into a single matrix-like object.
+
 #### NBBg-samples-chain1.csv
 Chain 1 samples from parameter posterior distribution from NBBg model fit. Separate chains could be retrieved and diagnostics run.
+
 #### NBBg-samples-chain2.csv
 Chain 2 samples from parameter posterior distribution from NBBg model fit.
+
 #### NBBg-samples-chain3.csv
 Chain 3 samples from parameter posterior distribution from NBBg model fit.
 
