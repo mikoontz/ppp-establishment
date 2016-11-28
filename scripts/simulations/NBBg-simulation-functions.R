@@ -159,10 +159,10 @@ simNBBg <- function(samps, reps, Tf, total.to.introduce=20, p=0.5, excludeMaxNum
     if (!dir.exists(dirpath)) {
       dir.create(dirpath)
     }
-    if (!dir.exists(paste0(dirpath, "/N")) {
+    if (!dir.exists(paste0(dirpath, "/N"))) {
       dir.create(paste0(dirpath, "/N")
     }
-    if (!dir.exists(paste0(dirpath, "/migrants")) {
+    if (!dir.exists(paste0(dirpath, "/migrants"))) {
       dir.create(paste0(dirpath, "/migrants")
     }
     
