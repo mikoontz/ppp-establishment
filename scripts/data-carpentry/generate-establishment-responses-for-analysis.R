@@ -67,7 +67,7 @@ extinct.x.after.intro <- function(x=5, N, intro.regime, gap, gens.censused=c(rep
   # Since the evaluation of (intro.regime + as.numeric(gap)) represents the first generation to look at for post-introduction extinction, we want to look (x-1) generations later to ask the question, was the population extinct x generations after introductions were complete?
   gen.of.interest <- (intro.regime + x + as.numeric(gap)) - 1
   
-  when.extinct <- determine.when.extinct(N, intro.regime, as.numeric(gap))
+  when.extinct <- determine.when.extinct(N, intro.regime, as.numeric(gap), gens.censused = gens.censused)
   
   # Determine populations that went extinct by the generation of interest
   extinct.x.after <- (when.extinct <= gen.of.interest)
