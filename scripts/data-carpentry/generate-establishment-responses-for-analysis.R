@@ -201,8 +201,9 @@ Ntp1 <- tidyb$Ntp1 # Represents population abundance tp1 generations after start
 Nt <- tidyb$Nt
 migrants <- tidyb$migrants
 
-b <- merge(N, attributes, by="ID")
-census.columns <- which(colnames(b) %in% as.character(1:10))
+b <- merge(Ntp1, attributes, by="ID")
+census.columns <- grep(pattern = "[0-9]", x = colnames(b)) # All columns with a number in them are census columns (representing Ntp1)
+
 
 
 #### Calculate temporary extiction response variables ####
@@ -258,13 +259,24 @@ b$loss <- loss_from_temp_extinction(Ntp1 = Ntp1, migrants = migrants, intro.regi
 
 b$when.extinct <- determine.when.extinct(N = b[ ,census.columns], intro.regime = b$number, gap = b$gap)
 
-extant <- as.data.frame(!sapply(1:9, FUN = extinct.after.x, N=b[,census.columns], intro.regime=b$number, gap=b$gap))
+extant <- as.data.frame(!sapply(1:9, 
+                                FUN = extinct.after.x, 
+                                N = b[, census.columns], 
+                                intro.regime = b$number, 
+                                gap = b$gap))
 names(extant) <- paste0("extant", 1:9)
+
 b <- data.frame(b, extant)
 
 # Also include the relative extinction calculation in the final data set. These columns represent whether the population was extant or not 1, 2, 3, 4, or 5 generations after the introduction regime completed.
-extant_x_after <- as.data.frame(!sapply(1:5, FUN = extinct.x.after.intro, N=b[,census.columns], intro.regime=b$number, gap=b$gap))
+extant_x_after <- as.data.frame(!sapply(1:5, 
+                                        FUN = extinct.x.after.intro, 
+                                        N = b[,census.columns], 
+                                        intro.regime = b$number, 
+                                        gap = b$gap))
+
 names(extant_x_after) <- paste0("extant_", 1:5, "_after")
+
 b <- data.frame(b, extant_x_after)
 
 # Also include the relative abundance calculations in the final data set. These columns represent the abundance of the population 1, 2, 3, 4, or 5 generations after the final introduction event for a population's partiuclar introduction regime.
@@ -277,8 +289,16 @@ vector_N_x_after_intro <- function(x, ...) {
   N_x.after.intro(x, ...)$abundance
 }
 
-abund_x_after <- as.data.frame(sapply(1:5, FUN = vector_N_x_after_intro, N = N_for_abundance, intro.regime = b$number, ID = b$ID, gap = as.numeric(b$gap), zeros = TRUE))
+abund_x_after <- as.data.frame(sapply(1:5, 
+                                      FUN = vector_N_x_after_intro, 
+                                      N = N_for_abundance, 
+                                      intro.regime = b$number, 
+                                      ID = b$ID, 
+                                      gap = as.numeric(b$gap), 
+                                      zeros = TRUE))
+
 names(abund_x_after) <- paste0("N_", 1:5, "_after")
+
 b <- data.frame(b, abund_x_after)
 
 bb <- subset(b, select= -c(block, color, number, size, environment, special, gap, notes, drought))
