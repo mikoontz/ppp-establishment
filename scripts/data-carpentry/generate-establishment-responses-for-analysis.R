@@ -197,38 +197,67 @@ beetles <- read.csv('data/Tribolium-propagule-pressure-data.csv')
 
 tidyb <- tidy.beetles(beetles = beetles)
 
-N <- tidyb$Ntp1
+Ntp1 <- tidyb$Ntp1 # Represents population abundance tp1 generations after start of experiment
 Nt <- tidyb$Nt
+migrants <- tidyb$migrants
+
 b <- merge(N, attributes, by="ID")
 census.columns <- which(colnames(b) %in% as.character(1:10))
 
 
-col <- as.numeric(b$gap) + b$number
-b$temp.extinctions <- 0
-b$latest.extinct <- 0
-b$loss <- 0
-
-#### Calculate amount of loss
-for (i in which(tidyb$migrants[, 2] != 20))
-{
-  temp <- sum(N[i, 2:col[i]] == 0, na.rm=TRUE)
-  b$temp.extinctions[i] <- temp
-  
-  if (temp > 0) {
-    b$latest.extinct[i] <- max(which(N[i, 2:col[i]] == 0))
-  
-    b$loss[i] <- (b$latest.extinct[i] - as.numeric(b$gap[i])) * b$size[i]
-  }
+#### Calculate temporary extiction response variables ####
+#### temp_extinction() ####
+#### function description ####
+# Calculates number of times a population went extinct before being demographically rescued by additional inputs
+#### function definition ####
+temp_extinction <- function(Ntp1, intro.regime, gap = rep(FALSE, nrow(Ntp1))) {
+  final_intro_column <- as.numeric(gap) + intro.regime
+  num_temp_extinctions <- 
+    sapply(X = 1:length(final_intro_column), 
+           FUN = function(j) sum(Ntp1[j, 2:final_intro_column[j]] == 0, na.rm = TRUE))
+  return(num_temp_extinctions)
 }
 
 
-# Determine when extinctions occurred
-when.extinct <- determine.when.extinct(N=b[,census.columns], intro.regime=b$number, gap=b$gap)
+#### loss_from_temp_extinction() ####
+#### function description ####
+# Calculates number of lost inputs when a population goes temporarily extinct. Populations that went temporarily extinct when there were fewer additional inputs scheduled to arrive "lost" more inputs than those populations that went temporarily extinct and were revived earlier.
+#### function definition ####
+loss_from_temp_extinction <- function(Ntp1, migrants, intro.regime, gap = rep(FALSE, nrow(Ntp1))) {
+  # Column representing final introduction
+  final_intro_column <- as.numeric(gap) + intro.regime
+  # Initialize latest temporary extinction generation at 0
+  latest_temp_extinct <- rep(0, nrow(Ntp1))
+  # Use temp_extinction() function to get whether or not extinctions occurred
+  temp <- temp_extinction(Ntp1 = Ntp1, intro.regime = intro.regime, gap = gap)
+  # Population indicies with temporary extinctions
+  idx <- which(temp > 0)
+  
+  # Calculate the latest temporary extinction by looking at each row of Ntp1 and the census columns during which introductions were still occurring, counting how many generations had a Ntp1 == 0
+  latest_temp_extinct[idx] <- sapply(X = idx, 
+                                FUN = function(j) max(which(Ntp1[j, 2:final_intro_column[j]] == 0)))
+  
+  # Need to ignore the ID column, so the column representing the latest temporary extinction is 1 + the generation of the latest temporary extinction
+  latest_temp_extinct_column <- latest_temp_extinct + 1
 
-# Change names of abundance columns to be more descriptive and not be just a number.
-names(b)[2:11] <- paste0("N", names(b[2:11]))
+  # Initialize amount of loss at 0 
+  loss <- rep(0, nrow(Ntp1))
+  
+  # Calculate loss as the sum of migrants up to the latest generation with a temporary extinction
+  loss[idx] <- sapply(X = idx,
+                 FUN = function(j) sum(migrants[j, 2:latest_temp_extinct_column[j]])) 
 
-b$when.extinct <- when.extinct
+return(loss)
+}
+
+
+#### Add response variables to data frame ####
+b$temp.extinctions <- temp_extinction(Ntp1 = Ntp1, intro.regime = b$number, gap = b$gap)
+
+b$loss <- loss_from_temp_extinction(Ntp1 = Ntp1, migrants = migrants, intro.regime = b$number, gap = b$gap)
+
+b$when.extinct <- determine.when.extinct(N = b[ ,census.columns], intro.regime = b$number, gap = b$gap)
+
 extant <- as.data.frame(!sapply(1:9, FUN = extinct.after.x, N=b[,census.columns], intro.regime=b$number, gap=b$gap))
 names(extant) <- paste0("extant", 1:9)
 b <- data.frame(b, extant)
