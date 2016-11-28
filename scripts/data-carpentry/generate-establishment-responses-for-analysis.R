@@ -13,9 +13,10 @@
 
 source('scripts/data-carpentry/generate-tidy-data.R')
 
-#-----------------------
-#-----------------------
+##### Helper functions #####
 
+#### determine.when.extinct() ####
+#### function description ####
 # Returns the number of generations before each population went extinct. (First time a census showed 0 individuals, AND no further introductions coming). This function returns an NA for an element corresponding to a population that never went extinct
 
 # Arguments
@@ -23,7 +24,7 @@ source('scripts/data-carpentry/generate-tidy-data.R')
 #   intro.regime is a vector of propagule numbers. I.e. the number of introduction events for each population
 #   gap is a logical vector specifying whether there was a gap in the introductions in generation 2
 #   gens.censused is a numeric vector representing the total number of generations censused for each population. ID 1:480 were censused for 10 generations, ID 481:945 were censused for 9 generations
-
+#### function definition ####
 determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10, 480), rep(9, 437)) )
 {
   Tf <- ncol(N)
@@ -46,9 +47,50 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10,
   return(when.extinct)
 }
 
-#--------------------
-#--------------------
+#### simulation_stats() ####
+#### function definition ####
+# Convenience wrapper for getting establishment and population size response variables from experiment data or simulation
+#### function definition ####
+simulation_stats <- function(time_points, FUN, col_names, ...) {
+  values <- sapply(X = time_points, 
+                    FUN = FUN,
+                    ...)
+  
+  mean_by_regime <- apply(X = values, 
+                          MARGIN = 2, 
+                          FUN = function(x) tapply(X = x, 
+                                                   INDEX = intro.regime, 
+                                                   FUN = mean))
+  
+  mean_by_regime <- as.data.frame(mean_by_regime)
+  colnames(mean_by_regime) <- col_names
+  
+  return(mean_by_regime)
+}
 
+# Function returns summary statistics for extinction probability
+
+# Arguments
+#   extinct: a vector of TRUE or FALSE representing whether a population was extinct or not
+#   INDEX: a list of grouping indices to aggregate by. Each element in the list must have the same length as the extinct vector
+# extinction.stats <- function(extinct, INDEX)
+# {
+#   df <- aggregate(x=list(percent.extinct=extinct), by=INDEX, FUN=function(x) c(length(which(x)), length(x), length(which(x))/length(x)) )
+#   
+#   groups <- length(INDEX)  
+#   labels <- names(df)[1:groups]
+#               
+#   df <- cbind(df[,1:groups], as.data.frame(df[,groups+1]))
+#   
+#   names(df)[1:groups] <- labels
+#   names(df)[(groups+1):(groups+3)] <- c("n[extinct]", "n[total]", "percent.extinct")
+#   return(df)
+# }
+
+##### Response variable functions #####
+
+#### extinct.x.after.intro() ####
+#### function description ####
 # Function determines whether population was extinct x generations after its FINAL introduction event. Importantly, the timing of the final introduction event depends on how many introduction events there were, as well as whether there were any gaps in the introduction effort. Returns a logical vector with TRUE when population was extinct within x generations after final introduction and FALSE otherwise
 
 # Arguments:
@@ -57,7 +99,7 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10,
 #   intro.regime: the number of introduction events
 #   gap: whether there was a gap in the introduction events in generation 2
 #   gens.censused: The final generation of census for each population
-
+#### function definition ####
 extinct.x.after.intro <- function(x=5, N, intro.regime, gap, gens.censused=c(rep(10, 480), rep(9, 437)))
 {
   if (x > (ncol(N) - max(intro.regime) + 1))
@@ -76,22 +118,21 @@ extinct.x.after.intro <- function(x=5, N, intro.regime, gap, gens.censused=c(rep
   extinct.x.after <- (when.extinct <= gen.of.interest)
   extinct.x.after[is.na(extinct.x.after)] <- FALSE
   
-#   # Subset the N so that we only look at reps where enough time (Tf) had passed after the final introduction
-#   analysis.extinct <- extinct[gen.of.interest <= Tf]
-#   analysis.intro.regime <- intro.regime[gen.of.interest <= Tf]
-#   analysis.gen <- gen.of.interest[gen.of.interest <= Tf]
+  #   # Subset the N so that we only look at reps where enough time (Tf) had passed after the final introduction
+  #   analysis.extinct <- extinct[gen.of.interest <= Tf]
+  #   analysis.intro.regime <- intro.regime[gen.of.interest <= Tf]
+  #   analysis.gen <- gen.of.interest[gen.of.interest <= Tf]
   
   return(extinct.x.after)
 }
 
-#--------------------
-#--------------------
-
+#### extinct.after.x() ####
+#### function description ####
 # Function determines whether population was extinct x generations after the FIRST introduction event (i.e. the start of the experiment). Note that the timing of this question is independent of the introduction type or whether gaps were present in the introduction effort. Returns a logical vector with TRUE when population was extinct within x generations after final introduction and FALSE otherwise
 
 #   N is the matrix of population sizes; the censuses values
 #   gens.censused is a numeric vector representing the total number of generations censused for each population. ID 1:480 were censused for 10 generations, ID 481:945 were censused for 9 generations
-
+#### function definition ####
 extinct.after.x <- function(x=9, N, intro.regime, gap, gens.censused=c(rep(10, 480), rep(9, 437)))
 {
   if (x > (ncol(N) + 1))
@@ -102,7 +143,7 @@ extinct.after.x <- function(x=9, N, intro.regime, gap, gens.censused=c(rep(10, 4
     stop("Number of rows of N must be the same as the lengths of intro.regime, gap, and gens.censused. Non-matching lengths imply different numbers of populations.")
   
   when.extinct <- determine.when.extinct(N, intro.regime, gap, gens.censused)
-
+  
   extinct <- rep(FALSE, times=nrow(N)) 
   
   # All populations that have a number designation for when they became extinct get a TRUE
@@ -111,50 +152,13 @@ extinct.after.x <- function(x=9, N, intro.regime, gap, gens.censused=c(rep(10, 4
   return(extinct)
 }
 
-#--------------------
-#--------------------
-# Function returns summary statistics for extinction probability
-
-# Arguments
-#   extinct: a vector of TRUE or FALSE representing whether a population was extinct or not
-#   INDEX: a list of grouping indices to aggregate by. Each element in the list must have the same length as the extinct vector
-
-simulation_stats <- function(time_points, FUN, col_names, ...) {
-  values <- !sapply(X = time_points, 
-                    FUN = FUN,
-                    ...)
-  
-  mean_by_regime <- apply(X = values, 
-                          MARGIN = 2, 
-                          FUN = function(x) tapply(X = x, 
-                                                   INDEX = intro.regime, 
-                                                   FUN = mean))
-  
-  mean_by_regime <- as.data.frame(mean_by_regime)
-  colnames(mean_by_regime) <- col_names
-  
-  return(mean_by_regime)
-}
-# extinction.stats <- function(extinct, INDEX)
-# {
-#   df <- aggregate(x=list(percent.extinct=extinct), by=INDEX, FUN=function(x) c(length(which(x)), length(x), length(which(x))/length(x)) )
-#   
-#   groups <- length(INDEX)  
-#   labels <- names(df)[1:groups]
-#               
-#   df <- cbind(df[,1:groups], as.data.frame(df[,groups+1]))
-#   
-#   names(df)[1:groups] <- labels
-#   names(df)[(groups+1):(groups+3)] <- c("n[extinct]", "n[total]", "percent.extinct")
-#   return(df)
-# }
-
-#--------------------
+#### N_x.after.intro() ####
+#### function description ####
 # Function returns a dataframe containing the unique ID, the introduction regime of the population, and the population size x generations after the final introduction.
 # Function will break and return an error if x is too big (i.e. there weren't x generations of data past the final introdution event)
 # This function will work on simulated data or on microcosm data as long as the IDs and gap (1 or 0) are specified.
-
-N_x.after.intro <- function(x=1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow(N)), zeros=TRUE)
+#### function definition ####
+N_x.after.intro <- function(x = 1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow(N)), zeros=TRUE, return_df = TRUE)
 {
   if (x > (ncol(N) - max(intro.regime) + 1))
     stop("You are looking too far after the final introduction scenario. Can't look this far for all treatments. Try decreasing x.")
@@ -177,19 +181,16 @@ N_x.after.intro <- function(x=1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow
   df <- data.frame(ID, intro.regime, abundance)
   idx <- df$abundance == 0 | is.na(df$abundance)
   
-  if (zeros)
-    return(df)
-  else
-    return(df[!idx, ])
+  if (return_df) {
+    if (zeros)
+      return(df)
+    else
+      return(df[!idx, ])
+  }
+  return(abundance)
 }
 
-#--------------------
-
-
-# b <- merge(df, abund[, c("ID", "abundance")], by="ID")
-# b$number <- as.factor(b$number)
-# b$block <- as.factor(b$block)
-# b$gap <- as.factor(b$gap)
+#### Main script ####
 
 attributes <- read.csv('data/attributes.csv')
 beetles <- read.csv('data/Tribolium-propagule-pressure-data.csv')
@@ -207,6 +208,7 @@ b$temp.extinctions <- 0
 b$latest.extinct <- 0
 b$loss <- 0
 
+#### Calculate amount of loss
 for (i in which(tidyb$migrants[, 2] != 20))
 {
   temp <- sum(N[i, 2:col[i]] == 0, na.rm=TRUE)
@@ -219,50 +221,8 @@ for (i in which(tidyb$migrants[, 2] != 20))
   }
 }
 
-#------------------------------------
-# Alternate way to calculate temporary extinctions and lost inputs
-#------------------------------------
-# b$n.temp.extinctions <- 0
-# b$loss <- 0
-# 
-# for (i in 1:nrow(tidyb$Ntp1))
-# {
-#   b$n.temp.extinctions[i] <- sum(tidyb$Ntp1[i, 2:col[i]] == 0)
-#   b$loss[i] <- sum(tidyb$migrants[i,2:ncol(tidyb$migrants)]) - (match(0, tidyb$Ntp1[i, col[i]:2]) - 1) * b$size[i]
-# }
-# 
-# b[is.na(b$loss), "loss"] <- 0
-#-------------------------------------
 
-#-------------------------------------
-# Original code to get the abundance and establishment at a single time point, 5 generations after the final introduction event for each introduction regime
-#--------------------------------------
-
-# Example function run to determine which populations went extinct within 5 generations after their final introduction
-# extinct5 <- extinct.x.after.intro(x=5, N=b[,census.columns], intro.regime=b$number, gap=b$gap)
-
-# Example function run to determine which populations went extinct before the 9th generation of the experiment (this is the last generation that all populations were censused)
-# extinct.after9 <- extinct.after.x(x=9, N=b[,census.columns], intro.regime=b$number, gap=b$gap)
-
-# Example function run to get population abundance 5 generations after final introduction event.
-# First convert NAs to 0's in the population size data.frame
-# N_for_abundance <- b[, c(which(colnames(b) == "size"), census.columns)]
-# N_for_abundance[is.na(N_for_abundance)] <- 0
-
-# abund <- N_x.after.intro(x=5, N=N_for_abundance, intro.regime=b$number, ID=b$ID, gap=as.numeric(b$gap), zeros=TRUE)
-# abund <- subset(abund, select=c(ID, abundance))
-
-# b$extinct5after <- extinct5
-# b$extinctafter9 <- extinct.after9
-# b <- merge(b, abund, by="ID")
-
-# extinction.stats(extinct5, INDEX=list(number=b$number))
-# extinction.stats(extinct5, INDEX=list(env=b$env))
-# extinction.stats(extinct5, INDEX=list(number=b$number, env=b$env))
-
-#-----------------------------------------
-
-# Example function run to determine when extinctions occurred
+# Determine when extinctions occurred
 when.extinct <- determine.when.extinct(N=b[,census.columns], intro.regime=b$number, gap=b$gap)
 
 # Change names of abundance columns to be more descriptive and not be just a number.
