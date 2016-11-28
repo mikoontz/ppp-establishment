@@ -33,8 +33,10 @@ Converts long form census data (one row represents the census for each populatio
 Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, $\alpha$, kE, and kD).
 
 #### NBBg-simulation-functions.R
-Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, $\alpha$, kE, and kD) and also allows incorporation of model uncertainty.
+Functions to simulate N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, $\alpha$, kE, and kD) and also allows incorporation of model uncertainty.
 
+#### NBBg-simulation-script.R
+Script runs the simulation functions and summarizes output.
 
 ### environmental-stochasticity.R
 Calculates total stochasticity through time using lambda values for each population that remained extant throughout entire experiment. Uses a linear mixed effects model to assess the effect of environmental treatment (stable or fluctuating) on this total stochasticity value. We'd expect our fluctuating treatment to impose more variation in lambda values.
