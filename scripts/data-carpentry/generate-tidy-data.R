@@ -30,6 +30,7 @@ tidy.beetles <- function(beetles, deal_with_loners=TRUE)
 b <- subset(beetles, select=c(ID, Generation, Census))
 # Spread it
 Ntp1 <- spread(b, Generation, Census)
+names(Ntp1) <- c("ID", paste0("N", 0:9, "plus1"))
 # Check it
 head(Ntp1)
 tail(Ntp1)
@@ -42,7 +43,7 @@ tail(Ntp1)
 
 b <- subset(beetles, select=c(ID, Generation, N0))
 Nt <- spread(b, Generation, N0)
-names(Nt) <- c("ID", paste(0:9))
+names(Nt) <- c("ID", paste0("N", 0:9))
 head(Nt)
 tail(Nt)
 
@@ -57,6 +58,7 @@ migrants$'0' <- Nt$'0'
 # Reorder dataframe columns and leave off final generation addition, since those populations weren't even set up for another generation
 total.columns <- ncol(migrants)
 migrants <- migrants[, c(1, total.columns, 2:(total.columns-2))]
+names(migrants) <- c("ID", paste0("migrants", 0:9))
 head(migrants, 120)
 tail(migrants)
       
@@ -66,6 +68,8 @@ tail(migrants)
 
 b <- subset(beetles, select=c(ID, Generation, Environment))
 environment <- spread(b, Generation, Environment)
+names(environment) <- c("ID", paste0("env", 0:9))
+
 head(environment)
 
 #---------- 
@@ -74,6 +78,7 @@ head(environment)
 
 b <- subset(beetles, select=c(ID, Generation, Person))
 person <- spread(b, Generation, Person)
+names(person) <- c("ID", paste0("person", 0:9))
 head(person)
 tail(person)
 
@@ -83,6 +88,7 @@ tail(person)
 
 b <- subset(beetles, select=c(ID, Generation, Setup.Order))
 setup.order <- spread(b, Generation, Setup.Order)
+names(setup.order) <- c("ID", paste0("setup.order", 0:9))
 head(setup.order)
 tail(setup.order)
 
