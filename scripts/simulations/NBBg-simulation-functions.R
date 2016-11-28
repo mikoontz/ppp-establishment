@@ -74,36 +74,28 @@ NBBg <- function(Tf, total.reps, past.residents, p, N, migrants, samps, overflow
   {
     # Define number of females for mixed population of new migrants and residents from previous generation
     
-    F.residents <- rbinom(total.reps, size=past.residents, prob=p)
-    F.migrants <- rbinom(total.reps, size=migrants[,t-1], prob=p)
-    females <- F.residents + F.migrants
+    F.residents <- rbinom(total.reps, size = past.residents, prob = p)
+    F.migrants <- rbinom(total.reps, size = migrants[,t-1], prob = p)
+    F.mated <- F.residents + F.migrants
     
-    idx <- sample(1:dim(samps)[1], size=total.reps, replace=TRUE)
+    # Two cases where sex ratio affects how simulations will run
+    # If population is all females, it isn't necessarily doomed to extinction because migrant females arrived mated from the large external source population. Thus, if a population is all females then the number of mated females is equal to the number of migrant females. This has two consequences:
+    # (1) A smaller mean number of offspring because 1/p * F.mated is smaller than 1/p * F.all
+    # (2) A larger effect of demographic heterogeneity, because the kD * F.mated is smaller than kD * F.all in the overdispersion parameter in the negative binomial distribution for demographic heterogeneity
+    
+    idx.F.mated.change <- which((F.residents + F.migrants) == N[, t-1])
+    F.mated[idx.F.mated.change] <- F.migrants[idx.F.mated.change]
+  
+    idx <- sample(1:nrow(samps), size = total.reps, replace = TRUE)
     Re.shape <- samps[idx, "kE"]
     Re.scale <- samps[idx, "R0"] / Re.shape
-    Re <- rgamma(total.reps, shape=Re.shape, scale=Re.scale)
+    Re <- rgamma(total.reps, shape = Re.shape, scale = Re.scale)
     
     # Note that mu will be 0 when there are all males in the population
-    mu <- 1/p * females * Re * exp(-samps[idx, "alpha"] * N[ ,t-1])
+    mu <- 1/p * F.mated * Re * exp(-samps[idx, "alpha"] * N[ , t-1])
     
-    N[, t] <- rnbinom(n=total.reps, mu=mu, size=samps[idx, "kD"]*females + (females==0))
+    N[, t] <- rnbinom(n=total.reps, mu=mu, size=samps[idx, "kD"] * F.mated + (F.mated == 0)) # Ensures we'll get a number if F.mated == 0 rather than an NaN. Number will always be 0 if F.mated is 0.
     
-    # Two other cases where sex ratio affects how simulations will run
-    # (1) Population is entirely RESIDENT females will result in extinction. Migrant females arrive mated, so any migrant females would still allow for births.
-    # (2) Population is entirely female, only the heterogeneity in the migrant females will affect number of individuals in the next generation, NOT heterogeneity in ALL females.
-    
-    # Situation 1
-    extra.extinct.idx <- which((females == N[,t-1]) & (migrants[,t-1] == 0))
-    # Implication of situation 1
-    N[extra.extinct.idx, t] <- 0
-    
-    # Situation 2
-    # Determine indicies of populations that are affected by reduced heterogeneity scenario
-    rh.idx <- which((females == N[,t-1]) & (F.migrants > 0))
-    # Determine number of populations that are affected
-    sit2 <- length(rh.idx)
-    # Implication of situation 2
-    N[rh.idx, t] <- rnbinom(n=sit2, mu=mu[rh.idx], size=samps[idx, "kD"][rh.idx]*F.migrants[rh.idx])
     
     # In scenarios with no density dependence and high environment fluctuation, populations can explode to sizes that are beyond what can be handled by the computer-- that is, there are overflow errors where very (very very) large numbers just become NaN and then the other functions think those populations went extinct. If overflowGuard is TRUE, we'll convert population sizes greater than some absurdly large population size to something that is still absurdly large, but that can be handled by the computer. Keeping populations below about 1 billion seems to prevent overflow.
     if (overflowGuard)
