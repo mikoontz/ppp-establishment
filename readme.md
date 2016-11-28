@@ -13,6 +13,7 @@ Michael Koontz
             -   [NBBg-population-dynamics-function.R](#nbbg-population-dynamics-function.r)
         -   [environmental-stochasticity.R](#environmental-stochasticity.r)
         -   [establishment-probability.R](#establishment-probability.r)
+        -   [experiment-time-series-population-abundance-plot.R](#experiment-time-series-population-abundance-plot.r)
         -   [population-abundance.R](#population-abundance.r)
         -   [temporary-extinctions.R](#temporary-extinctions.r)
         -   [NBBg-mcmc.R](#nbbg-mcmc.r)
@@ -24,6 +25,8 @@ Michael Koontz
         -   [clean-establishment-data.csv](#clean-establishment-data.csv)
         -   [initial-density-dependence.csv](#initial-density-dependence.csv)
         -   [Tribolium-propagule-pressure-data.csv](#tribolium-propagule-pressure-data.csv)
+    -   [figures](#figures)
+        -   [experiment-time-series-population-abundance.tif](#experiment-time-series-population-abundance.tif)
     -   [written-notes](#written-notes)
         -   [NBBg-model-specification.tex](#nbbg-model-specification.tex)
 
@@ -70,6 +73,10 @@ Mixed effects logistic regression analyses with establishment as response (1 or 
 
 Assessments of establishment or extinction were made at fixed time points throughout the experiment (generations F5, F6, F7, F8, and F9), at a relative time point (5 generations after the final introduction event for each introduction regime), and at each time point with the population ID as a random effect in a repeated measures framework.
 
+### experiment-time-series-population-abundance-plot.R
+
+Script to generate the <a href="#experiment-time-series-population-abundance.tif">experiment-time-series-population-abundance.tif</a> figure.
+
 ### population-abundance.R
 
 Mixed effects Poisson regression analyses with population abundance as response with introduction regime and environmental stability as covariates.The script includes several analyses, all with a check to see whether the introduction gap in generation F2 was important.
@@ -114,6 +121,13 @@ Data for estimating parameters in the NBBg stochastic population dynamics model.
 ### Tribolium-propagule-pressure-data.csv
 
 Raw, long-form census data from parsing propagule pressure experiment. Each row represents the census value (and other attributes) for a single population in a single generation.
+
+figures
+-------
+
+### experiment-time-series-population-abundance.tif
+
+The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations F1 and F2. (That is, no population augmentation of F1 adults). Also plots mean population abundance and a 1 standard error envelope around that mean for each introduction regime.
 
 written-notes
 -------------
