@@ -60,6 +60,9 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10,
 
 extinct.x.after.intro <- function(x=5, N, intro.regime, gap, gens.censused=c(rep(10, 480), rep(9, 437)))
 {
+  if (x > (ncol(N) - max(intro.regime)))
+    stop("You are looking too far after the final introduction scenario. Can't look this far for all treatments. Try decreasing x.")
+  
   Tf <- ncol(N)
   # When did introductions finish for each rep?
   # Add x value to when introductions finished.
@@ -91,6 +94,9 @@ extinct.x.after.intro <- function(x=5, N, intro.regime, gap, gens.censused=c(rep
 
 extinct.after.x <- function(x=9, N, intro.regime, gap, gens.censused=c(rep(10, 480), rep(9, 437)))
 {
+  if (x > (ncol(N) + 1))
+    stop("You are looking too far after the final introduction scenario. Can't look this far for all treatments. Try decreasing x.")
+  
   # Check if arguments imply the same number of populations
   if (length( unique(c(nrow(N), length(gens.censused), length(gap), length(intro.regime)) )) !=1)
     stop("Number of rows of N must be the same as the lengths of intro.regime, gap, and gens.censused. Non-matching lengths imply different numbers of populations.")
