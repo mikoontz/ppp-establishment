@@ -69,11 +69,24 @@ Neff
 
 converge <- gelman.diag(x = key) # Should be at or *very* near 1 to indicate convergence.
 converge
-gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
+# Potential scale reduction factors:
+#   
+#   Point est. Upper C.I.
+# R0          1.01       1.04
+# alpha       1.01       1.02
+# kE          1.01       1.03
+# kD          1.00       1.01
+# 
+# Multivariate psrf
+# 
+# 1.01
 
-#### Burn in 20% of samples
+gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
+# Shows clear decline and improvement through the sampling process.
+
+#### Burn in 5% of samples
 burned <- lapply(samples_list, FUN = function(x) burn.in(x, n.mcmc*0.05))
-burned_key <- lapply(burned, FUN = function(x) x[, c("R0", "alpha", "kE", "kD")])
+burned_key <- as.mcmc.list(lapply(burned, FUN = function(x) x[, c("R0", "alpha", "kE", "kD")]))
 
 #### Trace plots of burned in samples ####
 
@@ -89,46 +102,43 @@ plot(data$Nt, data$Ntplus1, pch=19)
 lines(x = x, y = mu_Ntp1, col="red")
 
 #### Write the samples data file for my data ####
-# samples <- data.frame(R0=burned[["R0"]], kE=burned[["kE"]], kD=burned[["kD"]], alpha=burned[["alpha"]])
-# write.csv(samples, 'NBBg samples.csv', row.names=FALSE)
+# Chains converge, so combine all samples into a single matrix-like object
+combined_samples <- do.call(rbind, burned_key)
+
+# Write the combined samples to a .csv
+# write.csv(x = combined_samples,
+#           file = 'data/NBBg-samples/NBBg-samples-combined.csv',
+#           row.names = FALSE)
+
+# Write each chain to its own .csv
+# lapply(1:length(burned_key),
+#        FUN = function(i)
+#          write.csv(x = burned_key[[i]],
+#                    file = paste0("data/NBBg-samples/NBBg-samples-chain", i),
+#                    row.names = FALSE))
 
 #### Figuring out the modes and 95% credible intervals ####
 report <- lapply(burned_key, FUN = summary)
-
-# results using MJK Parsing Propagule Pressure data
-# parameter         mode      lowerCI      upperCI
-# 1        R0  1.134698685  1.004747623   1.26071576
-# 2        kE 16.497861042 10.726579596 198.95984985
-# 3        kD  1.517677349  0.830885042 100.68925330
-# 4     alpha  0.008640162  0.007291477   0.01022171
-# 5        RE  1.069107474  0.719188210   1.68939729
-
-# results using data from Melbourne and Hastings 2008 Nature paper
-
-# parameter         mean         mode      lowerCI      upperCI
-# 1        R0  2.603156146  2.575061700  2.244819461  3.024520886
-# 2        kE 29.488198170 21.381219238 10.870754031 75.050024319
-# 3        kD  1.089430833  0.732032613  0.407613921  2.816244763
-# 4     alpha  0.003717655  0.003707539  0.003398071  0.004049347
-# 5        RE  2.602043286  2.457251521  1.644039932  3.887305169
-
-
-
-###
-###
-### Randomly sample 10 population ID's and plot the predicted and known number of migrant females
+summary(burned_key)
+# Iterations = 1:19000
+# Thinning interval = 1 
+# Number of chains = 3 
+# Sample size per chain = 19000 
 # 
-# get.mode <- function(x)
-# {
-# 	names(sort(-table(x)))[1]
-# }
+# 1. Empirical mean and standard deviation for each variable,
+# plus standard error of the mean:
+#   
+#   Mean        SD  Naive SE Time-series SE
+# R0     1.13110 0.0654174 2.740e-04      3.092e-03
+# alpha  0.00876 0.0007555 3.165e-06      3.343e-05
+# kE    19.66002 3.8511432 1.613e-02      9.229e-02
+# kD     2.27827 0.9959276 4.171e-03      1.770e-02
 # 
-# par(mfrow=c(2, 5))
-# for (i in 1:length(ids))
-# {
-# 	plot(table(mcmc[["F.migrants"]][ids[i], ]), ylab="Frequency", main=paste("Expected Female Migrants:", test$Nt[ids[i]]/2, "\nEstimated Female Migrants:", get.mode(mcmc[["F.migrants"]][ids[i], ]), "\nActual Female Migrants:", test$F.migrants[ids[i]] ) )
-# 	
-# 	abline(v=test$F.migrants[ids[i]], col="blue", lwd=4)	
-# 	abline(v=get.mode(mcmc[["F.migrants"]][ids[i], ]), col="red", lwd=4)	
-# 
-# }
+# 2. Quantiles for each variable:
+#   
+#   2.5%       25%       50%      75%    97.5%
+# R0     1.009968  1.086325  1.128694  1.17402  1.26611
+# alpha  0.007303  0.008243  0.008754  0.00927  0.01027
+# kE    13.135438 16.911755 19.289537 22.02158 28.00732
+# kD     1.015638  1.586667  2.070256  2.72190  4.81263
+
