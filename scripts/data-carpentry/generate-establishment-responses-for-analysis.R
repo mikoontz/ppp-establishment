@@ -60,7 +60,7 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10,
 
 extinct.x.after.intro <- function(x=5, N, intro.regime, gap, gens.censused=c(rep(10, 480), rep(9, 437)))
 {
-  if (x > (ncol(N) - max(intro.regime)))
+  if (x > (ncol(N) - max(intro.regime) + 1))
     stop("You are looking too far after the final introduction scenario. Can't look this far for all treatments. Try decreasing x.")
   
   Tf <- ncol(N)
@@ -119,19 +119,35 @@ extinct.after.x <- function(x=9, N, intro.regime, gap, gens.censused=c(rep(10, 4
 #   extinct: a vector of TRUE or FALSE representing whether a population was extinct or not
 #   INDEX: a list of grouping indices to aggregate by. Each element in the list must have the same length as the extinct vector
 
-extinction.stats <- function(extinct, INDEX)
-{
-  df <- aggregate(x=list(percent.extinct=extinct), by=INDEX, FUN=function(x) c(length(which(x)), length(x), length(which(x))/length(x)) )
+simulation_stats <- function(time_points, FUN, col_names, ...) {
+  values <- !sapply(X = time_points, 
+                    FUN = FUN,
+                    ...)
   
-  groups <- length(INDEX)  
-  labels <- names(df)[1:groups]
-              
-  df <- cbind(df[,1:groups], as.data.frame(df[,groups+1]))
+  mean_by_regime <- apply(X = values, 
+                          MARGIN = 2, 
+                          FUN = function(x) tapply(X = x, 
+                                                   INDEX = intro.regime, 
+                                                   FUN = mean))
   
-  names(df)[1:groups] <- labels
-  names(df)[(groups+1):(groups+3)] <- c("n[extinct]", "n[total]", "percent.extinct")
-  return(df)
+  mean_by_regime <- as.data.frame(mean_by_regime)
+  colnames(mean_by_regime) <- col_names
+  
+  return(mean_by_regime)
 }
+# extinction.stats <- function(extinct, INDEX)
+# {
+#   df <- aggregate(x=list(percent.extinct=extinct), by=INDEX, FUN=function(x) c(length(which(x)), length(x), length(which(x))/length(x)) )
+#   
+#   groups <- length(INDEX)  
+#   labels <- names(df)[1:groups]
+#               
+#   df <- cbind(df[,1:groups], as.data.frame(df[,groups+1]))
+#   
+#   names(df)[1:groups] <- labels
+#   names(df)[(groups+1):(groups+3)] <- c("n[extinct]", "n[total]", "percent.extinct")
+#   return(df)
+# }
 
 #--------------------
 # Function returns a dataframe containing the unique ID, the introduction regime of the population, and the population size x generations after the final introduction.
@@ -140,7 +156,7 @@ extinction.stats <- function(extinct, INDEX)
 
 N_x.after.intro <- function(x=1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow(N)), zeros=TRUE)
 {
-  if (x > (ncol(N) - max(intro.regime)))
+  if (x > (ncol(N) - max(intro.regime) + 1))
     stop("You are looking too far after the final introduction scenario. Can't look this far for all treatments. Try decreasing x.")
   
   numbers <- unique(intro.regime)
