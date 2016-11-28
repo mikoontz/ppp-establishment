@@ -159,26 +159,25 @@ extinct.after.x <- function(x=9, N, intro.regime, gap, gens.censused=c(rep(10, 4
 # This function will work on simulated data or on microcosm data as long as the IDs and gap (1 or 0) are specified.
 # The 'zeroes' argument lets 0's be included instead of NAs. Default is FALSE so they don't affect population mean calculations
 #### function definition ####
-N_x.after.intro <- function(x = 1, N, intro.regime, ID=1:nrow(N), gap=numeric(nrow(N)), zeros = FALSE)
+N_x.after.intro <- function(x = 1, Ntp1, intro.regime, ID = 1:nrow(N), gap = numeric(nrow(N)), zeros = FALSE)
 {
-  if (x > (ncol(N) - max(intro.regime) + 1))
+  if (x > (ncol(Ntp1) - max(intro.regime) + 1))
     stop("You are looking too far after the final introduction scenario. Can't look this far for all treatments. Try decreasing x.")
   
   numbers <- unique(intro.regime)
-  mat <- N*0 # Data frame of 0's the same dimensions as N
+  mat <- Ntp1 * 0 # Data frame of 0's the same dimensions as N
   # Iterate through the unique values of propagule number
   
   for (i in numbers)
   {
-    # For population time series where the introduction regime is the current propagule number AND there's no introduction gap, the correct time point is i+x
-    mat[(intro.regime == i), i + x ] <- 1
+    # For population time series where the introduction regime is the current propagule number AND there's no introduction gap, the correct time point is i+x-1 since we are using the Ntp1 data frame
+    mat[(intro.regime == i), i + x - 1 ] <- 1
     # For population time series where the introduction regime is the current propagule number AND there WAS an introduction gap, the correct time point is offset by 1 (i.e., i+x+1)
     if (any(intro.regime == i & gap == 1))
-      mat[(intro.regime == i & gap == 1), i+x+1] <- 1
+      mat[(intro.regime == i & gap == 1), i + x] <- 1
   }
   
-  
-  abundance <- apply(mat * N, 1, sum, na.rm = TRUE)
+  abundance <- apply(mat * Ntp1, 1, sum, na.rm = TRUE)
   idx <- abundance == 0
   abundance_no_zeroes <- abundance
   abundance_no_zeroes[idx] <- NA 
@@ -188,22 +187,6 @@ N_x.after.intro <- function(x = 1, N, intro.regime, ID=1:nrow(N), gap=numeric(nr
     else
       return(abundance_no_zeroes)
 }
-
-#### Main script ####
-
-attributes <- read.csv('data/attributes.csv')
-beetles <- read.csv('data/Tribolium-propagule-pressure-data.csv')
-
-tidyb <- tidy.beetles(beetles = beetles)
-
-Ntp1 <- tidyb$Ntp1 # Represents population abundance tp1 generations after start of experiment
-Nt <- tidyb$Nt
-migrants <- tidyb$migrants
-
-b <- merge(Ntp1, attributes, by="ID")
-census.columns <- grep(pattern = "[0-9]", x = colnames(b)) # All columns with a number in them are census columns (representing Ntp1)
-
-
 
 #### Calculate temporary extiction response variables ####
 #### temp_extinction() ####
@@ -217,7 +200,6 @@ temp_extinction <- function(Ntp1, intro.regime, gap = rep(FALSE, nrow(Ntp1))) {
            FUN = function(j) sum(Ntp1[j, 2:final_intro_column[j]] == 0, na.rm = TRUE))
   return(num_temp_extinctions)
 }
-
 
 #### loss_from_temp_extinction() ####
 #### function description ####
@@ -235,20 +217,35 @@ loss_from_temp_extinction <- function(Ntp1, migrants, intro.regime, gap = rep(FA
   
   # Calculate the latest temporary extinction by looking at each row of Ntp1 and the census columns during which introductions were still occurring, counting how many generations had a Ntp1 == 0
   latest_temp_extinct[idx] <- sapply(X = idx, 
-                                FUN = function(j) max(which(Ntp1[j, 2:final_intro_column[j]] == 0)))
+                                     FUN = function(j) max(which(Ntp1[j, 2:final_intro_column[j]] == 0)))
   
   # Need to ignore the ID column, so the column representing the latest temporary extinction is 1 + the generation of the latest temporary extinction
   latest_temp_extinct_column <- latest_temp_extinct + 1
-
+  
   # Initialize amount of loss at 0 
   loss <- rep(0, nrow(Ntp1))
   
   # Calculate loss as the sum of migrants up to the latest generation with a temporary extinction
   loss[idx] <- sapply(X = idx,
-                 FUN = function(j) sum(migrants[j, 2:latest_temp_extinct_column[j]])) 
-
-return(loss)
+                      FUN = function(j) sum(migrants[j, 2:latest_temp_extinct_column[j]])) 
+  
+  return(loss)
 }
+#### Main script ####
+
+attributes <- read.csv('data/attributes.csv')
+beetles <- read.csv('data/Tribolium-propagule-pressure-data.csv')
+
+tidyb <- tidy.beetles(beetles = beetles)
+
+Ntp1 <- tidyb$Ntp1 # Represents population abundance tp1 generations after start of experiment
+Nt <- tidyb$Nt
+migrants <- tidyb$migrants
+
+b <- merge(Ntp1, attributes, by="ID")
+census.columns <- grep(pattern = "[0-9]", x = colnames(b)) # All columns with a number in them are census columns (representing Ntp1)
+
+
 
 
 #### Add response variables to data frame ####
@@ -283,24 +280,27 @@ b <- data.frame(b, extant_x_after)
 N_for_abundance <- b[, c(which(colnames(b) == "size"), census.columns)]
 N_for_abundance[is.na(N_for_abundance)] <- 0
 
-N = b[, cencus.columns]
-
 abund_x_after <- as.data.frame(sapply(1:5, 
                                       FUN = N_x.after.intro, 
-                                      N = N_for_abundance, 
+                                      N = b[, census.columns], 
                                       intro.regime = b$number, 
                                       ID = b$ID, 
-                                      gap = as.numeric(b$gap), 
-                                      zeros = TRUE,
-                                      return_df = FALSE))
+                                      gap = as.numeric(b$gap)))
 
 names(abund_x_after) <- paste0("N_", 1:5, "_after")
 
 b <- data.frame(b, abund_x_after)
 
+#### Finally, convert all Ntp1 censuses of 0 to NA for the purposes of the response variable ####
+b[, census.columns] <- sapply(b[, census.columns], function(j) replace(j, which(j == 0), NA))
+
+
 bb <- subset(b, select= -c(block, color, number, size, environment, special, gap, notes, drought))
+
+
 
 clean_establishment_data <- merge(attributes, bb, by="ID")
 head(clean_establishment_data)
+tail(clean_establishment_data)
 
 # write.csv(clean_establishment_data, 'data/clean-establishment-data.csv', row.names=FALSE)
