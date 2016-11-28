@@ -54,7 +54,7 @@ tail(Nt)
 b <- subset(beetles, select=c(ID, Generation, Addition))
 migrants <- spread(b, Generation, Addition)
 # Add the initial introduction onto the dataframe
-migrants$'0' <- Nt$'0'
+migrants$'0' <- Nt$N0
 # Reorder dataframe columns and leave off final generation addition, since those populations weren't even set up for another generation
 total.columns <- ncol(migrants)
 migrants <- migrants[, c(1, total.columns, 2:(total.columns-2))]
