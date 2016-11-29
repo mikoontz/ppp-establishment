@@ -30,7 +30,7 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused = c(rep(1
   # Determine the first generation that each population went permanently extinct. 
   # Offset by 2 because there are really only Tf-1 generations of Ntp1 censuses and minus 1 more so that we get the first EXTINCT generation, not the last EXTANT generation 
   when.extinct <- (Tf - apply(N[,Tf:1], MARGIN=1, FUN=function(x) match(FALSE, x == 0)) + 2) 
-  
+  when.extinct[is.na(when.extinct)] <- 1
     # Note that if a population went to 0 each time you tried to introduce new individuals, the when.extinct value would say extinction happened too soon. In fact, the extinction isn't permanent until no more introductions will occur either. So the maximum of the when.extinct value and the number of introductions (plus 1 to look at the first GENERATION where no more introductions came).
   
   when.extinct <- pmax(when.extinct, (intro.regime + as.numeric(gap)))
