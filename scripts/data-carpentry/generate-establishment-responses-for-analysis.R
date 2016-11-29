@@ -20,7 +20,7 @@ source('scripts/data-carpentry/generate-tidy-data.R')
 # Returns the number of generations before each population went extinct. (First time a census showed 0 individuals, AND no further introductions coming). This function returns an NA for an element corresponding to a population that never went extinct
 
 # Arguments
-#   N is the matrix of population sizes; the censuses values
+#   N is the matrix of population sizes in the NEXT generation; the censuses values representing Ntp1 (and not including the initial introduction)
 #   intro.regime is a vector of propagule numbers. I.e. the number of introduction events for each population
 #   gap is a logical vector specifying whether there was a gap in the introductions in generation 2
 #   gens.censused is a numeric vector representing the total number of generations censused for each population. ID 1:480 were censused for 10 generations, ID 481:945 were censused for 9 generations
@@ -29,17 +29,17 @@ determine.when.extinct <- function(N, intro.regime, gap, gens.censused=c(rep(10,
 {
   Tf <- ncol(N)
   # Determine the first generation that each population went permanently extinct. 
-  # Offset by 2 because there are really only Tf-1 generations and minus 1 more so that we get the first EXTINCT generation, not the last EXTANT generation 
+  # Offset by 2 because there are really only Tf-1 generations of Ntp1 censuses and minus 1 more so that we get the first EXTINCT generation, not the last EXTANT generation 
   when.extinct <- Tf - (apply(N[,Tf:1], MARGIN=1, FUN=function(x) match(FALSE,x==0) ) - 2)
   
   # Note that if a population went to 0 each time you tried to introduce new individuals, the when.extinct value would say extinction happened too soon. In fact, the extinction isn't permanent until no more introductions will occur either. So the maximum of the when.extinct value and the number of introductions (plus 1 to look at the first GENERATION where no more introductions came).
   
-  when.extinct <- pmax(when.extinct, (intro.regime + 1 + as.numeric(gap)))
+  when.extinct <- pmax(when.extinct, (intro.regime + as.numeric(gap)))
 
 # Determine populations that never went extinct. The when.extinct vector will be equal to gens.censused+1 when the population has a positive number of individuals at time (gens.censused)
 # This is where it was important to know that some populations weren't censused as many times as others (9 vs. 10 generations)
 
-  never.extinct <- which(when.extinct == (gens.censused+1))
+  never.extinct <- which(when.extinct == (gens.censused))
   
   # Make the populations that never went extinct into NAs
   when.extinct[never.extinct] <- NA
