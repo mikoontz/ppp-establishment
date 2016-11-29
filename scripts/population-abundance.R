@@ -32,9 +32,38 @@ b$block <- as.factor(b$block)
 b$gap <- as.factor(b$gap)
 
 
-#### Analysis 1: Population abundance at generation F9 ####
+##### Analysis 1: Population abundance assessment at each generation, include generation as a fixed effect, population ID as random effect #####
+#### Analysis 1: Assessing effect of the introduction gap ####
+bb <- subset(b, select = c("ID", "block", "number", "environment", "gap", paste0("N", 0:8, "plus1")))
 
-#### Analysis 1: Effect of introduction gap ####
+# Gather the extant/extinct assessments currently in short form across columns into a 2-column pair of keys and values.
+long_b <- gather(bb, key = generation, value = abundance, -c(ID, block, number, environment, gap))
+# Convert the gathered "generation" column to a numeric value representing which filial generation the row refers to
+start <- regexpr(pattern = "[0-9]+", long_b$generation)
+stop <- attr(x = start, which = "match.length") + start - 1
+long_b$generation <- as.numeric(substr(long_b$generation, start = start, stop = stop)) + 1 # add the one to account for the "plus1"
+
+# We are only interested in generations 5 through 9, which represent time points with all introductions completed
+long_b <- subset(long_b, generation >= 5)
+
+gap.potential <- subset(long_b, subset=(block!=3)&(number%in%c(2,4)))
+
+fm1 <- glmer(abundance ~ number * environment * as.factor(generation) + gap + (1 | ID) + (1 | block), data = gap.potential, family = "poisson", control=glmerControl(optimizer="bobyqa"))
+
+fm2 <- update(fm1, . ~ . - gap)
+anova(fm1, fm2) # Looks like model with gap is NOT more likely than the model without, so we could proceed. I think it's probably best to still drop the populations that experienced an introduction gap, since that's what we did for the establishment probability analysis. The difference between these 2 analyses could itself be interesting...
+
+b_trim <- long_b[long_b$gap == "FALSE", ]
+#### Analysis 1: Determining the random effects structure ####
+# Even the simplest possible model that we'd be interested in won't fit using this framework. Let's abandon it in favor of fitting models for each generation that we care about.
+fm1 <- glmer(abundance ~ (number + environment) * as.factor(generation) + number:environment + (1 | ID) + (1 | block), data = b_trim, family = "poisson", control=glmerControl(optimizer="bobyqa"))
+
+summary(fm1)
+
+
+#### Analysis 2: Population abundance at generation F9 ####
+
+#### Analysis 2: Effect of introduction gap ####
 # First test the effect of introduction gap on the time to extinction
 # We proceed the exact same way as we do with the extinction probability analysis, except we use a Poisson likelihood instead of a binomial likelihood.
 #-------------------
@@ -55,7 +84,7 @@ anova(m1,m2) # LRT suggests model with 3-way interaction is WAY more likely than
 #-------
 
 bb <- subset(b, subset = (gap == FALSE))
-#### Analysis 1: Influence of fixed effects ####
+#### Analysis 2: Influence of fixed effects ####
 # We'll use the same random effects structure as we did for the establishment probability analysis
 # There are not as many data points in this dataset, so we keep the random effects structure simple with just a random intercept of temporal block
 #---------------
@@ -70,7 +99,7 @@ anova(m6, m7) # Significant interaction of number of introductions and environme
 
 # The final model which includes all fixed effects
 final <- m6
-#### Analysis 3: Interpretation and contrasts ####
+#### Analysis 2: Interpretation and contrasts ####
 
 results <- lsmeans::lsmeans(final, pairwise ~ environment + number, adjust="none")
 results
