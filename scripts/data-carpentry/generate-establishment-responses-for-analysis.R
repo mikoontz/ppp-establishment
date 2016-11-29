@@ -297,6 +297,6 @@ bb <- subset(b, select= -c(block, color, number, size, environment, special, gap
 
 clean_establishment_data <- merge(attributes, bb, by="ID")
 head(clean_establishment_data)
-tail(clean_establishment_data)
+tail(clean_establishment_data, 10)
 
 # write.csv(clean_establishment_data, 'data/clean-establishment-data.csv', row.names=FALSE)
