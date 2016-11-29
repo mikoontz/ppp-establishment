@@ -71,7 +71,15 @@ Uses the NBBg MCMC code to estimate parameters of the NBBg model fit to the raw 
 
 ## data
 ### simulations
-Data that arise from simulations.
+#### simulation_stats.csv
+Summary output from simulation runs of 500,000 replications per treatment (4 introduction regimes * 2 environment stabilities)
+
+#### N.csv
+Population trajectories for 2,000,000 simulated *Tribolium* populations introduced via 1 of 4 different introduction regimes into a stable environment.
+
+#### N_var.csv
+Population trajectories for 2,000,000 simulated *Tribolium* populations introduced via 1 of 4 different introduction regimes into a fluctuating environment.
+
 
 ### NBBg-samples
 #### NBBg-samples-combined.csv

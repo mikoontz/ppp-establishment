@@ -24,6 +24,9 @@ Michael Koontz
         -   [NBBg-environment-stability-effect.R](#nbbg-environment-stability-effect.r)
     -   [data](#data)
         -   [simulations](#simulations-1)
+            -   [simulation\_stats.csv](#simulation_stats.csv)
+            -   [N.csv](#n.csv)
+            -   [N\_var.csv](#n_var.csv)
         -   [NBBg-samples](#nbbg-samples)
             -   [NBBg-samples-combined.csv](#nbbg-samples-combined.csv)
             -   [NBBg-samples-chain1.csv](#nbbg-samples-chain1.csv)
@@ -124,7 +127,17 @@ data
 
 ### simulations
 
-Data that arise from simulations.
+#### simulation\_stats.csv
+
+Summary output from simulation runs of 500,000 replications per treatment (4 introduction regimes \* 2 environment stabilities)
+
+#### N.csv
+
+Population trajectories for 2,000,000 simulated *Tribolium* populations introduced via 1 of 4 different introduction regimes into a stable environment.
+
+#### N\_var.csv
+
+Population trajectories for 2,000,000 simulated *Tribolium* populations introduced via 1 of 4 different introduction regimes into a fluctuating environment.
 
 ### NBBg-samples
 
