@@ -398,6 +398,10 @@ fm2 <- glmer(extant ~ number * environment + generation + (1 | ID) + (1 | block)
 # What about making generation a factor?
 fm3 <- glmer(extant ~ number * environment + as.factor(generation) + (1 | ID) + (1 | block), data = b_trim, family = "binomial", control=glmerControl(optimizer="bobyqa"))
 # Still no convergence.
+# Additional check if no convergence should be worrisome
+relgrad <- with(fm3@optinfo$derivs, solve(Hessian, gradient))
+max(abs(relgrad))
+
 
 # What kind of variation is in the data?
 aggregate(extant ~ number + environment + generation, FUN = mean, data = b_trim)
