@@ -24,6 +24,7 @@
 library(lme4)
 library(lsmeans)
 library(multcompView)
+library(tidyr)
 
 b <- read.csv("data/clean-establishment-data.csv")
 
