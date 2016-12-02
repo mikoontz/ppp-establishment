@@ -38,8 +38,6 @@ set.up <- function(total.to.introduce, Tf, reps, excludeMaxNum=TRUE)
   # First get different propagule number/size combinations
   propagule.pressure <- get.propagule.pressure(total.to.introduce, Tf, excludeMaxNum)
   
-
-  
   # Set up the number of migrants per generation based on combinations of propagule number and size
   total.reps <- dim(propagule.pressure)[1]*reps
   migrants <- matrix(0, nrow=total.reps, ncol=Tf)

@@ -5,13 +5,7 @@
 ### Date Created: 20141107
 ### Last Updated: 20141114
 ###
-### The purpose of this code is to simulate population growth or decline given parameter values for different kinds of stochasticity and starting population size (including number of individuals that are resident and number that are migrants)
-
-###
-###
-###
-
-### The data argument should be a dataframe with 2 columns: Number of residents at time t and number of migrants at time t
+### The purpose of this code is to simulate population growth or decline over Tf generations given parameter values for different kinds of stochasticity and starting population size (including number of individuals that are resident and number that are migrants)
 
 # Simulate NBBg dynamics
 NBBg <- function(Tf, total.reps, past.residents, p, N, migrants, samps, overflowGuard=FALSE)
@@ -40,7 +34,7 @@ NBBg <- function(Tf, total.reps, past.residents, p, N, migrants, samps, overflow
     # Note that mu will be 0 when there are all males in the population
     mu <- 1/p * F.mated * Re * exp(-samps[idx, "alpha"] * N[ , t-1])
     
-    N[, t] <- rnbinom(n=total.reps, mu=mu, size=samps[idx, "kD"] * F.mated + (F.mated == 0)) # Ensures we'll get a number if F.mated == 0 rather than an NaN. Number will always be 0 if F.mated is 0.
+    N[, t] <- rnbinom(n=total.reps, mu=mu, size=samps[idx, "kD"] * F.mated + (F.mated == 0)) # Ensures we'll get a number if F.mated == 0 rather than an NaN. N[, t] will still always be 0 if F.mated is 0.
     
     
     # In scenarios with no density dependence and high environment fluctuation, populations can explode to sizes that are beyond what can be handled by the computer-- that is, there are overflow errors where very (very very) large numbers just become NaN and then the other functions think those populations went extinct. If overflowGuard is TRUE, we'll convert population sizes greater than some absurdly large population size to something that is still absurdly large, but that can be handled by the computer. Keeping populations below about 1 billion seems to prevent overflow.
