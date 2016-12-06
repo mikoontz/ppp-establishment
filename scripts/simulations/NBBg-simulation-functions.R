@@ -6,7 +6,7 @@
 # Functions
 #----------
 
-source("NBBg-population-dynamics-function")
+source("scripts/simulations/NBBg-population-dynamics-function.R")
 
 # Returns a data.frame with the possible combinations of propagule number and propagule size to reach a fixed total number of individuals to introduce.
 
@@ -95,13 +95,13 @@ get.intro.regime <- function(N, propagule.pressure)
 ### Convenience wrapper that calls required functions above with desired parameters and returns a short form data frame of population sizes. Also includes ability to save objects for later retrieval.
 ### Takes in parameters required to run a NBBg (see Melbourne & Hastings 2008) model for Tf generations while introducing a fixed total number of individuals in different combinations of introduction regime.
 
-simNBBg <- function(samps, reps, Tf, total.to.introduce=20, p=0.5, excludeMaxNum=TRUE, save_objects=FALSE, data_descriptor="", dirpath="data/simulations/", overflowGuard=FALSE)
+simNBBg <- function(samps, reps, Tf, total.to.introduce = 20, p = 0.5, excludeMaxNum = TRUE, save_objects = FALSE, data_descriptor = "", dirpath = "data/simulations/", overflowGuard = FALSE)
 {
   # Derive setup variables and storage objects using basic arguments passed to simNBBg
-  setup <- set.up(total.to.introduce, Tf, reps, excludeMaxNum=excludeMaxNum)
+  setup <- set.up(total.to.introduce, Tf, reps, excludeMaxNum = excludeMaxNum)
   
   # Run the actual simulation
-  N <- NBBg(Tf=Tf, total.reps=setup$total.reps, past.residents=setup$past.residents, p=p, N=setup$N, migrants=setup$migrants, samps=samps, overflowGuard=overflowGuard)
+  N <- NBBg(Tf=Tf, total.reps = setup$total.reps, past.residents = setup$past.residents, p = p, N = setup$N, migrants = setup$migrants, samps = samps, overflowGuard = overflowGuard)
   
   # Save N and migrants data frame or not
   if (save_objects) {
