@@ -232,12 +232,15 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		# Discrete uniform proposal distribution
 		
     F.migrants.star <- sapply(data$migrants, FUN=function(x) sample(x, size=1))
+    
+    # Because F.migrants changes F.mated, we need to recalculate
     F.mated.star <- F.migrants.star + F.residents
 
     F.mated.idx.star <- which((F.migrants.star + F.residents) == data$Nt) # Indices where proposal number of migrant females makes the population be all females
     
     F.mated.star[F.mated.idx.star] <- F.migrants.star[F.mated.idx.star]
-    		
+
+    # Because F.mated changes mu, we need to recalculate		
 		mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
 
 		# Calculate mh ratio
@@ -260,10 +263,13 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		###
 	
     F.residents.star <- sapply(data$residents, FUN=function(x) sample(x, size=1))
+    
+    # Because F.migrants changes F.mated, we need to recalculate
     F.mated.star <- F.migrants + F.residents.star
 		
     F.mated.idx.star <- which((F.migrants + F.residents.star) == data$Nt) # Indices where proposal number of resident females makes the population be all females
     
+    # Because F.mated changes mu, we need to recalculate		
     mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
 
 		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated.star, log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
