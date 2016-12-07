@@ -8,7 +8,7 @@
 ### The purpose of this code is to validate the MCMC algorithm used to calculate NBBg parameters on the Parsing Propagule Pressure initial density dependence side experiment. We use known values of the parameters and simulate an NBBg model, then fit our hierarchical model to those simulated data to see if we can reobtain the known parameter values. We then fit our hierarchical model to data from Melbourne and Hastings (2008) to see if we can reobtain the parameter values they estimated from their analysis.
 
 # Clear environment of defined variables if necessary
-# rm(list = ls())
+rm(list = ls())
 
 source("scripts/simulations/NBBg-population-dynamics-function.R")
 source("scripts/NBBg-mcmc.R")
@@ -63,14 +63,14 @@ x <- 1:1000
 plot(test_data$Nt, test_data$Ntplus1, pch=16, cex = 0.5)
 lines(x=x, y=x * R0 * exp(-alpha*x), col="red")
 
-n.mcmc <- 100000
-priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
-priors.scale <- c(R0=1, kE=1, kD=1, alpha=1)
-tune <- c(R0=0.2, kE=5, kD=0.75, alpha=0.0001, RE=1.5)
+n.mcmc <- 10000
+priors.shape <- c(R0 = 0.001, kE = 0.001, kD=0.001, alpha=0.001)
+priors.scale <- c(R0 = 0.001, kE = 0.001, kD=0.001, alpha=0.001)
+tune <- c(R0=0.05, kE=0.05, kD=0.025, alpha=0.0001, RE=1.5)
 
 inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
               c(R0=5, kE=2, kD=25, alpha=0.015),
-              c(R0=0.5, kE=35, kD=1, alpha=0.0005))
+              c(R0=0.25, kE=35, kD=1, alpha=0.0005))
 
 #### Run MCMC algorithm ####
 mcmc_output <- lapply(inits, FUN = function(x) NBBG.mcmc(data = test_data, 
