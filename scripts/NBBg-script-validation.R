@@ -7,6 +7,9 @@
 ###
 ### The purpose of this code is to validate the MCMC algorithm used to calculate NBBg parameters on the Parsing Propagule Pressure initial density dependence side experiment. We use known values of the parameters and simulate an NBBg model, then fit our hierarchical model to those simulated data to see if we can reobtain the known parameter values. We then fit our hierarchical model to data from Melbourne and Hastings (2008) to see if we can reobtain the parameter values they estimated from their analysis.
 
+# Clear environment of defined variables if necessary
+# rm(list = ls())
+
 source("scripts/simulations/NBBg-population-dynamics-function.R")
 source("scripts/NBBg-mcmc.R")
 
@@ -33,23 +36,23 @@ migrants <- data.frame(migrants0 = c(rep(seq(2,100), times=2),
 N <- data.frame(Nt = migrants$migrants0 + past.residents, Ntplus1 = 0)
 
 # Known parameter values 
-R0 <- 2.6
-kE <- 17.6
-kD <- 1.07
-alpha <- 0.0037
+R0 <- 1.8
+kE <- 11
+kD <- 2
+alpha <- 0.006
 samps <- data.frame(R0, alpha, kE, kD)
 
 
-test_data <- NBBg(Tf = 2, 
-                  total.reps = nrow(df),
+pop_trajectory <- NBBg(Tf = 2, 
+                  total.reps = nrow(N),
                   N = N,
                   past.residents = 0, 
                   migrants = migrants, 
                   p = 0.5, 
                   samps = samps)
 
-test_data <- data.frame(ID = 1:nrow(test_data), 
-                        test_data, 
+test_data <- data.frame(ID = 1:nrow(pop_trajectory), 
+                        pop_trajectory, 
                         migrants = migrants$migrants0, 
                         residents = past.residents)
 head(test_data)
@@ -60,7 +63,7 @@ x <- 1:1000
 plot(test_data$Nt, test_data$Ntplus1, pch=16, cex = 0.5)
 lines(x=x, y=x * R0 * exp(-alpha*x), col="red")
 
-n.mcmc <- 1000
+n.mcmc <- 100000
 priors.shape <- c(R0=2.6, kE=17.6, kD=1.07, alpha=0.0037)
 priors.scale <- c(R0=1, kE=1, kD=1, alpha=1)
 tune <- c(R0=0.2, kE=5, kD=0.75, alpha=0.0001, RE=1.5)
@@ -69,17 +72,61 @@ inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
               c(R0=5, kE=2, kD=25, alpha=0.015),
               c(R0=0.5, kE=35, kD=1, alpha=0.0005))
 
-mcmc_test_data <- NBBG.mcmc(data = test_data, 
-                            priors.shape = priors.shape, 
-                            priors.scale = priors.scale, 
-                            inits = inits[[1]], 
-                            tune = tune,
-                            n.mcmc = n.mcmc)
+#### Run MCMC algorithm ####
+mcmc_output <- lapply(inits, FUN = function(x) NBBG.mcmc(data = test_data, 
+                                                            priors.shape = priors.shape, 
+                                                            priors.scale = priors.scale, 
+                                                            inits = x, 
+                                                            tune = tune,
+                                                            n.mcmc = n.mcmc))
 
-mcmc_test_data[["accept"]]
+# Percent of proposals accepted
+num_accepted <- lapply(mcmc_output, FUN = function(x) x[["accept"]])
+names(num_accepted) <- paste0("chain_", 1:length(num_accepted))
 
-key_params <- mcmc_test_data$samps[, c("R0", "kE", "kD", "alpha")]
-summary(key_params)
+percent_accepted <- lapply(num_accepted, FUN = function(x) x / n.mcmc * 100)
+percent_accepted
+
+# Pull out samples of parameters
+samples <- lapply(mcmc_output, FUN = function(x) x[["samps"]])
+samples_list <- mcmc.list(samples)
+
+# Pull out key parameters
+key <- lapply(samples_list, function(x) x[, c("R0", "alpha", "kE", "kD")])
+
+#### Trace plots of unburned samples for key parameters ####
+
+plot(key[[1]])
+
+#### Effective number of parameters for chains ####
+Neff <- lapply(key, effectiveSize)
+names(Neff) <- paste0("chain_", 1:length(key))
+Neff
+
+#### Convergence diagnostics for MCMC chains ####
+
+converge <- gelman.diag(x = key) # Should be at or *very* near 1 to indicate convergence.
+converge
+# Potential scale reduction factors:
+#   
+#   Point est. Upper C.I.
+# R0          1.00       1.02
+# alpha       1.00       1.01
+# kE          1.01       1.02
+# kD          1.01       1.03
+# 
+# Multivariate psrf
+# 
+# 1.01
+
+gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
+# Shows clear decline and improvement through the sampling process.
+
+lapply(key, FUN = summary)
+# True values
+samps
+
+
 
 #### Data from Melbourne & Hastings (2008) ####
 
