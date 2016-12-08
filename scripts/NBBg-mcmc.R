@@ -106,9 +106,9 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 
 		# Calculate mh ratio
 		
-		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated, log=TRUE), na.rm=TRUE) + dgamma(alpha.star, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
+		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated + (F.mated == 0), log=TRUE), na.rm=TRUE) + dgamma(alpha.star, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
 		
-		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE), na.rm=TRUE) + dgamma(alpha, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
+		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE), na.rm=TRUE) + dgamma(alpha, shape=priors.shape["alpha"], scale=priors.scale["alpha"], log=TRUE)
 					
 		mh <- exp(mh1 - mh2)
 		
@@ -133,9 +133,9 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		
 		# Calculate mh ratio
 		
-		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD.star * F.mated, log=TRUE), na.rm=TRUE) + dgamma(kD.star, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
+		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD.star * F.mated + (F.mated == 0), log=TRUE), na.rm=TRUE) + dgamma(kD.star, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
 			
-		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE), na.rm=TRUE) + dgamma(kD, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
+		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE), na.rm=TRUE) + dgamma(kD, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
 		
 		mh <- exp(mh1 - mh2)
 		
@@ -161,9 +161,9 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 
 ###### Calculate mh ratio #####
 		
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated, log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated + (F.mated == 0), log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
 		
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE) + dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)
 		
 		mh <- exp(mh1 - mh2)
 		mh.idx <- which(mh > runif(n=reps) )
@@ -245,9 +245,9 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 
 		# Calculate mh ratio
 		
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size= kD * F.mated.star, log=TRUE) + dbinom(F.migrants.star, size=data$migrants, prob=p, log=TRUE) 
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size= kD * F.mated.star + (F.mated.star == 0), log=TRUE) + dbinom(F.migrants.star, size=data$migrants, prob=p, log=TRUE) 
 			
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE) + dbinom(F.migrants, size=data$migrants, prob=p, log=TRUE)
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dbinom(F.migrants, size=data$migrants, prob=p, log=TRUE)
 	
 		mh <- exp(mh1 - mh2)
 		mh.idx <- which(mh > runif(reps))
@@ -272,9 +272,9 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
     # Because F.mated changes mu, we need to recalculate		
     mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
 
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated.star, log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
+		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated.star + (F.mated.star == 0), log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
 		
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated, log=TRUE) + dbinom(F.residents, size=data$residents, prob=p, log=TRUE)
+		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dbinom(F.residents, size=data$residents, prob=p, log=TRUE)
 	
 		mh <- exp(mh1 - mh2)
 		mh.idx <- which(mh > runif(reps))
