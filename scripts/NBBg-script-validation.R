@@ -64,13 +64,17 @@ plot(test_data$Nt, test_data$Ntplus1, pch=16, cex = 0.5)
 lines(x=x, y=x * R0 * exp(-alpha*x), col="red")
 
 n.mcmc <- 10000
-priors.shape <- c(R0 = 0.001, kE = 0.001, kD=0.001, alpha=0.001)
-priors.scale <- c(R0 = 0.001, kE = 0.001, kD=0.001, alpha=0.001)
-tune <- c(R0=0.05, kE=0.05, kD=0.025, alpha=0.0001, RE=1.5)
+
+# Vague priors. Note the inverse of the scale is the rate
+priors.shape <- c(R0 = 0.001, alpha=0.001, kE = 0.001, kD=0.001)
+priors.scale <- 1 / c(R0 = 0.001, alpha=0.001, kE = 0.001, kD=0.001)
+
+# Tuning parameters
+tune <- c(R0 = 0.25, alpha = 0.00025, kE = 2.75, kD = 2.75, RE = 1.5)
 
 inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
               c(R0=5, kE=2, kD=25, alpha=0.015),
-              c(R0=0.25, kE=35, kD=1, alpha=0.0005))
+              c(R0=0.5, kE=35, kD=1, alpha=0.0005))
 
 #### Run MCMC algorithm ####
 mcmc_output <- lapply(inits, FUN = function(x) NBBG.mcmc(data = test_data, 
@@ -130,31 +134,65 @@ samps
 
 #### Data from Melbourne & Hastings (2008) ####
 
-# melbourne <- read.csv("melbourne_ricker_data.csv")
+melbourne <- read.csv("data/melbourne_ricker_data.csv")
 # head(melbourne)
-# melbourne$At <- round(melbourne$At)
-# melbourne$Atp1 <- round(melbourne$Atp1)
-# melbourne$residents <- 0
-# melbourne$migrants <- melbourne$Nt
-# 
-# ### Define MCMC arguments
-# 
-# n.mcmc <- 5000
-# inits <- c(R0=2, kE=22, kD=10, alpha=0.005)
+melbourne$At <- round(melbourne$At)
+melbourne$Atp1 <- round(melbourne$Atp1)
+melbourne$residents <- 0
+melbourne$migrants <- melbourne$Nt
+colnames(melbourne)[colnames(melbourne)=="Atp1"] <- "Ntplus1"
+colnames(melbourne)[colnames(melbourne)=="At"] <- "migrants"
 
-# colnames(melbourne)[colnames(melbourne)=="Atp1"] <- "Ntplus1"
-# colnames(melbourne)[colnames(melbourne)=="At"] <- "migrants"
-# melbourne$residents <- 0
-# melbourne$Nt <- melbourne$migrants + melbourne$residents
-# melbourne
-# plot(melbourne$Nt, melbourne$Ntplus1, pch=19)
+melbourne$residents <- 0
+melbourne$Nt <- melbourne$migrants + melbourne$residents
+melbourne$ID <- 1:nrow(melbourne)
+
+plot(melbourne$Nt, melbourne$Ntplus1, pch=19)
+
+### Define MCMC arguments
+
+n.mcmc <- 50000
+inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
+              c(R0=5, kE=2, kD=25, alpha=0.015),
+              c(R0=0.5, kE=35, kD=1, alpha=0.0005))
+
 #--------------
 # For Brett's data
-# priors.shape <- c(R0=0.001, kE=0.001, kD=0.001, alpha=0.001)
-# priors.scale <- c(R0=1000, kE=1000, kD=1000, alpha=1000)
-# tune <- c(R0=0.2, kE=15, kD=1, alpha=0.0002, RE=1.2)
-# mcmc.melbourne <- NBBG.mcmc(melbourne, priors.shape, priors.scale, inits, tune, n.mcmc)
-# mcmc.melbourne[["accept"]]
+priors.shape <- c(R0=0.001, kE=0.001, kD=0.001, alpha=0.001)
+priors.scale <- c(R0=1000, kE=1000, kD=1000, alpha=1000)
+tune <- c(R0=0.2, kE=15, kD=1, alpha=0.0002, RE=1.2)
+
+mcmc_output_melbourne <- lapply(inits, FUN = function(x) NBBG.mcmc(data = melbourne, 
+                                                                   priors.shape = priors.shape, 
+                                                                   priors.scale = priors.scale, 
+                                                                   inits = x, 
+                                                                   tune = tune,
+                                                                   n.mcmc = n.mcmc))
+
+# Percent of proposals accepted
+num_accepted_mel <- lapply(mcmc_output_melbourne, FUN = function(x) x[["accept"]])
+names(num_accepted_mel) <- paste0("chain_", 1:length(num_accepted_mel))
+
+percent_accepted_mel <- lapply(num_accepted_mel, FUN = function(x) x / n.mcmc * 100)
+percent_accepted_mel
+
+# Pull out samples of parameters
+samples_mel <- lapply(mcmc_output_melbourne, FUN = function(x) x[["samps"]])
+samples_list_mel <- mcmc.list(samples_mel)
+
+# Pull out key parameters
+key_mel <- lapply(samples_list_mel, function(x) x[, c("R0", "alpha", "kE", "kD")])
+
+plot(key_mel[[1]])
+
+lapply(key_mel, summary)
+
+#### Effective number of parameters for chains ####
+Neff_mel <- lapply(key_mel, effectiveSize)
+names(Neff_mel) <- paste0("chain_", 1:length(key_mel))
+Neff_mel
+
+
 
 # par(mfrow=c(3,2))
 # plot(melbourne$Nt, melbourne$Ntplus1, pch=19)
@@ -172,3 +210,5 @@ samps
 # samples <- data.frame(R0=burned[["R0"]], kE=burned[["kE"]], kD=burned[["kD"]], alpha=burned[["alpha"]])
 # 
 # write.csv(samples, 'NBBg samples melbourne.csv', row.names=FALSE)
+
+percent_accepted
