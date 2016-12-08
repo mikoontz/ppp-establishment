@@ -127,15 +127,21 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		# Proposal
 		
 		kD.star <- rnorm(1, mean=kD, sd=tune["kD"])
-		
+		# kD.star <- rgamma(1, shape = tune["kD"], scale = kD / tune["kD"])
+		  
 		if (kD.star >= 0)
 		{
 		
 		# Calculate mh ratio
-		
+		# correction1 <- dgamma(kD, shape = tune["kD"], scale = kD.star / tune["kD"], log = TRUE)
+		# correction2 <- dgamma(kD.star, shape = tune["kD"], scale = kD / tune["kD"], log = TRUE)
+		  
 		mh1 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD.star * F.mated + (F.mated == 0), log=TRUE), na.rm=TRUE) + dgamma(kD.star, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
 			
 		mh2 <- sum(dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE), na.rm=TRUE) + dgamma(kD, shape=priors.shape["kD"], scale=priors.scale["kD"], log=TRUE)
+		
+		# mh1 <- mh1 + correction1
+		# mh2 <- mh2 + correction2
 		
 		mh <- exp(mh1 - mh2)
 		
