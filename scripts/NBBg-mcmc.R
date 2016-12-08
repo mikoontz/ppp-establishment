@@ -75,7 +75,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 	F.residents.save[1, ] <- F.residents
 
 	F.mated <- F.migrants + F.residents # Default number of mated females is all females
-	F.mated.idx <- which((F.migrants + F.residents) == data$Nt) # Indices where population is all females
+	F.mated.idx <- which(F.mated == data$Nt) # Indices where population is all females
 	F.mated[F.mated.idx] <- F.migrants[F.mated.idx] # Populations with all females use only the migrant females for the number of mated females (because we assume they arrive mated from the large external source)
 	F.mated.save[1, ] <- F.mated
 	
