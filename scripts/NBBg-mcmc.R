@@ -156,27 +156,30 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		### Update RE
 		###
 	
+		RE <- rgamma(n = reps, mean = R0, scale = R0 / kE)
+		mu <- 1/p * F.mated * RE * exp(-alpha * data$Nt)
+		
 		# Proposal
 		
-		RE.star <- rnorm(reps, mean=RE, sd=tune["RE"])
-		RE.star[which(RE.star < 0)] <- NA # Any proposals of RE that are less than 0 (impossible values) are instead NA. This will propagate the nothingness through the mu.star calculations, the likelihoods, and the mh ratios such that none of them throw errors or warnings. We also need to ensure that none of those proposals get accepted by chance, which is done by making sure to use the which() function when determining for which of the populations to accept or reject the proposal RE. Because the RE proposals that were negative are now NA, they will be excluded from the candidate set of proposals to accept or reject. Thus, the only updates will be to proposals that meet 2 criteria: They're mh.ratio > runif(1) AND their mh.ratio is NOT NA.
-		
-		# Because RE changes mu, we need to recalculate
-		
-		mu.star <- 1/p * F.mated * RE.star * exp(-alpha * data$Nt)
-
-###### Calculate mh ratio #####
-		
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated + (F.mated == 0), log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
-		
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)
-		
-		mh <- exp(mh1 - mh2)
-		mh.idx <- which(mh > runif(n=reps) )
-		
-		RE[mh.idx] <- RE.star[mh.idx]
-		mu[mh.idx] <- mu.star[mh.idx]
-		accept["RE"] <- accept["RE"] + (length(mh.idx) / reps)
+# 		RE.star <- rnorm(reps, mean=RE, sd=tune["RE"])
+# 		RE.star[which(RE.star < 0)] <- NA # Any proposals of RE that are less than 0 (impossible values) are instead NA. This will propagate the nothingness through the mu.star calculations, the likelihoods, and the mh ratios such that none of them throw errors or warnings. We also need to ensure that none of those proposals get accepted by chance, which is done by making sure to use the which() function when determining for which of the populations to accept or reject the proposal RE. Because the RE proposals that were negative are now NA, they will be excluded from the candidate set of proposals to accept or reject. Thus, the only updates will be to proposals that meet 2 criteria: They're mh.ratio > runif(1) AND their mh.ratio is NOT NA.
+# 		
+# 		# Because RE changes mu, we need to recalculate
+# 		
+# 		mu.star <- 1/p * F.mated * RE.star * exp(-alpha * data$Nt)
+# 
+# ###### Calculate mh ratio #####
+# 		
+# 		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated + (F.mated == 0), log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
+# 		
+# 		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dgamma(RE, shape=kE, scale=R0/kE, log=TRUE)
+# 		
+# 		mh <- exp(mh1 - mh2)
+# 		mh.idx <- which(mh > runif(n=reps) )
+# 		
+# 		RE[mh.idx] <- RE.star[mh.idx]
+# 		mu[mh.idx] <- mu.star[mh.idx]
+# 		accept["RE"] <- accept["RE"] + (length(mh.idx) / reps)
 
 
 		###
@@ -235,61 +238,79 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		### Update F.migrants
 		###
 
-		# Discrete uniform proposal distribution
-		
-    F.migrants.star <- sapply(data$migrants, FUN=function(x) sample(x, size=1))
     
-    # Because F.migrants changes F.mated, we need to recalculate
-    F.mated.star <- F.migrants.star + F.residents
+		F.migrants <- rbinom(n = reps, size = data$migrants, prob = p)
+		F.mated <- F.migrants + F.residents
 
-    F.mated.idx.star <- which((F.migrants.star + F.residents) == data$Nt) # Indices where proposal number of migrant females makes the population be all females
-    
-    F.mated.star[F.mated.idx.star] <- F.migrants.star[F.mated.idx.star]
-
-    # Because F.mated changes mu, we need to recalculate		
-		mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
-
-		# Calculate mh ratio
+		F.mated.idx <- which((F.mated) == data$Nt) # Indices where proposal number of migrant females makes the population be all females
+		F.mated[F.mated.idx] <- F.migrants[F.mated.idx]
 		
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size= kD * F.mated.star + (F.mated.star == 0), log=TRUE) + dbinom(F.migrants.star, size=data$migrants, prob=p, log=TRUE) 
-			
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dbinom(F.migrants, size=data$migrants, prob=p, log=TRUE)
-	
-		mh <- exp(mh1 - mh2)
-		mh.idx <- which(mh > runif(reps))
+		# Because F.mated changes mu, we need to recalculate		
+		mu <- 1/p * F.mated * RE * exp(-alpha * data$Nt)
 		
-		F.migrants[mh.idx] <- F.migrants.star[mh.idx]
-		F.mated[mh.idx] <- F.mated.star[mh.idx]
-		mu[mh.idx] <- mu.star[mh.idx]
-
-		accept["F.migrants"] <- accept["F.migrants"] + length(mh.idx)/reps
+# 		# Discrete uniform proposal distribution
+#     F.migrants.star <- sapply(data$migrants, FUN=function(x) sample(x, size=1))
+#     
+#     # Because F.migrants changes F.mated, we need to recalculate
+#     F.mated.star <- F.migrants.star + F.residents
+# 
+#     F.mated.idx.star <- which((F.migrants.star + F.residents) == data$Nt) # Indices where proposal number of migrant females makes the population be all females
+#     
+#     F.mated.star[F.mated.idx.star] <- F.migrants.star[F.mated.idx.star]
+# 
+#     # Because F.mated changes mu, we need to recalculate		
+# 		mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
+# 
+# 		# Calculate mh ratio
+# 		
+# 		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size= kD * F.mated.star + (F.mated.star == 0), log=TRUE) + dbinom(F.migrants.star, size=data$migrants, prob=p, log=TRUE) 
+# 			
+# 		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dbinom(F.migrants, size=data$migrants, prob=p, log=TRUE)
+# 	
+# 		mh <- exp(mh1 - mh2)
+# 		mh.idx <- which(mh > runif(reps))
+# 		
+# 		F.migrants[mh.idx] <- F.migrants.star[mh.idx]
+# 		F.mated[mh.idx] <- F.mated.star[mh.idx]
+# 		mu[mh.idx] <- mu.star[mh.idx]
+# 
+# 		accept["F.migrants"] <- accept["F.migrants"] + length(mh.idx)/reps
 		
 		###
 		### Update F.residents
 		###
 	
-    F.residents.star <- sapply(data$residents, FUN=function(x) sample(x, size=1))
-    
-    # Because F.migrants changes F.mated, we need to recalculate
-    F.mated.star <- F.migrants + F.residents.star
+		F.residents <- rbinom(n = reps, size = data$residents, prob = p)
+		F.mated <- F.migrants + F.residents
 		
-    F.mated.idx.star <- which((F.migrants + F.residents.star) == data$Nt) # Indices where proposal number of resident females makes the population be all females
-    
-    # Because F.mated changes mu, we need to recalculate		
-    mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
-
-		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated.star + (F.mated.star == 0), log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
+		F.mated.idx <- which((F.mated) == data$Nt) # Indices where proposal number of migrant females makes the population be all females
+		F.mated[F.mated.idx] <- F.migrants[F.mated.idx]
 		
-		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dbinom(F.residents, size=data$residents, prob=p, log=TRUE)
-	
-		mh <- exp(mh1 - mh2)
-		mh.idx <- which(mh > runif(reps))
+		# Because F.mated changes mu, we need to recalculate		
+		mu <- 1/p * F.mated * RE * exp(-alpha * data$Nt)
 		
-		F.residents[mh.idx] <- F.residents.star[mh.idx]
-		F.mated[mh.idx] <- F.mated.star[mh.idx]
-		mu[mh.idx] <- mu.star[mh.idx]
-	
-		accept["F.residents"] <- accept["F.residents"] + length(mh.idx)/reps
+#     F.residents.star <- sapply(data$residents, FUN=function(x) sample(x, size=1))
+#     
+#     # Because F.migrants changes F.mated, we need to recalculate
+#     F.mated.star <- F.migrants + F.residents.star
+# 		
+#     F.mated.idx.star <- which((F.migrants + F.residents.star) == data$Nt) # Indices where proposal number of resident females makes the population be all females
+#     
+#     # Because F.mated changes mu, we need to recalculate		
+#     mu.star <- 1/p * F.mated.star * RE * exp(-alpha * data$Nt)
+# 
+# 		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated.star + (F.mated.star == 0), log=TRUE) + dbinom(F.residents.star, size=data$residents, prob=p, log=TRUE)
+# 		
+# 		mh2 <- dnbinom(data$Ntplus1, mu=mu, size=kD * F.mated + (F.mated == 0), log=TRUE) + dbinom(F.residents, size=data$residents, prob=p, log=TRUE)
+# 	
+# 		mh <- exp(mh1 - mh2)
+# 		mh.idx <- which(mh > runif(reps))
+# 		
+# 		F.residents[mh.idx] <- F.residents.star[mh.idx]
+# 		F.mated[mh.idx] <- F.mated.star[mh.idx]
+# 		mu[mh.idx] <- mu.star[mh.idx]
+# 	
+# 		accept["F.residents"] <- accept["F.residents"] + length(mh.idx)/reps
 	
 					
 		###
