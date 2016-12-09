@@ -38,7 +38,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 {
 	reps <- nrow(data)
 
-	### Set up storage variables for parameters and hyperparameters
+#### Set up storage variables for parameters ####
 	
 	R0.save <- rep(0, n.mcmc)
 	R0.save[1] <- inits["R0"]
@@ -83,7 +83,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 
 	accept <- c(R0=0, alpha=0, kE=0, kD=0, RE=0, F.migrants=0, F.residents=0)
 	
-	### Begin MCMC loop
+#### Begin MCMC loop ####
 		
 	for (i in 2:n.mcmc)
 	{
@@ -91,10 +91,8 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		
 		if(i%%100==0) cat(i," "); flush.console()
 		
-		###
-		### Update alpha
-		###
-	
+#### Update alpha ####
+
 		# Proposal
 		
 		alpha.star <- rnorm(1, mean=alpha, sd=tune["alpha"])
@@ -119,11 +117,8 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 			accept["alpha"] <- accept["alpha"] + 1
 		}
 		} # End the 'if alpha is non-negative' statement
+#### Update kD ####
 
-		###
-		### Update kD
-		###
-		
 		# Proposal
 		
 		kD.star <- rnorm(1, mean=kD, sd=tune["kD"])
@@ -152,11 +147,9 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		}
 		} # End if kD is non-negative
 		
-		###
-		### Update RE
-		###
-	
-		RE <- rgamma(n = reps, mean = R0, scale = R0 / kE)
+#### Update RE ####
+
+		RE <- rgamma(n = reps, shape = R0, scale = R0 / kE)
 		mu <- 1/p * F.mated * RE * exp(-alpha * data$Nt)
 		
 		# Proposal
@@ -168,7 +161,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 # 		
 # 		mu.star <- 1/p * F.mated * RE.star * exp(-alpha * data$Nt)
 # 
-# ###### Calculate mh ratio #####
+# # Calculate mh ratio
 # 		
 # 		mh1 <- dnbinom(data$Ntplus1, mu=mu.star, size=kD * F.mated + (F.mated == 0), log=TRUE) + dgamma(RE.star, shape=kE, scale=R0/kE, log=TRUE)
 # 		
@@ -180,12 +173,8 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 # 		RE[mh.idx] <- RE.star[mh.idx]
 # 		mu[mh.idx] <- mu.star[mh.idx]
 # 		accept["RE"] <- accept["RE"] + (length(mh.idx) / reps)
+#### Update R0 ####
 
-
-		###
-		### Update R0
-		###
-		
 		# Proposal
 
 		R0.star <- rnorm(1, mean=R0, sd=tune["R0"])
@@ -207,9 +196,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		}
 		} # End if R0 proposal is non-negative statement
 		
-		###
-		### Update kE
-		###
+#### Update kE ####
 		
 		# Proposal
 	
@@ -234,11 +221,8 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 		}
 		} # End if kE proposal is non-negative
 		
-		###
-		### Update F.migrants
-		###
+#### Update F.migrants ####
 
-    
 		F.migrants <- rbinom(n = reps, size = data$migrants, prob = p)
 		F.mated <- F.migrants + F.residents
 
@@ -276,9 +260,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 # 
 # 		accept["F.migrants"] <- accept["F.migrants"] + length(mh.idx)/reps
 		
-		###
-		### Update F.residents
-		###
+#### Update F.residents ####
 	
 		F.residents <- rbinom(n = reps, size = data$residents, prob = p)
 		F.mated <- F.migrants + F.residents
@@ -313,9 +295,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 # 		accept["F.residents"] <- accept["F.residents"] + length(mh.idx)/reps
 	
 					
-		###
-		### Save samples
-		###
+#### Save samples	####
 		
 		R0.save[i] <- R0
 		kE.save[i] <- kE
@@ -334,6 +314,7 @@ NBBG.mcmc <- function(data, priors.shape, priors.scale, inits, tune, n.mcmc, p=0
 	
 }
 
+#### Burn in function ####
 burn.in <- function(chain, burn.in)
 {
   return(mcmc(chain[-(1:burn.in), ]))
