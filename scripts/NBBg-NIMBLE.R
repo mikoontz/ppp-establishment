@@ -88,6 +88,7 @@ nbbgData <- list(Nt = data$Nt,
                  residents = data$residents,
                  migrants = data$migrants)
 
+
 #### initial values ####
 nbbgInits <- list(R0 = 1,
                   alpha = 0.005,
@@ -106,27 +107,60 @@ nbbg <- nimbleModel(code = nbbgCode, name = 'NBBg', constants = nbbgConsts,
 #### build the nimble model ####
 nbbgMCMC <- buildMCMC(nbbg)
 
+#### function to generate initial values ####
+inits_generate <- function(data) {
+  R0 <- runif(n = 1, min = 0.5, max = 3.0)
+  alpha <- runif(n = 1, min = 0.001, max = 0.01)
+  kE <- runif(n = 1, min = 0.5, max = 25)
+  kD <- runif(n = 1, min = 0.5, max = 25)
+  RE <- rep(R0, times = nrow(data))
+  lambda <- RE
+  F_migrants <- floor(data$migrants / 2)
+  F_residents <- floor(data$residents / 2)
+  F_mated <- floor(data$Nt / 2)
+  
+  initsList <-  list(R0 = R0,
+                     alpha = alpha,
+                     kD = kD,
+                     kE = kE,
+                     RE = RE,
+                     lambda = lambda,
+                     F_migrants = F_migrants,
+                     F_residents = F_residents,
+                     F_mated = F_mated)
+}
+
 Cnbbg <- compileNimble(nbbg)
 CnbbgMCMC <- compileNimble(nbbgMCMC, project = nbbg)
 
-#### Fit the model ####
-CnbbgMCMC$run(20000)
+#### Fit the model; multiple chains ####
 
-#### Extract the samples ####
-samps <- as.data.frame(as.matrix(CnbbgMCMC$mvSamples))
-key <- samps[, c("R0", "alpha", "kD", "kE")]
+sampsList <- runMCMC(CnbbgMCMC, niter = 30000, nchains = 4, inits = inits_generate(data), returnCodaMCMC = TRUE)
 
-#### Plot the samples ####
-samps_plot <- function(x) {
-  plot(key[[x]], type = "l", xlab = "Iteration", ylab = "Value")
-  mtext(side = 2, names(key[x]), line = 5)
-  
-  plot(density(key[[x]]), main = NA)
-  abline(v = mean(key[[x]]), col = "red", lwd = 2)
-}
 
-par(mfrow = c(ncol(key), 2), oma = c(0, 3, 2, 0))
-lapply(1:length(key), samps_plot)
-mtext(side = 3, outer = TRUE, text = "Trace Plot(s)", at = 0.25)
-mtext(side= 3, outer = TRUE, text = "Density Plot(s)", at = 0.75)
+
+
+
+
+# #### Fit the model ####
+# CnbbgMCMC$run(20000)
+# 
+# #### Extract the samples ####
+# samps <- as.data.frame(as.matrix(CnbbgMCMC$mvSamples))
+# key <- samps[, c("R0", "alpha", "kD", "kE")]
+# 
+# #### Plot the samples ####
+# samps_plot <- function(x) {
+#   plot(key[[x]], type = "l", xlab = "Iteration", ylab = "Value")
+#   mtext(side = 2, names(key[x]), line = 5)
+#   
+#   plot(density(key[[x]]), main = NA)
+#   abline(v = mean(key[[x]]), col = "red", lwd = 2)
+#   return(invisible())
+# }
+# 
+# par(mfrow = c(ncol(key), 2), oma = c(0, 3, 2, 0))
+# lapply(1:length(key), samps_plot)
+# mtext(side = 3, outer = TRUE, text = "Trace Plot(s)", at = 0.25)
+# mtext(side= 3, outer = TRUE, text = "Density Plot(s)", at = 0.75)
 
