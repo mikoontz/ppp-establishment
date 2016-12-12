@@ -61,6 +61,7 @@ test_data <- data.frame(ID = 1:nrow(pop_trajectory),
                         migrants = migrants$migrants0, 
                         residents = past.residents)
 head(test_data)
+dim(test_data)
 
 #### Plot the simulated data ####
 x <- 1:1000
@@ -69,14 +70,8 @@ lines(x=x, y=x * R0 * exp(-alpha*x), col="red")
 
 #### Set up MCMC parameters
 niter <- 50000
-nchains <- 4
+nchains <- 3
 nburnin <- 10000
-
-#### Vague priors ####
-priors <- list(R0 = c(shape = 0.001, scale = 1000),
-               alpha = c(shape = 0.001, scale = 1000),
-               kE = c(shape = 0.001, scale = 1000),
-               kD = c(shape = 0.001, scale = 1000))
 
 #### Weakly regularizing priors from Melbourne & Hastings (2008) ####
 # These aid in model convergence
@@ -114,7 +109,9 @@ lapply(key, FUN = summary)
 # True values
 samps
 
-
+allSamps <- do.call(rbind, key)
+colMeans(allSamps)
+samps
 
 #### Data from Melbourne & Hastings (2008) ####
 
@@ -133,39 +130,56 @@ plot(melbourne$Nt, melbourne$Ntplus1, pch=19)
 
 ### Define MCMC arguments
 niter <- 50000
-nchains <- 4
+nchains <- 3
 nburnin <- 10000
 
 #### Weakly regularizing priors ####
 # These aid in model convergence
 
-priors <- list(R0 = c(shape = 1, scale = 1),
-               alpha = c(shape = 0.005, scale = 1),
-               kE = c(shape = 15, scale = 1),
-               kD = c(shape = 15, scale = 1))
+gammaMoments <- function(mu, s2) {
+  
+  scale <- s2 / mu
+  shape = mu / scale
+  
+  return(c(shape = shape, scale = scale))
+}
+
+# R0 weakly regularizing prior
+gammaMoments(mu = 2, s2 = 4)
+# alpha weakly regularizing prior
+gammaMoments(mu = 0.006, s2 = 0.012)
+# kE and kD weakly regularizing priors
+gammaMoments(mu = 10, s2 = 20)
+
+priors <- list(R0 = c(shape = 1, scale = 2),
+               alpha = c(shape = 0.003, scale = 2),
+               kE = c(shape = 5, scale = 2),
+               kD = c(shape = 5, scale = 2))
 
 #### Run MCMC algorithm ####
-key <- nbbgNIMBLE_run(data = melbourne, priors = priors, nchains = nchains, niter = niter, nburnin = nburnin)
+key_mel <- nbbgNIMBLE_run(data = melbourne, priors = priors, nchains = nchains, niter = niter, nburnin = nburnin)
 
 #### Trace plots of unburned samples for key parameters ####
 
-plot(key[[1]])
+plot(key_mel[[1]])
 
 #### Effective number of parameters for chains ####
-Neff <- lapply(key, effectiveSize)
-names(Neff) <- paste0("chain_", 1:length(key))
-Neff
+Neff_mel <- lapply(key_mel, effectiveSize)
+names(Neff_mel) <- paste0("chain_", 1:length(key_mel))
+Neff_mel
 
 #### Summed over all chains. ####
-effectiveSize(key)
+effectiveSize(key_mel)
 
 #### Convergence diagnostics for MCMC chains ####
 
-converge <- gelman.diag(x = key) # Should be at or *very* near 1 to indicate convergence.
+converge <- gelman.diag(x = key_mel) # Should be at or *very* near 1 to indicate convergence.
 converge
 
 
-gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
+gelman.plot(x = key_mel) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
 # Shows clear decline and improvement through the sampling process.
 
-lapply(key, FUN = summary)
+allSamps_mel <- do.call(rbind, key_mel)
+colMeans(allSamps_mel)
+(literature_params_mel <- c(R0 = 2.6, alpha = 0.0037, kE = 17.6, kD = 1.07))
