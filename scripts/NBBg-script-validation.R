@@ -8,10 +8,10 @@
 ### The purpose of this code is to validate the MCMC algorithm used to calculate NBBg parameters on the Parsing Propagule Pressure initial density dependence side experiment. We use known values of the parameters and simulate an NBBg model, then fit our hierarchical model to those simulated data to see if we can reobtain the known parameter values. We then fit our hierarchical model to data from Melbourne and Hastings (2008) to see if we can reobtain the parameter values they estimated from their analysis.
 
 # Clear environment of defined variables if necessary
-rm(list = ls())
+# rm(list = ls())
 
 source("scripts/simulations/NBBg-population-dynamics-function.R")
-source("scripts/NBBg-mcmc.R")
+source("scripts/NBBg-NIMBLE.R")
 
 #### Simulated data to validate the MCMC algorithm ####
 ### Simulate data
@@ -33,15 +33,20 @@ migrants <- data.frame(migrants0 = c(rep(seq(2,100), times=2),
                                      rep(seq(550, 1000, by=50), times=2)),
                        migrants1 = 0)
 
+
 N <- data.frame(Nt = migrants$migrants0 + past.residents, Ntplus1 = 0)
+
+# # Triple the amount of data simulated
+# migrants <- rbind(migrants, migrants, migrants)
+# N <- rbind(N, N, N)
 
 # Known parameter values 
 R0 <- 1.8
 kE <- 11
 kD <- 2
 alpha <- 0.006
-samps <- data.frame(R0, alpha, kE, kD)
 
+samps <- data.frame(R0, alpha, kE, kD)
 
 pop_trajectory <- NBBg(Tf = 2, 
                   total.reps = nrow(N),
@@ -57,46 +62,32 @@ test_data <- data.frame(ID = 1:nrow(pop_trajectory),
                         residents = past.residents)
 head(test_data)
 
+#### Plot the simulated data ####
 x <- 1:1000
-
-# par(mfrow=c(3,2))
 plot(test_data$Nt, test_data$Ntplus1, pch=16, cex = 0.5)
 lines(x=x, y=x * R0 * exp(-alpha*x), col="red")
 
-n.mcmc <- 10000
+#### Set up MCMC parameters
+niter <- 50000
+nchains <- 4
+nburnin <- 10000
 
-# Vague priors. Note the inverse of the scale is the rate
-priors.shape <- c(R0 = 0.001, alpha=0.001, kE = 0.001, kD=0.001)
-priors.scale <- 1 / c(R0 = 0.001, alpha=0.001, kE = 0.001, kD=0.001)
+#### Vague priors ####
+priors <- list(R0 = c(shape = 0.001, scale = 1000),
+               alpha = c(shape = 0.001, scale = 1000),
+               kE = c(shape = 0.001, scale = 1000),
+               kD = c(shape = 0.001, scale = 1000))
 
-# Tuning parameters
-tune <- c(R0 = 0.25, alpha = 0.00025, kE = 2.75, kD = 2.75, RE = 1.5)
+#### Weakly regularizing priors from Melbourne & Hastings (2008) ####
+# These aid in model convergence
 
-inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
-              c(R0=5, kE=2, kD=25, alpha=0.015),
-              c(R0=0.5, kE=35, kD=1, alpha=0.0005))
+priors <- list(R0 = c(shape = 2.6, scale = 1),
+               alpha = c(shape = 0.0037, scale = 1),
+               kE = c(shape = 17.6, scale = 1),
+               kD = c(shape = 1.07, scale = 1))
 
 #### Run MCMC algorithm ####
-mcmc_output <- lapply(inits, FUN = function(x) NBBG.mcmc(data = test_data, 
-                                                            priors.shape = priors.shape, 
-                                                            priors.scale = priors.scale, 
-                                                            inits = x, 
-                                                            tune = tune,
-                                                            n.mcmc = n.mcmc))
-
-# Percent of proposals accepted
-num_accepted <- lapply(mcmc_output, FUN = function(x) x[["accept"]])
-names(num_accepted) <- paste0("chain_", 1:length(num_accepted))
-
-percent_accepted <- lapply(num_accepted, FUN = function(x) x / n.mcmc * 100)
-percent_accepted
-
-# Pull out samples of parameters
-samples <- lapply(mcmc_output, FUN = function(x) x[["samps"]])
-samples_list <- mcmc.list(samples)
-
-# Pull out key parameters
-key <- lapply(samples_list, function(x) x[, c("R0", "alpha", "kE", "kD")])
+key <- nbbgNIMBLE_run(data = test_data, priors = priors, nchains = nchains, niter = niter, nburnin = nburnin)
 
 #### Trace plots of unburned samples for key parameters ####
 
@@ -107,21 +98,14 @@ Neff <- lapply(key, effectiveSize)
 names(Neff) <- paste0("chain_", 1:length(key))
 Neff
 
+#### Summed over all chains. ####
+effectiveSize(key)
+
 #### Convergence diagnostics for MCMC chains ####
 
 converge <- gelman.diag(x = key) # Should be at or *very* near 1 to indicate convergence.
 converge
-# Potential scale reduction factors:
-#   
-#   Point est. Upper C.I.
-# R0          1.00       1.02
-# alpha       1.00       1.01
-# kE          1.01       1.02
-# kD          1.01       1.03
-# 
-# Multivariate psrf
-# 
-# 1.01
+
 
 gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
 # Shows clear decline and improvement through the sampling process.
@@ -135,7 +119,6 @@ samps
 #### Data from Melbourne & Hastings (2008) ####
 
 melbourne <- read.csv("data/melbourne_ricker_data.csv")
-# head(melbourne)
 melbourne$At <- round(melbourne$At)
 melbourne$Atp1 <- round(melbourne$Atp1)
 melbourne$residents <- 0
@@ -145,70 +128,44 @@ colnames(melbourne)[colnames(melbourne)=="At"] <- "migrants"
 
 melbourne$residents <- 0
 melbourne$Nt <- melbourne$migrants + melbourne$residents
-melbourne$ID <- 1:nrow(melbourne)
 
 plot(melbourne$Nt, melbourne$Ntplus1, pch=19)
 
 ### Define MCMC arguments
+niter <- 50000
+nchains <- 4
+nburnin <- 10000
 
-n.mcmc <- 50000
-inits <- list(c(R0=2, kE=22, kD=10, alpha=0.005),
-              c(R0=5, kE=2, kD=25, alpha=0.015),
-              c(R0=0.5, kE=35, kD=1, alpha=0.0005))
+#### Weakly regularizing priors ####
+# These aid in model convergence
 
-#--------------
-# For Brett's data
-priors.shape <- c(R0=0.001, kE=0.001, kD=0.001, alpha=0.001)
-priors.scale <- c(R0=1000, kE=1000, kD=1000, alpha=1000)
-tune <- c(R0=0.2, kE=15, kD=1, alpha=0.0002, RE=1.2)
+priors <- list(R0 = c(shape = 1, scale = 1),
+               alpha = c(shape = 0.005, scale = 1),
+               kE = c(shape = 15, scale = 1),
+               kD = c(shape = 15, scale = 1))
 
-mcmc_output_melbourne <- lapply(inits, FUN = function(x) NBBG.mcmc(data = melbourne, 
-                                                                   priors.shape = priors.shape, 
-                                                                   priors.scale = priors.scale, 
-                                                                   inits = x, 
-                                                                   tune = tune,
-                                                                   n.mcmc = n.mcmc))
+#### Run MCMC algorithm ####
+key <- nbbgNIMBLE_run(data = melbourne, priors = priors, nchains = nchains, niter = niter, nburnin = nburnin)
 
-# Percent of proposals accepted
-num_accepted_mel <- lapply(mcmc_output_melbourne, FUN = function(x) x[["accept"]])
-names(num_accepted_mel) <- paste0("chain_", 1:length(num_accepted_mel))
+#### Trace plots of unburned samples for key parameters ####
 
-percent_accepted_mel <- lapply(num_accepted_mel, FUN = function(x) x / n.mcmc * 100)
-percent_accepted_mel
-
-# Pull out samples of parameters
-samples_mel <- lapply(mcmc_output_melbourne, FUN = function(x) x[["samps"]])
-samples_list_mel <- mcmc.list(samples_mel)
-
-# Pull out key parameters
-key_mel <- lapply(samples_list_mel, function(x) x[, c("R0", "alpha", "kE", "kD")])
-
-plot(key_mel[[1]])
-
-lapply(key_mel, summary)
+plot(key[[1]])
 
 #### Effective number of parameters for chains ####
-Neff_mel <- lapply(key_mel, effectiveSize)
-names(Neff_mel) <- paste0("chain_", 1:length(key_mel))
-Neff_mel
+Neff <- lapply(key, effectiveSize)
+names(Neff) <- paste0("chain_", 1:length(key))
+Neff
+
+#### Summed over all chains. ####
+effectiveSize(key)
+
+#### Convergence diagnostics for MCMC chains ####
+
+converge <- gelman.diag(x = key) # Should be at or *very* near 1 to indicate convergence.
+converge
 
 
+gelman.plot(x = key) # Depicts shrink factor through time which can help ensure that convergence test above isn't a false positive. Must show decline through time, rather than a value of 1 (just by chance) throughout sampling
+# Shows clear decline and improvement through the sampling process.
 
-# par(mfrow=c(3,2))
-# plot(melbourne$Nt, melbourne$Ntplus1, pch=19)
-# lines(x=x, y=x * results[results$parameter=="R0", "mean"] * exp(-results[results$parameter=="alpha", "mean"]*x), col="red")
-# plot(mcmc.melbourne[["R0"]], type="l", main="R0")
-# plot(mcmc.melbourne[["kE"]], type="l", main="kE")
-# plot(mcmc.melbourne[["kD"]], type="l", main="kD")
-# plot(mcmc.melbourne[["alpha"]], type="l", main=expression(alpha))
-# plot(mcmc.melbourne[["RE"]][1, ], type="l", main="RE")
-# burned <- burn.in(mcmc.melbourne[c("R0", "kE", "kD", "alpha")], 500)
-# burned.df <- burn.in.df(mcmc.melbourne[c("RE", "F.migrants", "F.residents")], 150)
-# dev.off()
-
-#### Write the samples file for Brett's data ####
-# samples <- data.frame(R0=burned[["R0"]], kE=burned[["kE"]], kD=burned[["kD"]], alpha=burned[["alpha"]])
-# 
-# write.csv(samples, 'NBBg samples melbourne.csv', row.names=FALSE)
-
-percent_accepted
+lapply(key, FUN = summary)
