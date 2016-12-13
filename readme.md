@@ -18,7 +18,7 @@ Michael Koontz
         -   [experiment-time-series-population-abundance-plot.R](#experiment-time-series-population-abundance-plot.r)
         -   [population-abundance.R](#population-abundance.r)
         -   [temporary-extinctions.R](#temporary-extinctions.r)
-        -   [NBBg-mcmc.R](#nbbg-mcmc.r)
+        -   [NBBg-NIMBLE.R](#nbbg-nimble.r)
         -   [NBBg-script.R](#nbbg-script.r)
         -   [NBBg-script-validation.R](#nbbg-script-validation.r)
         -   [NBBg-environment-stability-effect.R](#nbbg-environment-stability-effect.r)
@@ -39,7 +39,7 @@ Michael Koontz
     -   [figures](#figures)
         -   [experiment-time-series-population-abundance.tif](#experiment-time-series-population-abundance.tif)
     -   [written-notes](#written-notes)
-        -   [NBBg-model-specification.tex](#nbbg-model-specification.tex)
+        -   [NBBg-model-specification.Rmd](#nbbg-model-specification.rmd)
 
 Introduction
 ============
@@ -76,7 +76,7 @@ Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters
 
 #### NBBg-simulation-functions.R
 
-Functions to simulate N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, \(\alpha\), kE, and kD) and also allows incorporation of model uncertainty.
+Helper functions to setting up the simulation of the NBBg model using estimated parameter values (and their distributions) from a separate fitted model.
 
 #### NBBg-simulation-script.R
 
@@ -106,21 +106,21 @@ Assessments of population size were made at fixed time points throughout the exp
 
 Assessment of whether temporary extinctions in the multiply-introduced populations affected establishment probability or population size. Tests effect of temporary extinction versus no temporary extinction (categorical variable with 2 levels) as well as effect of "amount of loss" (continuous variable) representing how many of the 20 possible individuals introduced did not have a genetic contribution to the population when response was assessed. That is, the "amount of loss" represents how much of a bottleneck the population passed through during introduction.
 
-### NBBg-mcmc.R
+### NBBg-NIMBLE.R
 
-Metropolis-Hastings algorithm to estimate parameters in NBBg model from Melbourne and Hastings (2008).
+Metropolis-Hastings algorithm to estimate parameters in NBBg model from Melbourne and Hastings (2008) using the `nimble` package.
 
 ### NBBg-script.R
 
-Script to run Metropolis-Hastings algorithm, assess MCMC diagnostics, and write samples to a file for use in simulations.
+Script to run `nimble` algorithm, assess MCMC diagnostics, and write samples to a file for use in simulations.
 
 ### NBBg-script-validation.R
 
-Test of the NBBg MCMC code on simulated dataset with known parameters and on a published dataset with previously estimated parameters (Melbourne and Hastings, 2008).
+Test of the NBBg `nimble` code on simulated dataset with known parameters and on a published dataset with previously estimated parameters (Melbourne and Hastings, 2008).
 
 ### NBBg-environment-stability-effect.R
 
-Uses the NBBg MCMC code to estimate parameters of the NBBg model fit to the raw experimental data from Generation P to Generation F1 in the fluctuating environment versus the stable environment. We would expect the kE parameter to be larger in the stable environment, indicating less variability in N<sub>t+1</sub> arising from environmental stochasticity.
+Uses the NBBg `nimble` code to estimate parameters of the NBBg model fit to the raw experimental data from Generation P to Generation F1 in the fluctuating environment versus the stable environment. We would expect the kE parameter to be larger in the stable environment, indicating less variability in N<sub>t+1</sub> arising from environmental stochasticity.
 
 data
 ----
@@ -183,6 +183,6 @@ The population trajectories for the 842 populations that didn't experience a gap
 written-notes
 -------------
 
-### NBBg-model-specification.tex
+### NBBg-model-specification.Rmd
 
 The specification for the NBBg stochastic hierarchical population dynamics model as well as the specification of the full conditional distributions for each estimated parameter. Other files by the same name with different extensions are part of the .pdf rendering process.
