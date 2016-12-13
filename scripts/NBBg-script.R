@@ -26,9 +26,9 @@ data$migrants <- data$Nt
 head(data)
 
 # Setup MCMC parameters
-niter <- 20000
-nchains <- 4
-nburnin <- 2000
+niter <- 50000
+nchains <- 3
+nburnin <- 10000
 
 priors <- list(R0 = c(shape = 2.6, scale = 1),
                alpha = c(shape = 0.0037, scale = 1),
@@ -70,8 +70,8 @@ combined_samples <- do.call(rbind, key)
 # write.csv(x = combined_samples,
 #           file = 'data/NBBg-samples/NBBg-samples-combined.csv',
 #           row.names = FALSE)
-
-# Write each chain to its own .csv
+# 
+# # Write each chain to its own .csv
 # lapply(1:length(key),
 #        FUN = function(i)
 #          write.csv(x = key[[i]],
