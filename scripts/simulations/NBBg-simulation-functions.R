@@ -33,10 +33,12 @@ get.propagule.pressure <- function(total.to.introduce, Tf, excludeMaxNum=TRUE)
 }
 
 # This function sets up storage matrices, determines the migrants matrix, and initiates the first generation of the population. Returns a number of set up variables.
-set.up <- function(total.to.introduce, Tf, reps, excludeMaxNum=TRUE)
+sims_setup <- function(total.to.introduce, Tf, reps, excludeMaxNum=TRUE, propagule.pressure = NA)
 {
-  # First get different propagule number/size combinations
-  propagule.pressure <- get.propagule.pressure(total.to.introduce, Tf, excludeMaxNum)
+  if (any(is.na(propagule.pressure))) {
+    # First get different propagule number/size combinations
+    propagule.pressure <- get.propagule.pressure(total.to.introduce, Tf, excludeMaxNum)
+  }
   
   # Set up the number of migrants per generation based on combinations of propagule number and size
   total.reps <- dim(propagule.pressure)[1]*reps
@@ -90,34 +92,4 @@ get.intro.regime <- function(N, propagule.pressure)
   intro.regime <- propagule.pressure[intro.regime.idx, "number"]
   
   return(intro.regime)
-}
-
-### Convenience wrapper that calls required functions above with desired parameters and returns a short form data frame of population sizes. Also includes ability to save objects for later retrieval.
-### Takes in parameters required to run a NBBg (see Melbourne & Hastings 2008) model for Tf generations while introducing a fixed total number of individuals in different combinations of introduction regime.
-
-simNBBg <- function(samps, reps, Tf, total.to.introduce = 20, p = 0.5, excludeMaxNum = TRUE, save_objects = FALSE, data_descriptor = "", dirpath = "data/simulations/", overflowGuard = FALSE)
-{
-  # Derive setup variables and storage objects using basic arguments passed to simNBBg
-  setup <- set.up(total.to.introduce, Tf, reps, excludeMaxNum = excludeMaxNum)
-  
-  # Run the actual simulation
-  N <- NBBg(Tf=Tf, total.reps = setup$total.reps, past.residents = setup$past.residents, p = p, N = setup$N, migrants = setup$migrants, samps = samps, overflowGuard = overflowGuard)
-  
-  # Save N and migrants data frame or not
-  if (save_objects) {
-    if (!dir.exists(dirpath)) {
-      dir.create(dirpath)
-    }
-    if (!dir.exists(paste0(dirpath, "/N"))) {
-      dir.create(paste0(dirpath, "/N"))
-    }
-    if (!dir.exists(paste0(dirpath, "/migrants"))) {
-      dir.create(paste0(dirpath, "/migrants"))
-    }
-    
-    write.csv(N, paste0(dirpath, "/N", data_descriptor, ".csv"), row.names=FALSE)
-    write.csv(setup$migrants, paste0(dirpath, "/migrants", data_descriptor, ".csv"), row.names=FALSE)
-  }
-  return(N)
-  
 }
