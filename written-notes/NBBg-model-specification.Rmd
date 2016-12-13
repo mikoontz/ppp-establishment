@@ -1,0 +1,74 @@
+---
+title: "Specification of NBBG model for propagule pressure simulation experiment"
+author: "Michael Koontz"
+date: "12/13/2016"
+output: pdf_document
+---
+
+## Introduction
+
+We introduced 20 *Tribolium* flour beetles to novel environments that were either stable or randomly fluctuating through time, varying the number of introduction events used to distribute them (1, 2, 4, or 5 events). We want to simulate the exercise using reasonable choices for different kinds of stochasticity that may affect the population (demographic stochasticity, environmental stochasticity, and demographic heterogeneity including sex ratio). The goal is to see whether we see similar results with simulations as we do with the manipulative experiment, and to determine what factors may drive any divergence in observations (*e.g.* how big does environmental stochasticity need to be in order to change the outcome of the simulated experiment?). The first step is to estimate the parameters corresponding to stochasticity using a Negative binomial-binomial-gamma stochastic model built on a Ricker skeleton of density dependent population growth.
+
+## The Data Model
+
+\begin{align*}
+N_{(t+1), i} & \sim NegBinom(\mu_i, k_DF_{{mated}_{(t,i)}}) \\
+\end{align*}
+
+Where $N_{(t+1)i}$ is the population size in the next generation for the $i^{th}$ population, $\mu_i$ is the expected per capita population growth rate (births minus density independent deaths) for the $i^{th}$ population in the $E$ environment, $\alpha$ is the adult search rate for eggs, $N_{ti}$ is the population size in the current generation for the $i^{th}$ population, $k_D$ is the shape parameter of the gamma distribution for demographic stochasticity, and $F_{ti}$ is the expected number of females in the $i^{th}$ population.
+
+## The Process Model
+
+\begin{align*}
+\mu_{(t + 1), i} & = \frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i}e^{-\alpha N_{t, i}} \\
+p & = 0.5 \\
+N_{t, i} & = N_{{migrants}_{(t, i)}} + N_{{residents}_{(t, i)}} \\
+F_{{mated}_{t,i}} & = \begin{cases}
+	F_{{migrants}_{t, i}} & \text{when } F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} = N_{t, i}  \\
+	F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} & \text{when } F_{{migrants}_{t, i}} + F_{{residents}_{t,i}} < N_{t, i}
+	\end{cases} \\
+\end{align*}
+
+Where $p$ is the probability of an individual being female ($p=0.5$), $F_i$ is the number of adult females in the $i^{th}$ population, and $R_E$ is the per-capita population growth rate for the $E$ environment assuming an even sex ratio.
+
+## The Parameter Model
+
+### Parameters
+
+\begin{align*}
+F_{{migrants}_{(t, i)}} & \sim Binom(N_{{migrants}_{(t, i)}}, p) \\
+F_{{residents}_{(t, i)}} & \sim Binom(N_{{residents}_{(t, i)}}, p) \\
+R_{E_i} & \sim Gamma(k_E, \frac{R_0}{k_E}) \\
+\end{align*}
+
+Where $k_E$ is the shape parameter of the gamma distribution for environmental stochasticity and $R_0$ is the expectation of per-capita population growth rate in the average environment assuming an even sex ratio.
+
+### Priors
+
+\begin{align*}
+R_0 & \sim  Gamma(2.6, 1) \\
+k_E & \sim Gamma(17.6, 1) \\
+k_D & \sim Gamma(1.07, 1) \\
+\alpha & \sim Gamma(0.0037, 1)
+\end{align*}
+
+## All Together
+
+\begin{align*}
+N_{(t+1)i} & \sim NegBinom(\mu_i, k_DF_{{mated}_{(t, i)}}) \\
+\mu_i & = \frac{1}{p}F_{{mated}_{(t, i)}}R_{E_i} e^{-\alpha N_{t, i}} \\
+p & = 0.5 \\
+N_{t, i} & = N_{{migrants}_{(t, i)}} + N_{{residents}_{(t, i)}} \\
+F_{{mated}_{(t, i)}} & = \begin{cases}
+	F_{{migrants}_{(t, i)}} & \text{when } F_{{migrants}_{(t, i)}} + F_{{residents}_{(t, i)}} = N_{t, i}  \\
+	F_{{migrants}_{(t, i)}} + F_{{residents}_{(t, i)}} & \text{when } F_{{migrants}_{(t, i)}} + F_{{residents}_{(t, i)}} < N_{t, i}
+	\end{cases} \\
+F_{{migrants}_{(t, i)}} & \sim Binom(N_{{migrants}_{(t, i)}}, p) \\
+F_{{residents}_{(t,i )}} & \sim Binom(N_{{residents}_{(t, i)}}, p) \\
+R_{E_i} & \sim Gamma(k_E, \frac{R_0}{k_E}) \\
+R_0 & \sim  Gamma(2.6, 1) \\
+k_E & \sim Gamma(17.6, 1) \\
+k_D & \sim Gamma(1.07, 1) \\
+\alpha & \sim Gamma(0.0037, 1) \\
+\end{align*}
+
