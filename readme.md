@@ -1,7 +1,7 @@
-Table of Contents for ppp-establishment Repository
+Table of Contents for `ppp-establishment` Repository
 ================
 Michael Koontz
-11/27/2016
+12/14/2016
 
 -   [Introduction](#introduction)
 -   [Files in Repository](#files-in-repository)
@@ -9,13 +9,15 @@ Michael Koontz
         -   [data-carpentry](#data-carpentry)
             -   [generate-establishment-responses-for-analysis.R](#generate-establishment-responses-for-analysis.r)
             -   [generate-tidy-data.R](#generate-tidy-data.r)
+        -   [figure-carpentry](#figure-carpentry)
+            -   [experiment-time-series-population-abundance-plot.R](#experiment-time-series-population-abundance-plot.r)
+            -   [establishment-and-abundance-experiment-and-simulation-results-plot.R](#establishment-and-abundance-experiment-and-simulation-results-plot.r)
         -   [simulations](#simulations)
             -   [NBBg-population-dynamics-function.R](#nbbg-population-dynamics-function.r)
             -   [NBBg-simulation-functions.R](#nbbg-simulation-functions.r)
             -   [NBBg-simulation-script.R](#nbbg-simulation-script.r)
         -   [environmental-stochasticity.R](#environmental-stochasticity.r)
         -   [establishment-probability.R](#establishment-probability.r)
-        -   [experiment-time-series-population-abundance-plot.R](#experiment-time-series-population-abundance-plot.r)
         -   [population-abundance.R](#population-abundance.r)
         -   [temporary-extinctions.R](#temporary-extinctions.r)
         -   [NBBg-NIMBLE.R](#nbbg-nimble.r)
@@ -24,9 +26,20 @@ Michael Koontz
         -   [NBBg-environment-stability-effect.R](#nbbg-environment-stability-effect.r)
     -   [data](#data)
         -   [simulations](#simulations-1)
-            -   [simulation\_stats.csv](#simulation_stats.csv)
-            -   [N.csv](#n.csv)
-            -   [N\_var.csv](#n_var.csv)
+            -   [simulation\_stats\_tidy.csv](#simulation_stats_tidy.csv)
+            -   [simulation\_stats\_raw.csv](#simulation_stats_raw.csv)
+            -   [N\_20x1\_regime.csv](#n_20x1_regime.csv)
+            -   [N\_var\_20x1\_regime.csv](#n_var_20x1_regime.csv)
+            -   [N\_10x2\_regime.csv](#n_10x2_regime.csv)
+            -   [N\_var\_10x2\_regime.csv](#n_var_10x2_regime.csv)
+            -   [N\_5x4\_regime.csv](#n_5x4_regime.csv)
+            -   [N\_var\_5x4\_regime.csv](#n_var_5x4_regime.csv)
+            -   [N\_4x5\_regime.csv](#n_4x5_regime.csv)
+            -   [N\_var\_4x5\_regime.csv](#n_var_4x5_regime.csv)
+            -   [migrants\_20x1\_regime.csv](#migrants_20x1_regime.csv)
+            -   [migrants\_10x2\_regime.csv](#migrants_10x2_regime.csv)
+            -   [migrants\_5x4\_regime.csv](#migrants_5x4_regime.csv)
+            -   [migrants\_4x5\_regime.csv](#migrants_4x5_regime.csv)
         -   [NBBg-samples](#nbbg-samples)
             -   [NBBg-samples-combined.csv](#nbbg-samples-combined.csv)
             -   [NBBg-samples-chain1.csv](#nbbg-samples-chain1.csv)
@@ -38,6 +51,8 @@ Michael Koontz
         -   [Tribolium-propagule-pressure-data.csv](#tribolium-propagule-pressure-data.csv)
     -   [figures](#figures)
         -   [experiment-time-series-population-abundance.tif](#experiment-time-series-population-abundance.tif)
+        -   [establishment-probability-experiment-and-simulations.tif](#establishment-probability-experiment-and-simulations.tif)
+        -   [population-abundance-experiment-and-simulations.tif](#population-abundance-experiment-and-simulations.tif)
     -   [written-notes](#written-notes)
         -   [NBBg-model-specification.Rmd](#nbbg-model-specification.rmd)
 
@@ -68,7 +83,21 @@ Takes short form data and appends population attributes (e.g. treatments, notes,
 
 Converts long form census data (one row represents the census for each population/generation combination) into short form (one row represents censuses for each population with different generations in different columns) for more intuitive access to data.
 
+### figure-carpentry
+
+Scripts that generate the figures in the paper
+
+#### experiment-time-series-population-abundance-plot.R
+
+Script to generate the <a href="#experiment-time-series-population-abundance.tif">experiment-time-series-population-abundance.tif</a> figure.
+
+#### establishment-and-abundance-experiment-and-simulation-results-plot.R
+
+Generates the <a href="establishment-probability-experiment-and-simulations.tif">establishment-probability-experiment-and-simulations.tif</a> and <a href="population-abundance-experiment-and-simulations.tif">population-abundance-experiment-and-simulations.tif</a> figures.
+
 ### simulations
+
+Scripts related to the simulation component to the project.
 
 #### NBBg-population-dynamics-function.R
 
@@ -91,10 +120,6 @@ Calculates total stochasticity through time using lambda values for each populat
 Mixed effects logistic regression analyses with establishment as response (1 or 0) with introduction regime and environmental stability as covariates. The script includes several analyses, all with a check to see whether the introduction gap in generation F2 was important.
 
 Assessments of establishment or extinction were made at fixed time points throughout the experiment (generations F5, F6, F7, F8, and F9), at a relative time point (5 generations after the final introduction event for each introduction regime), and at each time point with the population ID as a random effect in a repeated measures framework.
-
-### experiment-time-series-population-abundance-plot.R
-
-Script to generate the <a href="#experiment-time-series-population-abundance.tif">experiment-time-series-population-abundance.tif</a> figure.
 
 ### population-abundance.R
 
@@ -127,17 +152,63 @@ data
 
 ### simulations
 
-#### simulation\_stats.csv
+These files are broken down by introduction regime to keep them small enough for easy upload/download from GitHub.
 
-Summary output from simulation runs of 500,000 replications per treatment (4 introduction regimes \* 2 environment stabilities)
+#### simulation\_stats\_tidy.csv
 
-#### N.csv
+Tidy summary output from simulation runs of 500,000 replications per treatment (4 introduction regimes \* 2 environment stabilities)
 
-Population trajectories for 2,000,000 simulated *Tribolium* populations introduced via 1 of 4 different introduction regimes into a stable environment.
+#### simulation\_stats\_raw.csv
 
-#### N\_var.csv
+Raw summary output from simulation runs of 500,000 replications per treatment (4 introduction regimes \* 2 environment stabilities)
 
-Population trajectories for 2,000,000 simulated *Tribolium* populations introduced via 1 of 4 different introduction regimes into a fluctuating environment.
+#### N\_20x1\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 20x1 introduction regime into a relatively stable novel environment
+
+#### N\_var\_20x1\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 20x1 introduction regime into a fluctuating novel environment
+
+#### N\_10x2\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 10x2 introduction regime into a relatively stable novel environment
+
+#### N\_var\_10x2\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 10x2 introduction regime into a fluctuating novel environment
+
+#### N\_5x4\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 5x4 introduction regime into a relatively stable novel environment
+
+#### N\_var\_5x4\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 5x4 introduction regime into a fluctuating novel environment
+
+#### N\_4x5\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 4x5 introduction regime into a relatively stable novel environment
+
+#### N\_var\_4x5\_regime.csv
+
+Population trajectories for 500,000 simulated *Tribolium* populations introduced via 4x5 introduction regime into a fluctuating novel environment
+
+#### migrants\_20x1\_regime.csv
+
+Matrix representing the migrant *Tribolium* individuals into the populations introduced via 20x1 introduction regime.
+
+#### migrants\_10x2\_regime.csv
+
+Matrix representing the migrant *Tribolium* individuals into the populations introduced via 10x2 introduction regime.
+
+#### migrants\_5x4\_regime.csv
+
+Matrix representing the migrant *Tribolium* individuals into the populations introduced via 5x4 introduction regime.
+
+#### migrants\_4x5\_regime.csv
+
+Matrix representing the migrant *Tribolium* individuals into the populations introduced via 4x5 introduction regime.
 
 ### NBBg-samples
 
@@ -179,6 +250,14 @@ figures
 ### experiment-time-series-population-abundance.tif
 
 The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations F1 and F2. (That is, no population augmentation of F1 adults). Also plots mean population abundance and a 1 standard error envelope around that mean for each introduction regime.
+
+### establishment-probability-experiment-and-simulations.tif
+
+Plot of establishment probability results from experiment and simulations assessed at generation 7.
+
+### population-abundance-experiment-and-simulations.tif
+
+Plot of population abundance results from experiment and simulations assessed at generation 7.
 
 written-notes
 -------------
