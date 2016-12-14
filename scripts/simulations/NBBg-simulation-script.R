@@ -197,7 +197,7 @@ results_tidy <- results_tidy[, c((ncol(results_tidy) - 4) + 1:4, 1:(ncol(results
 #### Write data to files ####
 # write.csv(x = results, file = "data/simulations/simulation_stats_raw.csv", row.names = FALSE)
 # write.csv(x = results_tidy, file = "data/simulations/simulation_stats_tidy.csv", row.names = FALSE)
-
+# 
 # for (i in unique(intro.regime)) {
 #   file_tag <- paste(rev(pp[pp$number == i, ]), collapse = "x")
 #   write.csv(N[intro.regime == i, ], file = paste0("data/simulations/N_", file_tag, "_regime.csv"), row.names = FALSE)
