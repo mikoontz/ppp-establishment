@@ -34,8 +34,9 @@ sims_abundance <- sims_results %>%
   arrange(propagule_number, env)
 
 #### Read samples data to put the equilibrium abundance value on the abundance plot ####
+samps <- read.csv("data/NBBg-samples/NBBg-samples-combined.csv")
 
-
+equilibrium_abundance <- log(samps$R0) / samps$alpha
 
 #### Establishment ####
 #### Establishment data from experiment ####
@@ -133,3 +134,10 @@ text(x = xvals, y = max_y + 2, labels = abundance_sig_letters)
 
 #### Add simulation results to the plot ####
 segments(x0 = 1:8 - 0.25, x1 = 1:8 + 0.25, y0 = sims_abundance$mean_N, lwd = 4)
+
+segments(x0 = 0.25, x1 = 8.25, y0 = mean(equilibrium_abundance), y1 = mean(equilibrium_abundance), lty = "dashed")
+
+# Polygon of 95% credible interval around equilibrium abundance. Would need adjustment to y-axis.
+# lwr <- quantile(equilibrium_abundance, probs = 0.025)
+# upr <- quantile(equilibrium_abundance, probs = 0.975)
+# polygon(x = c(0.25, 8.25, 8.25, 0.25), y = c(lwr, lwr, upr, upr), col = adjustcolor("black", alpha.f = 0.2) )
