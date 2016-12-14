@@ -73,7 +73,7 @@ summary(fm1)
 gap.potential <- subset(b, subset=(block!=3)&(number%in%c(2,4)))
 
 # We use a simple random effects structure here, because there is far less data in this subsetted dataset.
-m1 <- glmer(N9 ~ number*environment*gap + (1 | block), data=gap.potential, family=poisson, control=glmerControl(optimizer="bobyqa"))
+m1 <- glmer(N8plus1 ~ number*environment*gap + (1 | block), data=gap.potential, family=poisson, control=glmerControl(optimizer="bobyqa"))
 
 # Update the model fit to remove the 3-way interaction
 m2 <- update(m1, formula= .~. - number:environment:gap)
@@ -92,7 +92,7 @@ bb <- subset(b, subset = (gap == FALSE))
 # Look at the effects of the fixed effects to guide interpretation, but leave all covariates in the model in the end.
 #---------------
 
-m6 <- glmer(N9 ~ number*environment + (1 | block), data=bb, family=poisson, control=glmerControl(optimizer="bobyqa"))
+m6 <- glmer(N8plus1 ~ number*environment + (1 | block), data=bb, family=poisson, control=glmerControl(optimizer="bobyqa"))
 
 m7 <- update(m6, formula= .~. - number:environment)
 
@@ -224,24 +224,84 @@ legend("bottomright",
 
 text(x = xvals, y = 53, labels = sig_letters)
 
-#### Add in simulation results for plot ####
-# simResults <- read.csv("Clean-Analyses/simulations/establishment_abundance_table_5_50.csv")
-# abundance <- numeric(8)
-# abundance[seq(1,7,2)] <- simResults[, 5]
-# abundance[seq(2,8,2)] <- simResults[, 2]
-# 
-# # Replot with simulation expectations.
-# # pdf("Clean-Plots/modeled-population-abundance-with-simulations-dot-whisker.pdf", height=3.75, width=3.75)
-# par(mar=c(3,4,2,1), xpd=NA, oma=c(2,0,0,0))
-# 
-# plot(x=xvals, y=exp(posthoc$lsmean), ylim=c(0, 52), xlim=c(0.5,4.5), las=1, pch=c(1,19), xaxt="n", xlab=NA, ylab="Population abundance", col=rep(cols, each=2), bty="L")
-# axis(side=1, at=1:4, labels=c("20x1", "10x2", "5x4", "4x5"), tick=FALSE)
-# arrows(x0=xvals, y0=exp(posthoc$asymp.LCL), y1=exp(posthoc$asymp.UCL), code=3, length=0.025, angle=90, lwd=2, col=rep(cols, each=2))
-# legend("topright", legend=c("fluctuating", "stable"), pch=c(1, 19), bty="n")
-# 
-# segments(x0=(xvals)-0.025, x1=(xvals)+0.025, y0=abundance, lwd=4)
-# text(x=xvals, y=exp(posthoc$asymp.UCL)+2, labels=sig_labs, cex=0.5)
-# 
-# mtext(side=1, text="Introduction regime", line=3)
+#### Analysis 4: Abundance assessed at generation F7 ####
 
-# dev.off()
+#### Analysis 4: Effect of introduction gap ####
+# First test the effect of introduction gap on the time to extinction
+# We proceed the exact same way as we do with the extinction probability analysis, except we use a Poisson likelihood instead of a binomial likelihood.
+#-------------------
+
+# Subset dataset to only populations that COULD have experienced a gap
+gap.potential <- subset(b, subset=(block!=3)&(number%in%c(2,4)))
+
+# We use a simple random effects structure here, because there is far less data in this subsetted dataset.
+m1 <- glmer(N6plus1 ~ number*environment*gap + (1 | block), data=gap.potential, family=poisson, control=glmerControl(optimizer="bobyqa"))
+
+# Update the model fit to remove the 3-way interaction
+m2 <- update(m1, formula= .~. - number:environment:gap)
+
+anova(m1,m2) # LRT suggests model with 3-way interaction is WAY more likely than model with additive effect of gap. 
+
+#-------
+# Remove gap populations 
+#-------
+
+bb <- subset(b, subset = (gap == FALSE))
+#### Analysis 2: Influence of fixed effects ####
+# We'll use the same random effects structure as we did for the establishment probability analysis
+# There are not as many data points in this dataset, so we keep the random effects structure simple with just a random intercept of temporal block
+#---------------
+# Look at the effects of the fixed effects to guide interpretation, but leave all covariates in the model in the end.
+#---------------
+
+m6 <- glmer(N6plus1 ~ number*environment + (1 | block), data=bb, family=poisson, control=glmerControl(optimizer="bobyqa"))
+
+m7 <- update(m6, formula= .~. - number:environment)
+
+anova(m6, m7) # Significant interaction of number of introductions and environmental stability
+
+# The final model which includes all fixed effects
+final <- m6
+#### Analysis 2: Interpretation and contrasts ####
+
+results <- lsmeans::lsmeans(final, pairwise ~ environment + number, adjust="none")
+results
+posthoc <- summary(results$lsmeans)
+
+sig_letters <- lsmeans::cld(results, Letters = letters, sort = FALSE, adjust = "none")$.group
+sig_letters <- gsub(sig_letters, pattern = " ", replacement = "")
+xvals <- 1:length(posthoc$lsmean)
+min_y <- min(exp(posthoc$asymp.LCL))
+max_y <- max(exp(posthoc$asymp.UCL))
+
+par(mar=c(4,4,3,1))
+
+plot(x = xvals, y = exp(posthoc$lsmean), 
+     ylim = c(min_y, max_y + 2), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las = 1, 
+     pch = c(1,19), 
+     xaxt = "n", 
+     xlab = "Introduction regime", 
+     ylab = "Population abundance", 
+     bty = "L")
+
+axis(side = 1, 
+     at = xvals[c(1,3,5,7)] + 0.5, 
+     labels=c("20x1", "10x2", "5x4", "4x5"), 
+     tick=FALSE)
+
+arrows(x0 = xvals, 
+       y0 = exp(posthoc$asymp.LCL), 
+       y1 = exp(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+legend("bottomright", 
+       legend = c("fluctuating", "stable"), 
+       pch = c(1, 19), 
+       bty = "n")
+
+text(x = xvals, y = max_y + 1, labels = sig_letters)
