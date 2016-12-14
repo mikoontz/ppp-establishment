@@ -9,7 +9,7 @@
 ###
 #### Purpose: Use tidy extinction data to assess the probability of extinction depending on different covariates. ####
 ###
-### There are 5 different analysis presented here. 
+### There are 6 different analysis presented here. 
 
 ### The first uses generation 9 (the end of the experiment) as the fixed point where we assess whether or not a population has established.
 
@@ -20,6 +20,8 @@
 ### The fourth analysis uses generation 5 as the fixed point where we assess whether or not a population has established. Generation 5 is the first generation after all introductions have completed for all populations.
 
 ### The fifth analysis uses a relative timepoint to measure extant/extinct. Here, we assess establishment 5 generations after the final introduction event for each introduction regime. Since the 20x1 introduction regime took 1 generation to implement (new individuals to a patch in generation P), we look at generation 5 (F5) for establishment. Since the 4x5 introduction regime took 5 generations to implement (new individuals to a patch in generations P, F1, F2, F3, F4), we look at generation 9 (F9) for establishment. This analysis preempts the counterargument that the fewer, larger introductions had more time to go extinct, thus we see they have a lower estimated establishment probability at any given absolute time point.
+
+### Sixth analysis assess establishment at generation 7
 
 #### Load libraries, read data, and set it up for analysis ####
 # Clear environment if necessary
@@ -44,7 +46,7 @@ b$gap <- as.factor(b$gap)
 gap.potential <- subset(b, subset=(block!=3)&(number%in%c(2,4)))
 
 # We use a simple random effects structure here, because there is far less data in this subsetted dataset. Use extant assessment at generation 10 (9 full censuses after initial introduction).
-m1 <- glmer(extant_5_after ~ number*environment*gap + (1 | block), data=gap.potential, family=binomial, control=glmerControl(optimizer="bobyqa"))
+m1 <- glmer(extant9 ~ number*environment*gap + (1 | block), data=gap.potential, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
 # Update the model fit to remove the 3-way interaction
 m2 <- update(m1, formula= .~. - number:environment:gap)
@@ -101,7 +103,7 @@ b.trim <- b
 #-------------------
 
 # The 'keep it maximal' random effects structure; Possibly too many parameters to justify this approach.
-m5a <- glmer(extant_5_after ~ number*environment + (number*environment | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
+m5a <- glmer(extant9 ~ number*environment + (number*environment | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa")) # Doesn't converge
 
 m5b <- update(m5a, formula= .~ number*environment + (number + environment | block))
 
@@ -122,7 +124,7 @@ anova(m5c, m5d) # No interaction between block and number
 #----------------
 
 # Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
-m6 <- glmer(extant_5_after ~ number*environment + (1 | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
+m6 <- glmer(extant9 ~ number*environment + (1 | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
 m7 <- update(m6, formula= .~. - number:environment)
 
@@ -138,6 +140,7 @@ anova(m8, m9) # Propagule number seems to be very important for extinction proba
 
 # The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period
 final <- m6
+
 #### Analysis 1: Interpretation and contrasts ####
 
 results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
@@ -156,11 +159,7 @@ plot(x = xvals, y=plogis(posthoc$lsmean),
      xaxt="n", 
      xlab="Introduction regime", 
      ylab="Establishment probability", 
-     col=cols, 
      bty="L")
-
-# cols <- c("dodgerblue", "brown1", "gold", "green")
-cols <- "black"
 
 axis(side=1, 
      at = xvals, 
@@ -173,8 +172,7 @@ arrows(x0 = xvals,
        code = 3, 
        length = 0.1, 
        angle = 90, 
-       lwd = 2,
-       col = cols)
+       lwd = 2)
 
 text(x = 1:4, y = 1.02, labels = sig_letters)
 
@@ -732,23 +730,61 @@ anova(lossA, reducedModel)
 # No significant effect of AMOUNT of loss. Check this against the amount of loss at different time points (up to generation 6, for instance)
 
 
-#### Plots with simulation results ####
-# simResults <- read.csv("Clean-Analyses/simulations/establishment_abundance_table_5_50.csv")
-# 
-# extant <- simResults[, 1]
-# 
-# pdf("/Users/mikoontz/Documents/Research/Tribolium/Demography/Clean-Plots/modeled-establishment-probability-with-simulations-dot-whisker.pdf", height=3.75, width=3.75)
-# 
-# par(mar=c(3,4,2,1), xpd=NA, oma=c(2,0,0,0))
-# plot(x=1:4, y=plogis(posthoc$lsmean), ylim=c(0.7, 1.0), xlim=c(0.5,4.5), las=1, pch=19, xaxt="n", xlab=NA, ylab="Establishment probability", col=cols, bty="L")
-# axis(side=1, at=1:4, labels=c("20x1", "10x2", "5x4", "4x5"), tick=FALSE)
-# arrows(x0=1:4, y0=plogis(posthoc$asymp.LCL), y1=plogis(posthoc$asymp.UCL), code=3, length=0.05, angle=90, lwd=2, col=cols)
-# text(x=1:4, y=plogis(posthoc$asymp.UCL)+0.02, labels=c("a", "b", "c", "c"), cex=0.5)
-# 
-# segments(x0=(1:4)-0.3, x1=(1:4)+0.3, y0=extant, lwd=4)
-# mtext(side=1, text="Introduction regime", line=3)
-# 
-# dev.off()
+##### Analysis 6: Extant/extinct assessment at generation 7 #####
+# Go directly to excluding populations that experienced an introduction gap
+b.trim <- b[b$gap == "FALSE", ]
+# dim(b.trim) # 842 populations didn't experience an introduction gap.
 
+m1 <- glmer(extant7 ~ number + environment + number:environment + (1 | block), data=b.trim, family=binomial, control=glmerControl(optimizer="bobyqa")) 
 
+m2 <- update(m1, formula= .~. - number:environment)
+anova(m1, m2) # Doesn't appear to be an interaction between propagule number and environmental stability
+
+m3 <- update(m2, formula= .~. -environment)
+anova(m2, m3) # Environment doesn't seem to affect extinction probability
+
+m4 <- update(m3, formula= .~. -number)
+anova(m3, m4) # Propagule number seems to be very important for extinction probability
+
+# The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period. Note though that this model didn't converge.
+
+final <- m1
+#### Analysis 6: Interpretation and contrasts ####
+
+results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
+results
+posthoc <- summary(results$lsmeans)
+
+sig_letters <- lsmeans::cld(results, Letters = letters, sort = FALSE, adjust = "none")$.group
+xvals <- 1:length(posthoc$lsmean)
+min_y <- min(plogis(posthoc$asymp.LCL))
+
+plot(x = xvals, y=plogis(posthoc$lsmean), 
+     ylim=c(min_y, 1.02), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las=1, 
+     pch=19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Establishment probability", 
+     bty="L")
+
+axis(side=1, 
+     at = xvals, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
+
+arrows(x0 = xvals, 
+       y0 = plogis(posthoc$asymp.LCL), 
+       y1 = plogis(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+text(x = 1:4, y = 1.02, labels = sig_letters)
+
+mtext(side=3, 
+      text="Effect of propagule number on extinction probability\nafter 7 filial generations", 
+      line = 2)
 
