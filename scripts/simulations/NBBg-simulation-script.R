@@ -122,6 +122,94 @@ results <- data.frame(
 
 results
 
-write.csv(x = results, file = "data/simulations/simulation_stats.csv", row.names = FALSE)
-write.csv(x = N, file = "data/simulations/N.csv", row.names = FALSE)
-write.csv(x = N_var, file = "data/simulations/N_var.csv", row.names = FALSE)
+#### Tidy the results ####
+sims_results_tidy <- function(sims_results, response, time_type, env) {
+  
+  # Defense. Make sure column names are appropriate.
+  if (!(response %in% c("extant_prop", "mean_N"))) {
+    stop("Response must be extant_prop or mean_N")
+  }
+  
+  if (!(time_type %in% c("absolute", "relative"))) {
+    stop("Time type must be absolute or relative")
+  } 
+  
+  if (!(env %in% c("stable", "fluctuating"))) {
+    stop("Environment must be stable or fluctuating")
+  }
+  
+  # Find the numbered columns and rename them something generic.
+  char_start <- regexpr(pattern = "[0-9]+", colnames(sims_results))
+  char_stop <- attributes(char_start)$match.length + char_start - 1
+  generation <- substr(colnames(sims_results), start = char_start, stop = char_stop)
+  colnames(sims_results) <- paste0("t_equals_", generation)
+  
+  # Add some NA columns to flesh out the whole time series. Absolute time types will need missing values for 1st through 4th time points
+  if (time_type == "absolute") {
+    tmp <- as.data.frame(matrix(NA, nrow = nrow(sims_results), ncol = max(pp$number) - 1)) # 4-row data frame of NAs
+    colnames(tmp) <- paste0("t_equals_", (1:(max(pp$number) - 1))) # Named t_equals_1 through t_equals_4
+    sims_results <- data.frame(tmp, sims_results) # These new columns go first
+  }
+  
+  # Relative time types will need missing values for 46th through 50th time points
+  if (time_type == "relative") {
+    tmp <- as.data.frame(matrix(NA, nrow = nrow(sims_results), ncol = max(pp$number) - 1)) # 4-row data frame of NAs
+    # Named t_equals_47 through t_equals_50
+    colnames(tmp) <- paste0("t_equals_", (max(as.numeric(generation) + 1):(max(as.numeric(generation) + max(pp$number) - 1))))
+    sims_results <- data.frame(sims_results, tmp) # These columns go at the end of the time series.
+  }
+  
+  # Fill in variable columns with their appropriate data
+  sims_results$intro_regime <- apply(pp, 1, function(x) paste(rev(x), collapse = "x"))
+  sims_results$response <- response
+  sims_results$time_type <- time_type
+  sims_results$env <- env
+  
+  return(sims_results)
+}
+
+#### Tidy the individual results data frames ####
+extant_prop_after_x_tidy <- sims_results_tidy(extant_prop_after_x, response = "extant_prop", time_type = "absolute", env = "stable")
+extant_prop_after_x_var_tidy <- sims_results_tidy(extant_prop_after_x_var, response = "extant_prop", time_type = "absolute", env = "fluctuating")
+
+mean_N_after_x_tidy <- sims_results_tidy(mean_N_after_x, response = "mean_N", time_type = "absolute", env = "stable")
+mean_N_after_x_var_tidy <- sims_results_tidy(mean_N_after_x_var, response = "mean_N", time_type = "absolute", env = "fluctuating")
+
+extant_prop_x_after_tidy <- sims_results_tidy(extant_prop_x_after, response = "extant_prop", time_type = "relative", env = "stable")
+extant_prop_x_after_var_tidy <- sims_results_tidy(extant_prop_x_after_var, response = "extant_prop", time_type = "relative", env = "fluctuating")
+
+mean_N_x_after_tidy <- sims_results_tidy(mean_N_x_after, response = "mean_N", time_type = "relative", env = "stable")
+mean_N_x_after_var_tidy <- sims_results_tidy(mean_N_x_after_var, response = "mean_N", time_type = "relative", env = "fluctuating")
+
+results_tidy <-
+  rbind(extant_prop_after_x_tidy,
+        extant_prop_after_x_var_tidy,
+        mean_N_after_x_tidy,
+        mean_N_after_x_var_tidy,
+        extant_prop_x_after_tidy,
+        extant_prop_x_after_var_tidy,
+        mean_N_x_after_tidy,
+        mean_N_x_after_var_tidy)
+
+#### Rearrange columns so that variable columns are first ####
+results_tidy <- results_tidy[, c((ncol(results_tidy) - 4) + 1:4, 1:(ncol(results_tidy) - 4))]
+
+#### Write data to files ####
+# write.csv(x = results, file = "data/simulations/simulation_stats_raw.csv", row.names = FALSE)
+# write.csv(x = results_tidy, file = "data/simulations/simulation_stats_tidy.csv", row.names = FALSE)
+
+# for (i in unique(intro.regime)) {
+#   file_tag <- paste(rev(pp[pp$number == i, ]), collapse = "x")
+#   write.csv(N[intro.regime == i, ], file = paste0("data/simulations/N_", file_tag, "_regime.csv"), row.names = FALSE)
+# }
+# 
+# for (i in unique(intro.regime)) {
+#   file_tag <- paste(rev(pp[pp$number == i, ]), collapse = "x")
+#   write.csv(N_var[intro.regime == i, ], file = paste0("data/simulations/N_var_", file_tag, "_regime.csv"), row.names = FALSE)
+# }
+# 
+# for (i in unique(intro.regime)) {
+#   file_tag <- paste(rev(pp[pp$number == i, ]), collapse = "x")
+#   write.csv(migrants[intro.regime == i, ], file = paste0("data/simulations/migrants_", file_tag, "_regime.csv"), row.names = FALSE)
+# }
+
