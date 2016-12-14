@@ -50,16 +50,18 @@ establishment_posthoc <- summary(establishment_results$lsmeans)
 establishment_sig_letters <- lsmeans::cld(establishment_results, Letters = letters, sort = FALSE, adjust = "none")$.group
 # Remove white space from significance letters object
 establishment_sig_letters <- gsub(establishment_sig_letters, pattern = " ", replacement = "")
-
-xvals <- 1:length(establishment_posthoc$lsmean)
+establishment_xvals <- 1:length(establishment_posthoc$lsmean)
 
 # Minimum y value of the plot is the lowest possible value that can be plotted (lowest lower CI or 
 # lowest result from simulations)
 min_y <- min(c(plogis(establishment_posthoc$asymp.LCL)), sims_establish$establish_prop)
 
-plot(x = xvals, y = plogis(establishment_posthoc$lsmean), 
+tiff("figures/establishment-probability-experiment-and-simulations.tif", units= "in", res= 300, height=5, width=6)
+par(mar=c(4,4,1,1), family = "Helvetica")
+
+plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean), 
      ylim=c(min_y, 1.02), 
-     xlim = range(xvals) + c(-0.5, 0.5), 
+     xlim = range(establishment_xvals) + c(-0.5, 0.5), 
      las=1, 
      pch=19, 
      xaxt="n", 
@@ -68,11 +70,11 @@ plot(x = xvals, y = plogis(establishment_posthoc$lsmean),
      bty="L")
 
 axis(side=1, 
-     at = xvals, 
+     at = establishment_xvals, 
      labels = c("20x1","10x2","5x4","4x5"), 
      tick = FALSE)
 
-arrows(x0 = xvals, 
+arrows(x0 = establishment_xvals, 
        y0 = plogis(establishment_posthoc$asymp.LCL), 
        y1 = plogis(establishment_posthoc$asymp.UCL), 
        code = 3, 
@@ -85,6 +87,9 @@ text(x = 1:4, y = 1.02, labels = establishment_sig_letters)
 #### Add simulation results to the plot ####
 segments(x0 = 1:4 - 0.25, x1 = 1:4 + 0.25, y0 = sims_establish$establish_prop, lwd = 4)
 
+dev.off()
+
+
 
 #### Abundance ####
 #### Abundance data from experiment ####
@@ -95,16 +100,17 @@ abundance_posthoc <- summary(abundance_results$lsmeans)
 
 abundance_sig_letters <- lsmeans::cld(abundance_results, Letters = letters, sort = FALSE, adjust = "none")$.group
 abundance_sig_letters <- gsub(abundance_sig_letters, pattern = " ", replacement = "")
-xvals <- 1:length(abundance_posthoc$lsmean)
+abundance_xvals <- 1:length(abundance_posthoc$lsmean)
 
 min_y <- min(c(exp(abundance_posthoc$asymp.LCL), sims_abundance$mean_N))
 max_y <- max(exp(abundance_posthoc$asymp.UCL))
 
-par(mar=c(4,4,3,1))
+tiff("figures/population-abundance-experiment-and-simulations.tif", units= "in", res= 300, height=5, width=6)
+par(mar=c(4,4,1,1), family = "Helvetica")
 
-plot(x = xvals, y = exp(abundance_posthoc$lsmean), 
-     ylim = c(min_y - 5, max_y + 4), 
-     xlim = range(xvals) + c(-0.5, 0.5), 
+plot(x = abundance_xvals, y = exp(abundance_posthoc$lsmean), 
+     ylim = c(-5, max_y + 4), 
+     xlim = range(abundance_xvals) + c(-0.5, 0.5), 
      las = 1, 
      pch = c(1,19), 
      xaxt = "n", 
@@ -113,11 +119,11 @@ plot(x = xvals, y = exp(abundance_posthoc$lsmean),
      bty = "L")
 
 axis(side = 1, 
-     at = xvals[c(1,3,5,7)] + 0.5, 
+     at = abundance_xvals[c(1,3,5,7)] + 0.5, 
      labels=c("20x1", "10x2", "5x4", "4x5"), 
      tick=FALSE)
 
-arrows(x0 = xvals, 
+arrows(x0 = abundance_xvals, 
        y0 = exp(abundance_posthoc$asymp.LCL), 
        y1 = exp(abundance_posthoc$asymp.UCL), 
        code = 3, 
@@ -125,18 +131,22 @@ arrows(x0 = xvals,
        angle = 90, 
        lwd = 2)
 
-legend("right", 
-       legend = c("fluctuating", "stable"), 
-       pch = c(1, 19), 
+legend(x = 5,
+       y = 10,
+       legend = c("fluctuating", "stable", "simulation results", "equilibrium abundance"), 
+       pch = c(1, 19, NA, NA),
+       lty = c(NA, NA, 1, 2),
+       lwd = c(NA, NA, 2, 2),
        bty = "n")
 
-text(x = xvals, y = max_y + 2, labels = abundance_sig_letters)
+text(x = abundance_xvals, y = max_y + 3, labels = abundance_sig_letters)
 
 #### Add simulation results to the plot ####
 segments(x0 = 1:8 - 0.25, x1 = 1:8 + 0.25, y0 = sims_abundance$mean_N, lwd = 4)
 
 segments(x0 = 0.25, x1 = 8.25, y0 = mean(equilibrium_abundance), y1 = mean(equilibrium_abundance), lty = "dashed")
 
+dev.off()
 # Polygon of 95% credible interval around equilibrium abundance. Would need adjustment to y-axis.
 # lwr <- quantile(equilibrium_abundance, probs = 0.025)
 # upr <- quantile(equilibrium_abundance, probs = 0.975)
