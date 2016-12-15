@@ -39,6 +39,9 @@ anova(fm1, fm2) # Drop random slope effect of environment
 results <- lsmeans::lsmeans(fm2, pairwise ~ environment)
 (contr <- results$contrasts)
 
+# 95% confidence interval on the contrast.
+confint(contr)
+
 #### Plot density of total stochasticity for each environment treatment ####
 plot(density(stoch_tot$stoch_tot[stoch_tot$environment == "stable"], na.rm= TRUE))
 lines(density(stoch_tot$stoch_tot[stoch_tot$environment == "fluctuating"], na.rm= TRUE), col = "red")
