@@ -21,10 +21,6 @@ Ntp1 <- tidy.b$Ntp1
 migrants <- tidy.b$migrants
 env <- tidy.b$environment
 
-# Modify names of Nt and Ntp1 data frames for unique referencing
-colnames(Nt)[2:ncol(Nt)] <- paste0("N", colnames(Nt)[2:ncol(Nt)])
-colnames(Ntp1)[2:ncol(Ntp1)] <- paste0("N", as.numeric(colnames(Ntp1)[2:ncol(Ntp1)])-1, "p1")
-
 series <- merge(Nt, Ntp1)
 
 # The vector of the order of columns to make it true: N0, N0p1, N1, N1p1, N2, N2p1, etc.
