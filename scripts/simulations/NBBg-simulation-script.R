@@ -10,16 +10,24 @@ source("scripts/data-carpentry/generate-establishment-responses-for-analysis.R")
 
 # Samples from posterior distribution of R0, alpha, kE, and kD parameters
 samps <- read.csv('data/NBBg-samples/NBBg-samples-combined.csv')
-reps <- 500000 # Number of reps per introduction scenario
-Tf <- 10 # Number of time steps, INCLUDING initial introduction
+reps <- 500 # Number of reps per introduction scenario
+Tf <- 51 # Number of time steps, INCLUDING initial introduction
 total.to.introduce <- 20
 p <- 0.5 # Probability of being female
-pp <- get.propagule.pressure(total.to.introduce, Tf, excludeMaxNum = FALSE)
+pp <- get.propagule.pressure(total.to.introduce, Tf, excludeMaxNum = TRUE)
+setup <- sims_setup(total.to.introduce = total.to.introduce, Tf = Tf, reps = reps, excludeMaxNum = TRUE)
 
 #### Simulate dynamics in stable environment ####
 # Baseline dynamics under 'stable' environment with density dependence. All NBBg parameters are the estimated values from the Bayesian data analysis. Model error (i.e. uncertainty in the parameter values) are propagated through the simulation since each modeled population in each time step draws a parameter set (maintaining correlation structure) from the MCMC samples
 
-N <- simNBBg(samps, reps, Tf, total.to.introduce, p = 0.5, save_objects = FALSE, excludeMaxNum = FALSE)
+N <- NBBg(N = setup$N, 
+          migrants = setup$migrants, 
+          past.residents = setup$past.residents, 
+          total.reps = setup$total.reps,  
+          samps = samps,
+          Tf = Tf,  
+          p = p, 
+          overflowGuard = FALSE)
 
 #### Simulate dynamics in more variable environment ####
 # Multiply kE samples by 100/121 to increase variance of Re by 20% and standard deviation of Re by 10%
@@ -28,7 +36,14 @@ var_samps$kE <- samps$kE * (100/121) # Add ~10% to standard deviation of R
 # HIvar_samps <- samps
 # HIvar_samps$kE <- samps$kE * (1/4) # Add ~100% to standard deviation of R
 
-N_var <- simNBBg(samps=var_samps, reps, Tf, total.to.introduce, p=0.5, save_objects=FALSE, data_descriptor="_var", excludeMaxNum = FALSE)
+N_var <- NBBg(N = setup$N, 
+                migrants = setup$migrants, 
+                past.residents = setup$past.residents, 
+                total.reps = setup$total.reps,  
+                samps = var_samps,
+                Tf = Tf,  
+                p = p, 
+                overflowGuard = FALSE)
 # N_HIvar <- simNBBg(samps=HIvar_samps, reps, Tf, total.to.introduce, p=0.5, save_objects=TRUE, data_descriptor="_HIvar")
 
 #### Simulation summaries ####
@@ -111,6 +126,8 @@ mean_N_x_after_var <- simulation_stats(time_points = time_points,
                                        col_names = paste0("N_", time_points, "after_var"))
 
 results <- data.frame(
+  size = pp$size,
+  number = pp$number,
   extant_prop_after_x,
   extant_prop_after_x_var,
   mean_N_after_x,
