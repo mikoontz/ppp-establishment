@@ -75,7 +75,7 @@ combined_samples <- do.call(rbind, key)
 # lapply(1:length(key),
 #        FUN = function(i)
 #          write.csv(x = key[[i]],
-#                    file = paste0("data/NBBg-samples/NBBg-samples-chain", i),
+#                    file = paste0("data/NBBg-samples/NBBg-samples-chain", i, ".csv"),
 #                    row.names = FALSE))
 
 #### Figuring out the modes and 95% credible intervals ####
