@@ -47,3 +47,11 @@ plot(density(stoch_tot$stoch_tot[stoch_tot$environment == "stable"], na.rm= TRUE
 lines(density(stoch_tot$stoch_tot[stoch_tot$environment == "fluctuating"], na.rm= TRUE), col = "red")
 abline(v = summary(results)$lsmeans$lsmean[1], lwd = 2, col = "red")
 abline(v = summary(results)$lsmeans$lsmean[2], lwd = 2, col = "black")
+
+#### Compare to literature ####
+# Values taken from Saether and Engin (2002)
+
+saether.1 <- c(0.152, 0.026, 0.065, 0.375, 0.034, 0.015, 0.012, 0.090, 0.017, 0.294, 0.010, 0.120, 0.003, 0.024, 0.008, 0.012, 0.027, 0.069, 0.118, 0.011, 0.055, 0.134, 0.068, 0.004)
+saether.2 <- c(0.041, 0.276, 0.014, 0.065, 0.411, 0.437, 0.114, 0.072, 0.005, 0.104, 0.014)
+
+median(c(saether.1, saether.2))
