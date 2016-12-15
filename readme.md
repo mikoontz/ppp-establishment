@@ -92,7 +92,7 @@ Scripts that generate the figures in the paper
 
 #### experiment-time-series-population-abundance-plot.R
 
-Script to generate the <a href="#experiment-time-series-population-abundance.tif">experiment-time-series-population-abundance.tif</a> figure.
+Script to generate the <a href="#experiment-time-series-population-abundancetif">experiment-time-series-population-abundance.tif</a> figure.
 
 #### experiment-time-series-establishment-proportion-plot.R
 

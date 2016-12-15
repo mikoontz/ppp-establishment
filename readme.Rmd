@@ -32,7 +32,7 @@ Converts long form census data (one row represents the census for each populatio
 Scripts that generate the figures in the paper
 
 #### experiment-time-series-population-abundance-plot.R
-Script to generate the <a href="#experiment-time-series-population-abundance.tif">experiment-time-series-population-abundance.tif</a> figure.
+Script to generate the <a href="#experiment-time-series-population-abundancetif">experiment-time-series-population-abundance.tif</a> figure.
 
 #### experiment-time-series-establishment-proportion-plot.R
 Generates the <a href="#experiment-time-series-establishment-proportion-absolute-time-type.tif">experiment-time-series-establishment-proportion-absolute-time-type.tif</a> and <a href="#experiment-time-series-establishment-proportion-relative-time-type.tif">experiment-time-series-establishment-proportion-relative-time-type.tif</a> figures.
