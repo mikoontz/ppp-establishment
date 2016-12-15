@@ -96,11 +96,11 @@ Script to generate the <a href="#experiment-time-series-population-abundance.tif
 
 #### experiment-time-series-establishment-proportion-plot.R
 
-Generates the <a href="experiment-time-series-establishment-proportion-absolute-time-type.tif">experiment-time-series-establishment-proportion-absolute-time-type.tif</a> and <a href="experiment-time-series-establishment-proportion-relative-time-type.tif">experiment-time-series-establishment-proportion-relative-time-type.tif</a> figures.
+Generates the <a href="#experiment-time-series-establishment-proportion-absolute-time-type.tif">experiment-time-series-establishment-proportion-absolute-time-type.tif</a> and <a href="#experiment-time-series-establishment-proportion-relative-time-type.tif">experiment-time-series-establishment-proportion-relative-time-type.tif</a> figures.
 
 #### establishment-and-abundance-experiment-and-simulation-results-plot.R
 
-Generates the <a href="establishment-probability-experiment-and-simulations.tif">establishment-probability-experiment-and-simulations.tif</a> and <a href="population-abundance-experiment-and-simulations.tif">population-abundance-experiment-and-simulations.tif</a> figures.
+Generates the <a href="#establishment-probability-experiment-and-simulations.tif">establishment-probability-experiment-and-simulations.tif</a> and <a href="#population-abundance-experiment-and-simulations.tif">population-abundance-experiment-and-simulations.tif</a> figures.
 
 ### simulations
 
