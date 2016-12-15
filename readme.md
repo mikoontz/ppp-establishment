@@ -11,6 +11,7 @@ Michael Koontz
             -   [generate-tidy-data.R](#generate-tidy-data.r)
         -   [figure-carpentry](#figure-carpentry)
             -   [experiment-time-series-population-abundance-plot.R](#experiment-time-series-population-abundance-plot.r)
+            -   [experiment-time-series-establishment-proportion-plot.R](#experiment-time-series-establishment-proportion-plot.r)
             -   [establishment-and-abundance-experiment-and-simulation-results-plot.R](#establishment-and-abundance-experiment-and-simulation-results-plot.r)
         -   [simulations](#simulations)
             -   [NBBg-population-dynamics-function.R](#nbbg-population-dynamics-function.r)
@@ -51,6 +52,8 @@ Michael Koontz
         -   [Tribolium-propagule-pressure-data.csv](#tribolium-propagule-pressure-data.csv)
     -   [figures](#figures)
         -   [experiment-time-series-population-abundance.tif](#experiment-time-series-population-abundance.tif)
+        -   [experiment-time-series-establishment-proportion-absolute-time-type.tif](#experiment-time-series-establishment-proportion-absolute-time-type.tif)
+        -   [experiment-time-series-establishment-proportion-relative-time-type.tif](#experiment-time-series-establishment-proportion-relative-time-type.tif)
         -   [establishment-probability-experiment-and-simulations.tif](#establishment-probability-experiment-and-simulations.tif)
         -   [population-abundance-experiment-and-simulations.tif](#population-abundance-experiment-and-simulations.tif)
     -   [written-notes](#written-notes)
@@ -90,6 +93,10 @@ Scripts that generate the figures in the paper
 #### experiment-time-series-population-abundance-plot.R
 
 Script to generate the <a href="#experiment-time-series-population-abundance.tif">experiment-time-series-population-abundance.tif</a> figure.
+
+#### experiment-time-series-establishment-proportion-plot.R
+
+Generates the <a href="experiment-time-series-establishment-proportion-absolute-time-type.tif">experiment-time-series-establishment-proportion-absolute-time-type.tif</a> and <a href="experiment-time-series-establishment-proportion-relative-time-type.tif">experiment-time-series-establishment-proportion-relative-time-type.tif</a> figures.
 
 #### establishment-and-abundance-experiment-and-simulation-results-plot.R
 
@@ -250,6 +257,14 @@ figures
 ### experiment-time-series-population-abundance.tif
 
 The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations F1 and F2. (That is, no population augmentation of F1 adults). Also plots mean population abundance and a 1 standard error envelope around that mean for each introduction regime.
+
+### experiment-time-series-establishment-proportion-absolute-time-type.tif
+
+Establishment proportion of experimental populations as a function of the total number of generations elapsed in the experiment.
+
+### experiment-time-series-establishment-proportion-relative-time-type.tif
+
+Establishment proportion of experimental populations as a function of number of generations since the final introduction event.
 
 ### establishment-probability-experiment-and-simulations.tif
 
