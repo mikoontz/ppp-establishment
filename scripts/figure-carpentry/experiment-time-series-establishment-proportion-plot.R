@@ -28,8 +28,22 @@ b[2, 2] <- NA
 b[3, 2:4] <- NA
 b[4, 2:5] <- NA
 
-par(family = "Helvetica")
-matplot(x = 1:9, y = 100*t(b[, -1]), lty = 1, pch = 19, lwd = 2, col = 1, type = "b", xlab = "Generation", ylab = "Percent established", xaxt = "n", yaxt = "n", xlim = c(1, 10), bty = "L")
+tiff("figures/experiment-time-series-establishment-proportion.tif", units= "in", res= 300, height=5, width=6)
+par(mar=c(4,4,1,1), family = "Helvetica")
+matplot(x = 1:9, y = 100*t(b[, -1]), 
+        lty = 1, 
+        pch = 19, 
+        lwd = 2, 
+        col = 1, 
+        type = "b", 
+        xlab = "Generation", 
+        ylab = "Percent established", 
+        xaxt = "n", 
+        yaxt = "n", 
+        xlim = c(1, 10), 
+        bty = "L")
+
 axis(side = 1, at = 1:9, labels = c("F1", "", "F3", "", "F5", "", "F7", "", "F9"))
 axis(side = 2, las = 1)
 text(x = 10, y = 100 * b[, ncol(b)], labels = b[, 1], cex = 2)
+dev.off()
