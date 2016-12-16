@@ -312,3 +312,23 @@ legend("bottomright",
        bty = "n")
 
 text(x = xvals, y = max_y + 1, labels = sig_letters)
+
+#### Analysis 4: Effect of temporary extinctions ####
+
+bb_for_temp <- subset(bb, subset=number %in% c(2,4,5))
+bb_for_temp$temp <- ifelse(bb_for_temp$temp.extinctions > 0, yes=TRUE, no=FALSE)
+bb_for_temp$temp <- as.factor(bb_for_temp$temp)
+
+tempA <- glmer(N6plus1 ~ number*environment + temp + (1 | block), data=bb_for_temp, family=poisson, control=glmerControl(optimizer="bobyqa"))
+
+reducedModel <- glmer(N6plus1 ~ number*environment + (1 | block), data=bb_for_temp, family=poisson, control=glmerControl(optimizer="bobyqa"))
+
+anova(tempA, reducedModel)
+# Significant effect of temporary extinction versus not
+summary(tempA)
+
+lossA <- glmer(N6plus1 ~ number*environment + loss + (1 | block), data=bb_for_temp, family=poisson, control=glmerControl(optimizer="bobyqa"))
+summary(lossA)
+
+anova(lossA, reducedModel)
+# Significant effect of AMOUNT of loss.

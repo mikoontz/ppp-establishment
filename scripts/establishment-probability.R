@@ -785,3 +785,23 @@ mtext(side=3,
 
 (nrow(b.trim) - sum(b.trim$extant7)) / nrow(b.trim)
 # Total extinct through 7 generations: 101/842 = 12.0 %
+
+#### Analysis 6: Effect of temporary extinctions ####
+
+bb <- subset(b.trim, subset=number %in% c(2,4,5))
+bb$temp <- ifelse(bb$temp.extinctions > 0, yes=TRUE, no=FALSE)
+bb$temp <- as.factor(bb$temp)
+
+tempA <- glmer(extant7 ~ number*environment + temp + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+reducedModel <- glmer(extant7 ~ number*environment + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+anova(tempA, reducedModel)
+# Significant effect of temporary extinction versus not
+summary(tempA)
+
+lossA <- glmer(extant7 ~ number*environment + loss + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+summary(lossA)
+
+anova(lossA, reducedModel)
+# No significant effect of AMOUNT of loss.
