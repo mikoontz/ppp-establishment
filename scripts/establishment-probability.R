@@ -788,3 +788,5 @@ mtext(side=3,
       text="Effect of propagule number on extinction probability\nafter 7 filial generations", 
       line = 2)
 
+(nrow(b.trim) - sum(b.trim$extant7)) / nrow(b.trim)
+# Total extinct through 7 generations: 101/842 = 12.0 %
