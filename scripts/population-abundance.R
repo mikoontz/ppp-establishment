@@ -262,9 +262,16 @@ anova(m6, m7) # Significant interaction of number of introductions and environme
 
 # The final model which includes all fixed effects
 final <- m6
+
+# Check on model assumptions
+plot(final)
+qqnorm(residuals(final)) # Not great, but not terrible.
+qqline(residuals(final))
+
 #### Analysis 4: Interpretation and contrasts ####
 
 results <- lsmeans::lsmeans(final, pairwise ~ environment + number, adjust="none")
+
 results
 posthoc <- summary(results$lsmeans)
 
