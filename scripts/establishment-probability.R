@@ -665,12 +665,8 @@ plot(x = xvals, y=plogis(posthoc$lsmean),
      pch=19, 
      xaxt="n", 
      xlab="Introduction regime", 
-     ylab="Establishment probability", 
-     col=cols, 
+     ylab="Establishment probability",
      bty="L")
-
-# cols <- c("dodgerblue", "brown1", "gold", "green")
-cols <- "black"
 
 axis(side=1, 
      at = xvals, 
@@ -683,10 +679,9 @@ arrows(x0 = xvals,
        code = 3, 
        length = 0.1, 
        angle = 90, 
-       lwd = 2,
-       col = cols)
+       lwd = 2)
 
-text(x = 1:4, y = 1.02, labels = sig_letters)
+text(x = 1:4, y = 1.0, labels = sig_letters)
 
 mtext(side=3, 
       text="Effect of propagule number on extinction probability\nafter 9 filial generations", 
