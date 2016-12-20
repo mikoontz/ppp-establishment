@@ -96,17 +96,26 @@ m6 <- glmer(N8plus1 ~ number*environment + (1 | block), data=bb, family=poisson,
 
 m7 <- update(m6, formula= .~. - number:environment)
 
-anova(m6, m7) # Significant interaction of number of introductions and environmental stability
+anova(m6, m7) # No significant interaction of number of introductions and environmental stability
+
+m8 <- update(m7, formula = . ~ . - environment)
+
+anova(m7, m8) # No significant effect of environment
+
+m9 <- update(m7, formula = . ~ . - number)
+
+anova(m7, m9) # Significant effect of number of introductions
 
 # The final model which includes all fixed effects
 final <- m6
+
 #### Analysis 2: Interpretation and contrasts ####
 
-results <- lsmeans::lsmeans(final, pairwise ~ environment + number, adjust="none")
+results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
 results
 posthoc <- summary(results$lsmeans)
 
-sig_letters <- lsmeans::cld(results, Letters = letters)$.group[order(cld(results)$number, cld(results)$environment)]
+sig_letters <- lsmeans::cld(results, Letters = letters, sort = FALSE)$.group
 xvals <- 1:length(posthoc$lsmean)
 min_y <- min(exp(posthoc$asymp.LCL))
 
@@ -116,14 +125,14 @@ plot(x = xvals, y = exp(posthoc$lsmean),
      ylim = c(0, 55), 
      xlim = range(xvals) + c(-0.5, 0.5), 
      las = 1, 
-     pch = c(1,19), 
+     pch = 19, 
      xaxt = "n", 
      xlab = "Introduction regime", 
      ylab = "Population abundance", 
      bty = "L")
 
 axis(side = 1, 
-     at = xvals[c(1,3,5,7)] + 0.5, 
+     at = xvals, 
      labels=c("20x1", "10x2", "5x4", "4x5"), 
      tick=FALSE)
 
@@ -133,13 +142,7 @@ arrows(x0 = xvals,
        code = 3, 
        length = 0.1, 
        angle = 90, 
-       lwd = 2, 
-       col = rep(cols, each = 2))
-
-legend("bottomright", 
-       legend = c("fluctuating", "stable"), 
-       pch = c(1, 19), 
-       bty = "n")
+       lwd = 2)
 
 text(x = xvals, y = 53, labels = sig_letters)
 
