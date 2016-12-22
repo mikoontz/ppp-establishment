@@ -74,7 +74,7 @@ se_no_zeroes <- sigma_no_zeroes / sqrt(counts_no_zeroes)
 time <- c(0, rep(1:9, each=2))
 
 #### Make time series plot through Generation 7 ####
-pdf("figures/experiment-time-series-population-abundance-generation-seven.pdf", height=5, width=6)
+pdf("figures/experiment-time-series-population-size-generation-seven.pdf", height=5, width=6)
 par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
 
 matplot(x = time[1:15], y = t(time_series[, 2:16]), 
@@ -113,7 +113,7 @@ dev.off()
 
 
 # #### Make time series plot through Generation 9 ####
-# pdf("figures/experiment-time-series-population-abundance.pdf", height=5, width=6)
+# pdf("figures/experiment-time-series-population-size.pdf", height=5, width=6)
 # par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
 # 
 # matplot(x = time, y = t(time_series[, 2:ncol(time_series)]), 
