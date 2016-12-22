@@ -28,10 +28,11 @@ b[2, 2] <- NA
 b[3, 2:4] <- NA
 b[4, 2:5] <- NA
 
-pdf("figures/experiment-time-series-establishment-proportion-absolute-time-type.pdf", height=5, width=6)
+#### Through 7 generations ####
+pdf("figures/experiment-time-series-establishment-proportion-absolute-time-type-seven-generations.pdf", height=5, width=6)
 par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
 
-matplot(x = 1:9, y = 100*t(b[, -1]), 
+matplot(x = 1:7, y = 100 * t(b[, c(-1, -9, -10)]), 
         lty = 1, 
         pch = 19, 
         lwd = 2, 
@@ -41,17 +42,43 @@ matplot(x = 1:9, y = 100*t(b[, -1]),
         ylab = "Percent established", 
         xaxt = "n", 
         yaxt = "n", 
-        xlim = c(1, 10.5), 
-        ylim = c(69, 102),
+        xlim = c(1, 7.5), 
+        ylim = c(75, 102),
         bty = "L",
         cex.lab = 1.5)
 
-axis(side = 1, at = 1:9, labels = c(1, NA, 3, NA, 5, NA, 7, NA, 9), cex.axis = 1.5)
-axis(side = 2, at = c(70, 80, 90, 100), las = 1, cex.axis = 1.5)
+axis(side = 1, at = 1:7, labels = c(1, NA, 3, NA, 5, NA, 7), cex.axis = 1.5)
+axis(side = 2, at = c(80, 90, 100), las = 1, cex.axis = 1.5)
 
-text(x = 10, y = 100 * b[, ncol(b)], labels = b[, 1], cex = 1.5)
+text(x = 7.5, y = 100 * b[, 8], labels = b[, 1], cex = 1.5)
 
 dev.off()
+
+#### Through all 9 generations ####
+# pdf("figures/experiment-time-series-establishment-proportion-absolute-time-type.pdf", height=5, width=6)
+# par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
+# 
+# matplot(x = 1:9, y = 100*t(b[, -1]), 
+#         lty = 1, 
+#         pch = 19, 
+#         lwd = 2, 
+#         col = 1, 
+#         type = "b", 
+#         xlab = "Generation", 
+#         ylab = "Percent established", 
+#         xaxt = "n", 
+#         yaxt = "n", 
+#         xlim = c(1, 10.5), 
+#         ylim = c(69, 102),
+#         bty = "L",
+#         cex.lab = 1.5)
+# 
+# axis(side = 1, at = 1:9, labels = c(1, NA, 3, NA, 5, NA, 7, NA, 9), cex.axis = 1.5)
+# axis(side = 2, at = c(70, 80, 90, 100), las = 1, cex.axis = 1.5)
+# 
+# text(x = 10, y = 100 * b[, ncol(b)], labels = b[, 1], cex = 1.5)
+# 
+# dev.off()
 
 
 #### Establishment when assessed at relative time points ####
