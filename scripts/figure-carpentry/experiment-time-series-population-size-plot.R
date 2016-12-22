@@ -5,14 +5,11 @@
 # Clear environment if necessary
 # rm(list=ls())
 
+library(viridis)
 source("scripts/data-carpentry/generate-tidy-data.R")
 
 beetles <- read.csv("data/Tribolium-propagule-pressure-data.csv")
 attributes <- read.csv("data/attributes.csv")  
-
-# b <- read.csv("Clean-Data/extinctions.csv")
-
-library(viridis)
 
 tidy.b <- tidy.beetles(beetles=beetles)
 
@@ -77,11 +74,9 @@ se_no_zeroes <- sigma_no_zeroes / sqrt(counts_no_zeroes)
 time <- c(0, rep(1:9, each=2))
 
 #### Make time series plot ####
-# pdf("figures/experiment-time-series-population-abundance.pdf", height=5, width=5)
-# postscript("figures/experiment-time-series-population-abundance.eps", family = "Times", height=5, width=5)
+pdf("figures/experiment-time-series-population-abundance.pdf", height=5, width=6)
+par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
 
-tiff("figures/experiment-time-series-population-abundance.tif", units= "in", res= 300, height=5, width=6)
-par(mar = c(4.1, 4.1, 1, 2), family = "Helvetica")
 matplot(x = time, y = t(time_series[, 2:ncol(time_series)]), 
         type = "l", 
         lty = "solid", 
@@ -90,7 +85,9 @@ matplot(x = time, y = t(time_series[, 2:ncol(time_series)]),
         xlab = "Generation", 
         ylab = "Population size", 
         xaxt = "n", 
-        ylim = c(0,80))
+        ylim = c(0,80),
+        cex.lab = 1.5,
+        cex.axis = 1.5)
 
 legend("topleft", 
        legend = c("20 individuals introduced in 1 event", "10x2", "4x5", "5x4"), 
@@ -100,8 +97,7 @@ legend("topleft",
        lwd = 3)
 
 axis(side = 1, 
-     at = 0:9, 
-     labels = c("P", "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9") )
+     at = 0:9)
 
 # ---------
 # Plot a 1 standard error envelope around the mean population abundances
