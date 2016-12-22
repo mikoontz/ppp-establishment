@@ -28,8 +28,9 @@ b[2, 2] <- NA
 b[3, 2:4] <- NA
 b[4, 2:5] <- NA
 
-tiff("figures/experiment-time-series-establishment-proportion-absolute-time-type.tif", units= "in", res= 300, height=5, width=6)
-par(mar=c(4,4,1,1), family = "Helvetica")
+pdf("figures/experiment-time-series-establishment-proportion-absolute-time-type.pdf", height=5, width=6)
+par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
+
 matplot(x = 1:9, y = 100*t(b[, -1]), 
         lty = 1, 
         pch = 19, 
@@ -40,12 +41,16 @@ matplot(x = 1:9, y = 100*t(b[, -1]),
         ylab = "Percent established", 
         xaxt = "n", 
         yaxt = "n", 
-        xlim = c(1, 10), 
-        bty = "L")
+        xlim = c(1, 10.5), 
+        ylim = c(69, 102),
+        bty = "L",
+        cex.lab = 1.5)
 
-axis(side = 1, at = 1:9, labels = c("F1", "", "F3", "", "F5", "", "F7", "", "F9"))
-axis(side = 2, las = 1)
-text(x = 10, y = 100 * b[, ncol(b)], labels = b[, 1])
+axis(side = 1, at = 1:9, labels = c(1, NA, 3, NA, 5, NA, 7, NA, 9), cex.axis = 1.5)
+axis(side = 2, at = c(70, 80, 90, 100), las = 1, cex.axis = 1.5)
+
+text(x = 10, y = 100 * b[, ncol(b)], labels = b[, 1], cex = 1.5)
+
 dev.off()
 
 
@@ -65,8 +70,9 @@ b <- read.csv("data/clean-establishment-data.csv", stringsAsFactors = FALSE) %>%
   as.data.frame()
 b
 
-tiff("figures/experiment-time-series-establishment-proportion-relative-time-type.tif", units= "in", res= 300, height=5, width=6)
-par(mar=c(4,4,1,1), family = "Helvetica")
+pdf("figures/experiment-time-series-establishment-proportion-relative-time-type.pdf", height=5, width=6)
+par(mar = c(5, 5.5, 1, 1), family = "Helvetica", mgp = c(4, 1, 0))
+
 matplot(x = 1:5, y = 100*t(b[, -1]), 
         lty = 1, 
         pch = 19, 
@@ -78,9 +84,10 @@ matplot(x = 1:5, y = 100*t(b[, -1]),
         xaxt = "n", 
         yaxt = "n", 
         xlim = c(1, 6), 
-        bty = "L")
+        bty = "L",
+        cex.lab = 1.5)
 
-axis(side = 1, at = 1:5)
-axis(side = 2, las = 1)
-text(x = 6, y = 100 * b[, ncol(b)], labels = b[, 1])
+axis(side = 1, at = 1:5, cex.axis = 1.5)
+axis(side = 2, las = 1, cex.axis = 1.5)
+text(x = 5.5, y = 100 * b[, ncol(b)], labels = b[, 1], cex = 1.5)
 dev.off()
