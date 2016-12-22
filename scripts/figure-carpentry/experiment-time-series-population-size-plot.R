@@ -73,11 +73,11 @@ se_no_zeroes <- sigma_no_zeroes / sqrt(counts_no_zeroes)
 
 time <- c(0, rep(1:9, each=2))
 
-#### Make time series plot ####
-pdf("figures/experiment-time-series-population-abundance.pdf", height=5, width=6)
+#### Make time series plot through Generation 7 ####
+pdf("figures/experiment-time-series-population-abundance-generation-seven.pdf", height=5, width=6)
 par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
 
-matplot(x = time, y = t(time_series[, 2:ncol(time_series)]), 
+matplot(x = time[1:15], y = t(time_series[, 2:16]), 
         type = "l", 
         lty = "solid", 
         col = adjustcolor("grey", alpha.f= 0.1), 
@@ -97,7 +97,7 @@ legend("topleft",
        lwd = 3)
 
 axis(side = 1, 
-     at = 0:9)
+     at = 0:7)
 
 # ---------
 # Plot a 1 standard error envelope around the mean population abundances
@@ -105,9 +105,48 @@ axis(side = 1,
 for (j in 1:nrow(means_no_zeroes))
 {
   
-  polygon(x= c(time, rev(time)), y= c((means_no_zeroes[j, ] - se_no_zeroes[j, ]), rev(means_no_zeroes[j, ] + se_no_zeroes[j, ])), col=adjustcolor(viridis(4)[j], alpha.f= 0.5), border = NA)
+  polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(viridis(4)[j], alpha.f= 0.5), border = NA)
 }
-matplot(time, t(means_no_zeroes), add= TRUE, col=viridis(4), type="l", lwd=1.5, lty="solid")
+matplot(time[1:15], t(means_no_zeroes[, 1:15]), add= TRUE, col=viridis(4), type="l", lwd=1.5, lty="solid")
 
 dev.off()
+
+
+# #### Make time series plot through Generation 9 ####
+# pdf("figures/experiment-time-series-population-abundance.pdf", height=5, width=6)
+# par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
+# 
+# matplot(x = time, y = t(time_series[, 2:ncol(time_series)]), 
+#         type = "l", 
+#         lty = "solid", 
+#         col = adjustcolor("grey", alpha.f= 0.1), 
+#         las = 1, 
+#         xlab = "Generation", 
+#         ylab = "Population size", 
+#         xaxt = "n", 
+#         ylim = c(0,80),
+#         cex.lab = 1.5,
+#         cex.axis = 1.5)
+# 
+# legend("topleft", 
+#        legend = c("20 individuals introduced in 1 event", "10x2", "4x5", "5x4"), 
+#        bty = "n", 
+#        col = viridis(4), 
+#        lty = 1,
+#        lwd = 3)
+# 
+# axis(side = 1, 
+#      at = 0:9)
+# 
+# # ---------
+# # Plot a 1 standard error envelope around the mean population abundances
+# # ---------
+# for (j in 1:nrow(means_no_zeroes))
+# {
+#   
+#   polygon(x= c(time, rev(time)), y= c((means_no_zeroes[j, ] - se_no_zeroes[j, ]), rev(means_no_zeroes[j, ] + se_no_zeroes[j, ])), col=adjustcolor(viridis(4)[j], alpha.f= 0.5), border = NA)
+# }
+# matplot(time, t(means_no_zeroes), add= TRUE, col=viridis(4), type="l", lwd=1.5, lty="solid")
+# 
+# dev.off()
 
