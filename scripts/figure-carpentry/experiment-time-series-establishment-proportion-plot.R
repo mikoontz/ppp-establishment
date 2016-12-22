@@ -42,7 +42,7 @@ matplot(x = 1:7, y = 100 * t(b[, c(-1, -9, -10)]),
         ylab = "Percent established", 
         xaxt = "n", 
         yaxt = "n", 
-        xlim = c(1, 7.5), 
+        xlim = c(1, 8), 
         ylim = c(75, 102),
         bty = "L",
         cex.lab = 1.5)
@@ -50,7 +50,7 @@ matplot(x = 1:7, y = 100 * t(b[, c(-1, -9, -10)]),
 axis(side = 1, at = 1:7, labels = c(1, NA, 3, NA, 5, NA, 7), cex.axis = 1.5)
 axis(side = 2, at = c(80, 90, 100), las = 1, cex.axis = 1.5)
 
-text(x = 7.5, y = 100 * b[, 8], labels = b[, 1], cex = 1.5)
+text(x = 7.25, y = 100 * b[, 8], labels = b[, 1], cex = 1.5, pos = 4)
 
 dev.off()
 
