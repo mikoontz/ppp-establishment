@@ -260,8 +260,13 @@ bb <- subset(b, subset = (gap == FALSE))
 m6 <- glmer(N6plus1 ~ number*environment + (1 | block), data=bb, family=poisson, control=glmerControl(optimizer="bobyqa"))
 
 m7 <- update(m6, formula= .~. - number:environment)
-
 anova(m6, m7) # Significant interaction of number of introductions and environmental stability
+
+m8 <- update(m7, formula = . ~ . - environment)
+anova(m7, m8) # Significant main effect of environment
+
+m9 <- update(m7, formula = . ~ . - number)
+anova(m7, m9) # Significant main effect of introduction regime
 
 # The final model which includes all fixed effects
 final <- m6
