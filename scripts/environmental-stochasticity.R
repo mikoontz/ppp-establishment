@@ -22,8 +22,10 @@ attributes <- read.csv("data/attributes.csv")
 b <- tidy.beetles(beetles = beetles) # Convert long form data to short form (one generation per column)
 data_col <- 2:(ncol(b$Nt) - 1) # The data columns (i.e. all time steps, but not including ID column for the tidy data.frames)
 
+max_gen <- 7 # Total number of generations for which to calculate variance across
+
 lambdas <- b$Ntp1[, data_col] / b$Nt[, data_col] # Calculate year to year population growth rates
-stoch_tot <- data.frame(attributes, stoch_tot=apply(lambdas, 1, function(x) var(log(x)))) # Add total stochasticity (defined as var(log(lambdas))) to the attributes data frame
+stoch_tot <- data.frame(attributes, stoch_tot=apply(lambdas[1:max_gen], 1, function(x) var(log(x)))) # Add total stochasticity (defined as var(log(lambdas))) to the attributes data frame
 
 #------------
 # Fitted models testing for effect of environment group (stable vs fluctuating) on actual total stochasticity
