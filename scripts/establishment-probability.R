@@ -791,6 +791,7 @@ mtext(side=3,
 bb <- subset(b.trim, subset=number %in% c(2,4,5))
 bb$temp <- ifelse(bb$temp.extinctions > 0, yes=TRUE, no=FALSE)
 bb$temp <- as.factor(bb$temp)
+bb$effective_colonists <- 20 - bb$loss
 
 tempA <- glmer(extant7 ~ number*environment + temp + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
@@ -800,8 +801,8 @@ anova(tempA, reducedModel)
 # Significant effect of temporary extinction versus not
 summary(tempA)
 
-lossA <- glmer(extant7 ~ number*environment + loss + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
-summary(lossA)
+effective_colonists_model <- glmer(extant7 ~ number*environment + effective_colonists + (1 | block), data=bb, family=binomial, control=glmerControl(optimizer="bobyqa"))
+summary(effective_colonists_model)
 
-anova(lossA, reducedModel)
+anova(effective_colonists_model, reducedModel)
 # No significant effect of AMOUNT of loss.
