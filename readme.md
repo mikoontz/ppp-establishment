@@ -10,16 +10,16 @@ Michael Koontz
             -   [generate-establishment-responses-for-analysis](#generate-establishment-responses-for-analysis)
             -   [generate-tidy-data](#generate-tidy-data)
         -   [figure-carpentry](#figure-carpentry)
-            -   [experiment-time-series-population-abundance-plot](#experiment-time-series-population-abundance-plot)
+            -   [experiment-time-series-population-size-plot](#experiment-time-series-population-size-plot)
             -   [experiment-time-series-establishment-proportion-plot](#experiment-time-series-establishment-proportion-plot)
-            -   [establishment-and-abundance-experiment-and-simulation-results-plot](#establishment-and-abundance-experiment-and-simulation-results-plot)
+            -   [establishment-and-size-experiment-and-simulation-results-plot](#establishment-and-size-experiment-and-simulation-results-plot)
         -   [simulations](#simulations)
             -   [NBBg-population-dynamics-function](#nbbg-population-dynamics-function)
             -   [NBBg-simulation-functions](#nbbg-simulation-functions)
             -   [NBBg-simulation-script](#nbbg-simulation-script)
         -   [environmental-stochasticity](#environmental-stochasticity)
         -   [establishment-probability](#establishment-probability)
-        -   [population-abundance](#population-abundance)
+        -   [population-size](#population-size)
         -   [temporary-extinctions](#temporary-extinctions)
         -   [NBBg-NIMBLE](#nbbg-nimble)
         -   [NBBg-script](#nbbg-script)
@@ -51,11 +51,13 @@ Michael Koontz
         -   [initial-density-dependence](#initial-density-dependence)
         -   [Tribolium-propagule-pressure-data](#tribolium-propagule-pressure-data)
     -   [figures](#figures)
-        -   [experiment-time-series-population-abundance](#experiment-time-series-population-abundance)
+        -   [experiment-time-series-population-size](#experiment-time-series-population-size)
+        -   [experiment-time-series-population-size-seven-generations](#experiment-time-series-population-size-seven-generations)
         -   [experiment-time-series-establishment-proportion-absolute-time-type](#experiment-time-series-establishment-proportion-absolute-time-type)
+        -   [experiment-time-series-establishment-proportion-absolute-time-type-seven-generations](#experiment-time-series-establishment-proportion-absolute-time-type-seven-generations)
         -   [experiment-time-series-establishment-proportion-relative-time-type](#experiment-time-series-establishment-proportion-relative-time-type)
         -   [establishment-probability-experiment-and-simulations](#establishment-probability-experiment-and-simulations)
-        -   [population-abundance-experiment-and-simulations](#population-abundance-experiment-and-simulations)
+        -   [population-size-experiment-and-simulations](#population-size-experiment-and-simulations)
     -   [written-notes](#written-notes)
         -   [NBBg-model-specification](#nbbg-model-specification)
 
@@ -64,7 +66,7 @@ Introduction
 
 We introduced 917 populations of *Tribolium* flour beetles comprising 20 individuals apiece to novel environments that were either stable or randomly fluctuating through time, varying the number of introduction events used to distribute them (1, 2, 4, or 5 events). Thus, there were 4 levels of "introduction regime" (20 individuals introduced in the 1st generation, 10 individuals introduced in the first 2 generations, 5 individuals introduced in the first 4 generations, and 4 individuals introduced in the first 5 generations), and 2 levels of "environmental stability" (stable or randomly fluctuating through time).
 
-Our goal was to investigate how the introduction regime and environmental stability of the recipient environment might affect establishment probability and the population abundance of the established populations.
+Our goal was to investigate how the introduction regime and environmental stability of the recipient environment might affect establishment probability and the population size of the established populations.
 
 This repository (`mikoontz\ppp-establishment`) represents the data and analysis from the experiment.
 
@@ -94,11 +96,11 @@ Converts long form census data (one row represents the census for each populatio
 
 Scripts that generate the figures in the paper
 
-#### experiment-time-series-population-abundance-plot
+#### experiment-time-series-population-size-plot
 
 File type: .R
 
-Script to generate the <a href="#experiment-time-series-population-abundance">experiment-time-series-population-abundance</a> figure.
+Script to generate the <a href="#experiment-time-series-population-size">experiment-time-series-population-size</a> figure.
 
 #### experiment-time-series-establishment-proportion-plot
 
@@ -106,11 +108,11 @@ File type: .R
 
 Generates the <a href="#experiment-time-series-establishment-proportion-absolute-time-type">experiment-time-series-establishment-proportion-absolute-time-type</a> and <a href="#experiment-time-series-establishment-proportion-relative-time-type.tif">experiment-time-series-establishment-proportion-relative-time-type</a> figures.
 
-#### establishment-and-abundance-experiment-and-simulation-results-plot
+#### establishment-and-size-experiment-and-simulation-results-plot
 
 File type: .R
 
-Generates the <a href="#establishment-probability-experiment-and-simulations.tif">establishment-probability-experiment-and-simulations.tif</a> and <a href="#population-abundance-experiment-and-simulations.tif">population-abundance-experiment-and-simulations.tif</a> figures.
+Generates the <a href="#establishment-probability-experiment-and-simulations.tif">establishment-probability-experiment-and-simulations.tif</a> and <a href="#population-size-experiment-and-simulations.tif">population-size-experiment-and-simulations.tif</a> figures.
 
 ### simulations
 
@@ -148,11 +150,11 @@ Mixed effects logistic regression analyses with establishment as response (1 or 
 
 Assessments of establishment or extinction were made at fixed time points throughout the experiment (generations F5, F6, F7, F8, and F9), at a relative time point (5 generations after the final introduction event for each introduction regime), and at each time point with the population ID as a random effect in a repeated measures framework.
 
-### population-abundance
+### population-size
 
 File type: .R
 
-Mixed effects Poisson regression analyses with population abundance as response with introduction regime and environmental stability as covariates.The script includes several analyses, all with a check to see whether the introduction gap in generation F2 was important.
+Mixed effects Poisson regression analyses with population size as response with introduction regime and environmental stability as covariates.The script includes several analyses, all with a check to see whether the introduction gap in generation F2 was important.
 
 Assessments of population size were made at fixed time points throughout the experiment (generations F5, F6, F7, F8, and F9) and at a relative time point (5 generations after the final introduction event for each introduction regime).
 
@@ -313,7 +315,7 @@ These are the population attributes that describe each population. They can be e
 
 File type: .csv
 
-The data used for establishment and population abundance analysis, which was generated with the <a href="#generate-establishment-responses-for-analysis.r">generate-establishment-responses-for-analysis.R</a> script.
+The data used for establishment and population size analysis, which was generated with the <a href="#generate-establishment-responses-for-analysis.r">generate-establishment-responses-for-analysis.R</a> script.
 
 ### initial-density-dependence
 
@@ -330,35 +332,47 @@ Raw, long-form census data from parsing propagule pressure experiment. Each row 
 figures
 -------
 
-### experiment-time-series-population-abundance
+### experiment-time-series-population-size
 
-File type: .tif
+File type: .pdf
 
-The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations F1 and F2. (That is, no population augmentation of F1 adults). Also plots mean population abundance and a 1 standard error envelope around that mean for each introduction regime.
+The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations 1 and 2. (That is, no population augmentation of generation 1 adults). Also plots mean population size and a 1 standard error envelope around that mean for each introduction regime. Plot through generation 9.
+
+### experiment-time-series-population-size-seven-generations
+
+File type: .pdf
+
+The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations 1 and 2. (That is, no population augmentation of generation 1 adults). Also plots mean population size and a 1 standard error envelope around that mean for each introduction regime. Plot through generation 7.
 
 ### experiment-time-series-establishment-proportion-absolute-time-type
 
-File type: .tif
+File type: .pdf
 
-Establishment proportion of experimental populations as a function of the total number of generations elapsed in the experiment.
+Establishment proportion of experimental populations as a function of the total number of generations elapsed in the experiment through generation 9.
+
+### experiment-time-series-establishment-proportion-absolute-time-type-seven-generations
+
+File type: .pdf
+
+Establishment proportion of experimental populations as a function of the total number of generations elapsed in the experiment through generation 7.
 
 ### experiment-time-series-establishment-proportion-relative-time-type
 
-File type: .tif
+File type: .pdf
 
 Establishment proportion of experimental populations as a function of number of generations since the final introduction event.
 
 ### establishment-probability-experiment-and-simulations
 
-File type: .tif
+File type: .pdf
 
 Plot of establishment probability results from experiment and simulations assessed at generation 7.
 
-### population-abundance-experiment-and-simulations
+### population-size-experiment-and-simulations
 
-File type: .tif
+File type: .pdf
 
-Plot of population abundance results from experiment and simulations assessed at generation 7.
+Plot of population size results from experiment and simulations assessed at generation 7.
 
 written-notes
 -------------
