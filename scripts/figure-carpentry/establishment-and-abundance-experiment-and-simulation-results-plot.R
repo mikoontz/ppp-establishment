@@ -62,7 +62,7 @@ pdf("figures/establishment-probability-experiment-and-simulations.pdf", height =
 par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
 
 plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean), 
-     ylim=c(min_y, 1.05), 
+     ylim=c(min_y - 0.03, 1.05), 
      xlim = xlim, 
      las=1, 
      pch=19, 
@@ -71,6 +71,7 @@ plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean),
      xlab="Introduction regime", 
      ylab="Establishment probability", 
      bty="L",
+     cex = 2,
      cex.lab = 1.5)
 
 axis(side = 1, 
@@ -80,7 +81,7 @@ axis(side = 1,
      cex.axis = 1.5)
 
 axis(side = 2,
-     at = c(0.7, 0.8, 0.9, 1.0),
+     at = c(0.6, 0.7, 0.8, 0.9, 1.0),
      las = 1,
      cex.axis = 1.5)
 
@@ -89,16 +90,18 @@ segments(x0 = establishment_xvals,
          y1 = plogis(establishment_posthoc$asymp.UCL), 
          lwd = 2)
 
-text(x = 1:4, y = 1.05, labels = establishment_sig_letters, pos = 1)
+text(x = 1:4, y = 1.05, labels = establishment_sig_letters, pos = 1, cex = 1.5)
 
 #### Add simulation results to the plot ####
 points(x = establishment_xvals, y = sims_establish$establish_prop,
+       cex = 2,
        pch = 17)
 
 legend(x = 3, y = 0.725,
-       legend = c("experiment results", "simulation results"),
+       legend = c("microcosm", "simulation"),
        pch = c(19, 17),
-       bty = "n")
+       bty = "n",
+       cex = 1.5)
 
 dev.off()
 
