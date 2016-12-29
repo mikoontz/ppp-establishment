@@ -97,11 +97,11 @@ points(x = establishment_xvals, y = sims_establish$establish_prop,
        cex = 2,
        pch = 17)
 
-legend(x = 3, y = 0.725,
+legend("bottomright",
        legend = c("microcosm", "simulation"),
        pch = c(19, 17),
        bty = "n",
-       cex = 1.5)
+       cex = 1.25)
 
 dev.off()
 
@@ -124,14 +124,14 @@ popSize_xvals <- offset_xvals(1:4, 0.1)
 
 min_y <- min(c(exp(popSize_posthoc$asymp.LCL), sims_popSize$mean_N))
 max_y <- max(exp(popSize_posthoc$asymp.UCL))
-xlim <- range(popSize_xvals) + c(-0.25, 0.25)
+xlim <- range(popSize_xvals) + c(-0.4, 0.4)
 
 pdf("figures/population-size-experiment-and-simulations.pdf", height = 5, width = 6)
 par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
 
 plot(x = popSize_xvals, y = exp(popSize_posthoc$lsmean),
      type = "n", # Set the plot up, but do not print lines yet
-     ylim = c(-5, max_y + 4), 
+     ylim = c(-10, max_y + 4), 
      xlim = xlim, 
      las = 1, 
      pch = 1, 
@@ -149,11 +149,13 @@ segments(x0 = popSize_xvals,
 
 points(x = popSize_xvals[c(1, 3, 5, 7)], y = exp(popSize_posthoc$lsmean[c(1, 3, 5, 7)]),
        pch = 1,
-       type = "b")
+       type = "b",
+       cex = 2)
 
 points(x = popSize_xvals[c(2, 4, 6, 8)], y = exp(popSize_posthoc$lsmean[c(2, 4, 6, 8)]),
      pch = 19,
-     type = "b")
+     type = "b",
+     cex = 2)
 
 axis(side = 1, 
      at = 1:4, 
@@ -166,25 +168,31 @@ axis(side = 2,
      las = 1,
      cex.axis = 1.5)
 
-legend(x = 3,
-       y = 10,
-       legend = c("fluctuating", "stable", "simulation results", "equilibrium size"), 
-       pch = c(1, 19, 2, NA),
-       lty = c(NA, NA, NA, 2),
-       lwd = c(NA, NA, NA, 2),
-       bty = "n")
+legend("bottomleft",
+       legend = c("fluctuating", "stable", "equilibrium size"), 
+       pch = c(0, 15, NA),
+       lty = c(NA, NA, 2),
+       lwd = c(NA, NA, 2),
+       bty = "n",
+       cex = 1.25)
 
-text(x = popSize_xvals, y = max_y + 7, labels = popSize_sig_letters, pos = 1)
+legend("bottomright",
+       legend = c("microcosm", "simulation"), 
+       pch = c(19, 17),
+       bty = "n",
+       cex = 1.25)
+
+text(x = popSize_xvals, y = max_y + 7, labels = popSize_sig_letters, pos = 1, cex = 1.5)
 
 sims_xvals <- offset_xvals(popSize_xvals, offset = 0.05)
 #### Add simulation results to the plot ####
 # segments(x0 = sims_xvals[seq(1, length(sims_xvals), by = 2)], x1 = sims_xvals[seq(2, length(sims_xvals), by = 2)], y0 = sims_popSize$mean_N, lwd = 4)
 
 points(x = popSize_xvals[c(1, 3, 5, 7)], y = sims_popSize$mean_N[c(1, 3, 5, 7)],
-       pch = 2)
+       pch = 2, cex = 2)
 
 points(x = popSize_xvals[c(2, 4, 6, 8)], y = sims_popSize$mean_N[c(2, 4, 6, 8)],
-       pch = 17)
+       pch = 17, cex = 2)
 
 segments(x0 = xlim[1], x1 = xlim[2], y0 = mean(equilibrium_popSize), y1 = mean(equilibrium_popSize), lty = "dashed", lwd = 2)
 
