@@ -1,7 +1,7 @@
 Table of Contents for `ppp-establishment` Repository
 ================
 Michael Koontz
-12/14/2016
+January 27, 2017
 
 -   [Introduction](#introduction)
 -   [Files in Repository](#files-in-repository)
@@ -19,12 +19,12 @@ Michael Koontz
             -   [NBBg-simulation-script](#nbbg-simulation-script)
         -   [environmental-stochasticity](#environmental-stochasticity)
         -   [establishment-probability](#establishment-probability)
+        -   [measurement-error](#measurement-error)
+        -   [NBBg-NIMBLE](#nbbg-nimble)
+        -   [NBBg-script-validation](#nbbg-script-validation)
+        -   [NBBg-script](#nbbg-script)
         -   [population-size](#population-size)
         -   [temporary-extinctions](#temporary-extinctions)
-        -   [NBBg-NIMBLE](#nbbg-nimble)
-        -   [NBBg-script](#nbbg-script)
-        -   [NBBg-script-validation](#nbbg-script-validation)
-        -   [NBBg-environment-stability-effect](#nbbg-environment-stability-effect)
     -   [data](#data)
         -   [simulations](#simulations-1)
             -   [simulation\_stats\_tidy](#simulation_stats_tidy)
@@ -49,6 +49,8 @@ Michael Koontz
         -   [attributes](#attributes)
         -   [clean-establishment-data](#clean-establishment-data)
         -   [initial-density-dependence](#initial-density-dependence)
+        -   [measurement-error](#measurement-error-1)
+        -   [melbourne\_ricker\_data](#melbourne_ricker_data)
         -   [Tribolium-propagule-pressure-data](#tribolium-propagule-pressure-data)
     -   [figures](#figures)
         -   [experiment-time-series-population-size](#experiment-time-series-population-size)
@@ -150,6 +152,30 @@ Mixed effects logistic regression analyses with establishment as response (1 or 
 
 Assessments of establishment or extinction were made at fixed time points throughout the experiment (generations F5, F6, F7, F8, and F9), at a relative time point (5 generations after the final introduction event for each introduction regime), and at each time point with the population ID as a random effect in a repeated measures framework.
 
+### measurement-error
+
+File type: .R
+
+Analysis of measurement error as a function of observer and size of population being censused.
+
+### NBBg-NIMBLE
+
+File type: .R
+
+Metropolis-Hastings algorithm to estimate parameters in NBBg model from Melbourne and Hastings (2008) using the `nimble` package.
+
+### NBBg-script-validation
+
+File type: .R
+
+Test of the NBBg `nimble` code on simulated dataset with known parameters and on a published dataset with previously estimated parameters (Melbourne and Hastings, 2008).
+
+### NBBg-script
+
+File type: .R
+
+Script to run `nimble` algorithm, assess MCMC diagnostics, and write samples to a file for use in simulations.
+
 ### population-size
 
 File type: .R
@@ -163,30 +189,6 @@ Assessments of population size were made at fixed time points throughout the exp
 File type: .R
 
 Assessment of whether temporary extinctions in the multiply-introduced populations affected establishment probability or population size. Tests effect of temporary extinction versus no temporary extinction (categorical variable with 2 levels) as well as effect of "amount of loss" (continuous variable) representing how many of the 20 possible individuals introduced did not have a genetic contribution to the population when response was assessed. That is, the "amount of loss" represents how much of a bottleneck the population passed through during introduction.
-
-### NBBg-NIMBLE
-
-File type: .R
-
-Metropolis-Hastings algorithm to estimate parameters in NBBg model from Melbourne and Hastings (2008) using the `nimble` package.
-
-### NBBg-script
-
-File type: .R
-
-Script to run `nimble` algorithm, assess MCMC diagnostics, and write samples to a file for use in simulations.
-
-### NBBg-script-validation
-
-File type: .R
-
-Test of the NBBg `nimble` code on simulated dataset with known parameters and on a published dataset with previously estimated parameters (Melbourne and Hastings, 2008).
-
-### NBBg-environment-stability-effect
-
-File type: .R
-
-Uses the NBBg `nimble` code to estimate parameters of the NBBg model fit to the raw experimental data from Generation P to Generation F1 in the fluctuating environment versus the stable environment. We would expect the kE parameter to be larger in the stable environment, indicating less variability in N<sub>t+1</sub> arising from environmental stochasticity.
 
 data
 ----
@@ -322,6 +324,18 @@ The data used for establishment and population size analysis, which was generate
 File type: .csv
 
 Data for estimating parameters in the NBBg stochastic population dynamics model. Represents 125 populations with a starting population size ranging from 5 to 200 individuals, and a full census at the next time step.
+
+### measurement-error
+
+File type: .csv
+
+Data from experiment to quantify measurement error during census as a function of observer and size of the population being censused.
+
+### melbourne\_ricker\_data
+
+File type: .csv
+
+Census data from Melbourne and Hastings (2008) used to validate our implementation of the NBBg model using the NIMBLE language.
 
 ### Tribolium-propagule-pressure-data
 
