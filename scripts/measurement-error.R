@@ -51,6 +51,10 @@ pct_err_long <- CoV %>%
   mutate(size_cat = ifelse(box %in% 1:5, yes = "s", no = ifelse(box %in% 6:10, yes = "m", no = "l"))) %>%
   mutate(group_mn = group.mn[box]) # Add the group means for each box
 
+max(pct_err_long$pct_err, na.rm = TRUE)
+mean(pct_err_long$pct_err, na.rm = TRUE)
+median(pct_err_long$pct_err, na.rm = TRUE)
+
 # Treat the population size as a categorical predictor with 3 levels (small, medium, large)
 fm1 <- lm(pct_err ~ observer + size_cat, data = pct_err_long)
 summary(fm1)
