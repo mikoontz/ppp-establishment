@@ -1,7 +1,7 @@
 Table of Contents for `ppp-establishment` Repository
 ================
 Michael Koontz
-January 27, 2017
+February 13, 2017
 
 -   [Introduction](#introduction)
 -   [Files in Repository](#files-in-repository)
@@ -50,8 +50,9 @@ January 27, 2017
         -   [clean-establishment-data](#clean-establishment-data)
         -   [initial-density-dependence](#initial-density-dependence)
         -   [measurement-error](#measurement-error-1)
-        -   [melbourne\_ricker\_data](#melbourne_ricker_data)
+        -   [melbourne-ricker-data](#melbourne-ricker-data)
         -   [Tribolium-propagule-pressure-data](#tribolium-propagule-pressure-data)
+        -   [Tribolium-source-population-data](#tribolium-source-population-data)
     -   [figures](#figures)
         -   [experiment-time-series-population-size](#experiment-time-series-population-size)
         -   [experiment-time-series-population-size-seven-generations](#experiment-time-series-population-size-seven-generations)
@@ -124,7 +125,7 @@ Scripts related to the simulation component to the project.
 
 File type: .R
 
-Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, \(\alpha\), kE, and kD).
+Simulates N<sub>t+1</sub> given N<sub>t</sub> and the values of 4 key parameters of the NBBg model (R<sub>0</sub>, *α*, kE, and kD).
 
 #### NBBg-simulation-functions
 
@@ -313,6 +314,8 @@ File type: .csv
 
 These are the population attributes that describe each population. They can be easily merged (aka joined) with other population information (*e.g.* response variables) by the unique identifier "ID".
 
+ID: unique population identifier block: which of the 4 temporal blocks the population belonged to (1, 2, 3, or 4) color: the color code of the block (blue, green, pink, or yellow) number: the number of introductions in the introduction regime of the population (1, 2, 4, or 5) size: the size of each introduction in the introduction regime of the population (20, 10, 5, or 4) environment: the environment context (stable or fluctuating) of the population special: was there anything idiosyncratic about this population? gap: was there an introduction gap during the multiple introductions (these populations were excluded from analysis) notes: more detailed notes on idiosyncracies drought: was there a dramatic loss of relative humidity between generations 2 and 3 due to total evaporation of the water trays? (turned out to not have any detectable effect by any measure)
+
 ### clean-establishment-data
 
 File type: .csv
@@ -331,7 +334,7 @@ File type: .csv
 
 Data from experiment to quantify measurement error during census as a function of observer and size of the population being censused.
 
-### melbourne\_ricker\_data
+### melbourne-ricker-data
 
 File type: .csv
 
@@ -342,6 +345,16 @@ Census data from Melbourne and Hastings (2008) used to validate our implementati
 File type: .csv
 
 Raw, long-form census data from parsing propagule pressure experiment. Each row represents the census value (and other attributes) for a single population in a single generation.
+
+Column descriptions: ID: unique population identifier Week: During which experiment week did the census take place? There were 2 blocks of surveys per week for 2 weeks in a row, then no censuses for 3 weeks, then the next generation's censuses start Environment: The percent of the growth medium that was the natal medium (95% wheat flour, 5% corn flour) Generation: To which generation did the censused adults belong? (e.g. initial introduction would be 0, offspring from initial introduction are generation 1, etc.) N0: The number of adulte beetles from the previous generation Census: The number of adult beetles in the current generation Person: Initials of the person doing the census Setup.Order: Subsets of populations (consisting of no more than 10 populations each) were censused in a random order in each block; this number represents the position of the subset of populations in that census order to which the population belonged Addition: How many beetles will be added to the population this generation from the external source population Last.addition: The number of beetles introduced to the population in the previous generation Proportion.new: What proportion of the total beetles from the previous generation were introduced from the external source population
+
+### Tribolium-source-population-data
+
+File type: .csv
+
+Raw, long-form census data from the source population maintenance. Note that not all patches were censused each generation, just a sample to monitor population growth rates.
+
+ID: convenience identifier; these are NOT unique and did NOT correspond to the same population throughout the course of the maintenance of this population. All IDs within a block were mixed together after census, before selecting colonists, and before refounding the source population for incubation Week: During which experiment week did the census take place? There were 2 blocks of surveys per week for 2 weeks in a row, then no censuses for 3 weeks, then the next generation's censuses start Block: which of the 4 temporal blocks the population was in Color: the color code for each block Environment: The percent of the growth medium that was the natal medium (95% wheat flour, 5% corn flour) Generation: To which generation did the censused adults belong? (e.g. initial introduction would be 0, offspring from initial introduction are generation 1, etc.) N0: The number of adulte beetles from the previous generation Census: The number of adult beetles in the current generation Check: Data entry check on the Census column Person: Initials of the person doing the census notes: Anything out of ordinary for the census
 
 figures
 -------
