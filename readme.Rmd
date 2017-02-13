@@ -8,15 +8,23 @@ output:
     toc_depth: 4
 ---
 
+# Abstract
 
-# Introduction
-We introduced 917 populations of *Tribolium* flour beetles comprising 20 individuals apiece to novel environments that were either stable or randomly fluctuating through time, varying the number of introduction events used to distribute them (1, 2, 4, or 5 events). Thus, there were 4 levels of "introduction regime" (20 individuals introduced in the 1st generation, 10 individuals introduced in the first 2 generations, 5 individuals introduced in the first 4 generations, and 4 individuals introduced in the first 5 generations), and 2 levels of "environmental stability" (stable or randomly fluctuating through time).
+Colonization of novel habitats is more likely with increasing propagule pressure— the total number of individuals introduced to a site. Two key components of propagule pressure are the number of introduction events through time and the average size of those introduction events. It is unclear which of these components is more important for colonization success, or under what environmental conditions their relative importance might shift. Using simulations and a highly replicated, seven-generation microcosm experiment with Tribolium flour beetles, we fixed the total number of individuals introduced to a stable or randomly fluctuating novel habitat and manipulated the number of introductions used to distribute those individuals as well as the number of individuals per introduction event. We evaluated how different combinations of the number and size of introductions affected establishment probability, size of established populations, and whether effects depended on the variability of the recipient environment. We found no effect of biologically realistic environmental stochasticity on establishment probability or size of established populations in the demographic simulations. However, there was strong evidence that establishment probability was enhanced with more, smaller introductions. In the microcosm, we similarly found no effect of environmental stochasticity on establishment probability, but unlike the simulations found that populations that established were larger in the stable environment, especially with more introduction events. The microcosm experiment yielded greater overall establishment probability and larger populations compared to the demographic simulations. Genetic mechanisms likely underlie these differences in results and thus deserve more attention in efforts to parse propagule pressure. Our results highlight the importance of preventing further introductions of undesirable species to invaded sites, and suggest conservation efforts should focus on increasing the number of introductions or re-introductions of desirable species rather than increasing the size of those introduction events.
 
-Our goal was to investigate how the introduction regime and environmental stability of the recipient environment might affect establishment probability and the population size of the established populations.
+# Keywords
 
-This repository (`mikoontz\ppp-establishment`) represents the data and analysis from the experiment.
+invasion, reintroduction, propagule pressure, biocontrol, conservation, microcosm, population dynamics, stochasticity, simulation
+
+# General Methods Framework
+
+In simulations and a microcosm experiment, we evaluated the outcome of introducing 20 total individuals to one of two environmental contexts (a stable or fluctuating novel environment), varying the number of introduction events used to distribute those individuals through time. This total was low enough to allow some population extinction within a reasonable timeframe, but high enough to be representative of documented introductions in the literature (Simberloff 1989, Simberloff 2009; Grevstad 1999; Berggren 2001; Taylor et al. 2005; Drake et al. 2005). The introduction regimes were: 20 individuals introduced in the first generation, 10 individuals introduced in each of the first 2 generations, 5 individuals introduced in each of the first 4 generations, and 4 individuals introduced in each of the first 5 generations. To create the fluctuating environment, we imposed a magnitude of variability corresponding to environmental stochasticity in nature, which leads to frequent, mild to moderate perturbations in population growth rate due to external forces (sensu Lande 1993). Populations were tracked for seven generations following the initial introduction. 
+
+Establishment probability and the size of established populations were used as measures of colonization success. Populations were deemed ‘established’ for any time step in which they were extant and population size was noted for all extant populations in every time step. For analysis, establishment probability and mean population size were assessed in generation 7.
 
 # Files in Repository
+
+This repository (`mikoontz\ppp-establishment`) represents the data and analysis from the simulations and the experiment.
 
 ## scripts
 ### data-carpentry
