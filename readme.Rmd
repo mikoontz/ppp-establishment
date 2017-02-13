@@ -237,6 +237,36 @@ File type: .csv
 
 Raw, long-form census data from parsing propagule pressure experiment. Each row represents the census value (and other attributes) for a single population in a single generation.
 
+Column descriptions:
+ID: unique population identifier
+Week: During which experiment week did the census take place? There were 2 blocks of surveys per week for 2 weeks in a row, then no censuses for 3 weeks, then the next generation's censuses start
+Environment: The percent of the growth medium that was the natal medium (95% wheat flour, 5% corn flour)
+Generation: To which generation did the censused adults belong? (e.g. initial introduction would be 0, offspring from initial introduction are generation 1, etc.)
+N0: The number of adulte beetles from the previous generation
+Census: The number of adult beetles in the current generation
+Person: Initials of the person doing the census
+Setup.Order: Subsets of populations (consisting of no more than 10 populations each) were censused in a random order in each block; this number represents the position of the subset of populations in that census order to which the population belonged
+Addition: How many beetles will be added to the population this generation from the external source population
+Last.addition: The number of beetles introduced to the population in the previous generation
+Proportion.new: What proportion of the total beetles from the previous generation were introduced from the external source population 
+
+### Tribolium-source-population-data
+File type: .csv
+
+Raw, long-form census data from the source population maintenance. Note that not all patches were censused each generation, just a sample to monitor population growth rates.
+
+ID: convenience identifier; these are NOT unique and did NOT correspond to the same population throughout the course of the maintenance of this population. All IDs within a block were mixed together after census, before selecting colonists, and before refounding the source population for incubation
+Week: During which experiment week did the census take place? There were 2 blocks of surveys per week for 2 weeks in a row, then no censuses for 3 weeks, then the next generation's censuses start
+Block: which of the 4 temporal blocks the population was in
+Color: the color code for each block
+Environment: The percent of the growth medium that was the natal medium (95% wheat flour, 5% corn flour)
+Generation: To which generation did the censused adults belong? (e.g. initial introduction would be 0, offspring from initial introduction are generation 1, etc.)
+N0: The number of adulte beetles from the previous generation
+Census: The number of adult beetles in the current generation
+Check: Data entry check on the Census column
+Person: Initials of the person doing the census
+notes: Anything out of ordinary for the census
+
 ## figures
 ### experiment-time-series-population-size
 File type: .pdf
