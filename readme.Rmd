@@ -227,7 +227,7 @@ File type: .csv
 
 Data from experiment to quantify measurement error during census as a function of observer and size of the population being censused.
 
-### melbourne_ricker_data
+### melbourne-ricker-data
 File type: .csv
 
 Census data from Melbourne and Hastings (2008) used to validate our implementation of the NBBg model using the NIMBLE language.
