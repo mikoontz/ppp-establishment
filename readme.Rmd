@@ -212,6 +212,17 @@ File type: .csv
 
 These are the population attributes that describe each population. They can be easily merged (aka joined) with other population information (*e.g.* response variables) by the unique identifier "ID".
 
+ID: unique population identifier
+block: which of the 4 temporal blocks the population belonged to (1, 2, 3, or 4)
+color: the color code of the block (blue, green, pink, or yellow)
+number: the number of introductions in the introduction regime of the population (1, 2, 4, or 5)
+size: the size of each introduction in the introduction regime of the population (20, 10, 5, or 4)
+environment: the environment context (stable or fluctuating) of the population
+special: was there anything idiosyncratic about this population?
+gap: was there an introduction gap during the multiple introductions (these populations were excluded from analysis)
+notes: more detailed notes on idiosyncracies
+drought: was there a dramatic loss of relative humidity between generations 2 and 3 due to total evaporation of the water trays? (turned out to not have any detectable effect by any measure)
+
 ### clean-establishment-data
 File type: .csv
 
