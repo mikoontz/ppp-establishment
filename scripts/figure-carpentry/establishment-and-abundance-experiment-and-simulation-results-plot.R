@@ -58,7 +58,7 @@ establishment_xvals <- 1:length(establishment_posthoc$lsmean)
 min_y <- min(c(plogis(establishment_posthoc$asymp.LCL)), sims_establish$establish_prop)
 xlim <- range(establishment_xvals) + c(-0.5, 0.5)
 
-pdf("figures/establishment-probability-experiment-and-simulations.pdf", height = 3, width = 3.14961)
+pdf("figures/establishment-probability-experiment-and-simulations.pdf", height = 3.14961, width = 3.14961)
 par(mar = c(3.5, 3.5, 0.5, 0.25), family = "Helvetica", mgp = c(2.25, 1, 0))
 
 plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean), 
@@ -126,7 +126,7 @@ min_y <- min(c(exp(popSize_posthoc$asymp.LCL), sims_popSize$mean_N))
 max_y <- max(exp(popSize_posthoc$asymp.UCL))
 xlim <- range(popSize_xvals) + c(-0.4, 0.4)
 
-pdf("figures/population-size-experiment-and-simulations.pdf", height = 3, width = 3.14961)
+pdf("figures/population-size-experiment-and-simulations.pdf", height = 3.14961, width = 3.14961)
 par(mar = c(3.5, 3.25, 0.5, 0.25), family = "Helvetica", mgp = c(2.0, 1, 0))
 
 plot(x = popSize_xvals, y = exp(popSize_posthoc$lsmean),
