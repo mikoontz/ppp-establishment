@@ -59,7 +59,7 @@ min_y <- min(c(plogis(establishment_posthoc$asymp.LCL)), sims_establish$establis
 xlim <- range(establishment_xvals) + c(-0.5, 0.5)
 
 pdf("figures/establishment-probability-experiment-and-simulations.pdf", height = 3, width = 3.14961)
-par(mar = c(3.5, 3.5, 0.5, 0.5), family = "Helvetica", mgp = c(2.25, 1, 0))
+par(mar = c(3.5, 3.5, 0.5, 0.25), family = "Helvetica", mgp = c(2.25, 1, 0))
 
 plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean), 
      ylim=c(min_y - 0.03, 1.05), 
@@ -69,8 +69,7 @@ plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean),
      xaxt = "n", 
      yaxt = "n",
      xlab = NA, 
-     ylab = "Establishment probability", 
-     bty = "L")
+     ylab = "Establishment probability")
 
 mtext(side = 1,
       text = "Introduction regime",
@@ -99,6 +98,7 @@ points(x = establishment_xvals, y = sims_establish$establish_prop,
        pch = 17)
 
 legend("bottomright",
+       inset = c(0, -0.025),
        legend = c("microcosm", "simulation"),
        pch = c(19, 17),
        bty = "n")
@@ -126,8 +126,8 @@ min_y <- min(c(exp(popSize_posthoc$asymp.LCL), sims_popSize$mean_N))
 max_y <- max(exp(popSize_posthoc$asymp.UCL))
 xlim <- range(popSize_xvals) + c(-0.4, 0.4)
 
-pdf("figures/population-size-experiment-and-simulations.pdf", height = 5, width = 6)
-par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
+pdf("figures/population-size-experiment-and-simulations.pdf", height = 3, width = 3.14961)
+par(mar = c(3.5, 3.25, 0.5, 0.25), family = "Helvetica", mgp = c(2.0, 1, 0))
 
 plot(x = popSize_xvals, y = exp(popSize_posthoc$lsmean),
      type = "n", # Set the plot up, but do not print lines yet
@@ -137,10 +137,12 @@ plot(x = popSize_xvals, y = exp(popSize_posthoc$lsmean),
      pch = 1, 
      xaxt = "n",
      yaxt = "n",
-     xlab = "Introduction regime", 
-     ylab = "Population size", 
-     bty = "L",
-     cex.lab = 1.5)
+     xlab = NA, 
+     ylab = "Population size")
+
+mtext(side = 1,
+      text = "Introduction regime",
+      line = 2)
 
 segments(x0 = popSize_xvals, 
          y0 = exp(popSize_posthoc$asymp.LCL), 
@@ -149,50 +151,53 @@ segments(x0 = popSize_xvals,
 
 points(x = popSize_xvals[c(1, 3, 5, 7)], y = exp(popSize_posthoc$lsmean[c(1, 3, 5, 7)]),
        pch = 1,
-       type = "b",
-       cex = 2)
+       type = "b")
 
 points(x = popSize_xvals[c(2, 4, 6, 8)], y = exp(popSize_posthoc$lsmean[c(2, 4, 6, 8)]),
      pch = 19,
-     type = "b",
-     cex = 2)
+     type = "b")
 
 axis(side = 1, 
      at = 1:4, 
-     labels=c("20x1", "10x2", "5x4", "4x5"), 
-     tick=FALSE,
-     cex.axis = 1.5)
+     labels = c("20x1", "10x2", "5x4", "4x5"), 
+     tick = FALSE,
+     line = -0.5)
 
 axis(side = 2,
      at = seq(0, 60, by = 20),
      las = 1,
-     cex.axis = 1.5)
+     hadj = 0.75)
 
 legend("bottomleft",
-       legend = c("fluctuating", "stable", "equilibrium size"), 
-       pch = c(0, 15, NA),
-       lty = c(NA, NA, 2),
-       lwd = c(NA, NA, 2),
-       bty = "n",
-       cex = 1.25)
+       inset = c(0, -0.025),
+       legend = c("fluctuating", "stable"), 
+       pch = c(0, 15),
+       bty = "n")
+
+legend("bottom",
+       inset = c(0, 0.15),
+       legend = "equilibrium size", 
+       lty = 2,
+       lwd = 2,
+       bty = "n")
 
 legend("bottomright",
+       inset = c(0, -0.025),
        legend = c("microcosm", "simulation"), 
        pch = c(19, 17),
-       bty = "n",
-       cex = 1.25)
+       bty = "n")
 
-text(x = popSize_xvals, y = max_y + 7, labels = popSize_sig_letters, pos = 1, cex = 1.5)
+text(x = popSize_xvals, y = max_y + 9, labels = popSize_sig_letters, pos = 1)
 
 sims_xvals <- offset_xvals(popSize_xvals, offset = 0.05)
 #### Add simulation results to the plot ####
 # segments(x0 = sims_xvals[seq(1, length(sims_xvals), by = 2)], x1 = sims_xvals[seq(2, length(sims_xvals), by = 2)], y0 = sims_popSize$mean_N, lwd = 4)
 
 points(x = popSize_xvals[c(1, 3, 5, 7)], y = sims_popSize$mean_N[c(1, 3, 5, 7)],
-       pch = 2, cex = 2)
+       pch = 2)
 
 points(x = popSize_xvals[c(2, 4, 6, 8)], y = sims_popSize$mean_N[c(2, 4, 6, 8)],
-       pch = 17, cex = 2)
+       pch = 17)
 
 segments(x0 = xlim[1], x1 = xlim[2], y0 = mean(equilibrium_popSize), y1 = mean(equilibrium_popSize), lty = "dashed", lwd = 2)
 
