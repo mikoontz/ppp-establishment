@@ -103,24 +103,25 @@ b <- read.csv("data/clean-establishment-data.csv", stringsAsFactors = FALSE) %>%
   as.data.frame()
 b
 
-pdf("figures/experiment-time-series-establishment-proportion-relative-time-type.pdf", height=5, width=6)
-par(mar = c(5, 5.5, 1, 1), family = "Helvetica", mgp = c(4, 1, 0))
-
-matplot(x = 1:5, y = 100*t(b[, -1]), 
-        lty = 1, 
-        pch = 19, 
-        lwd = 2, 
-        col = 1, 
-        type = "b", 
-        xlab = "Generations since\nfinal introduction event", 
-        ylab = "Percent established", 
-        xaxt = "n", 
-        yaxt = "n", 
-        xlim = c(1, 6), 
-        bty = "L",
-        cex.lab = 1.5)
-
-axis(side = 1, at = 1:5, cex.axis = 1.5)
-axis(side = 2, las = 1, cex.axis = 1.5)
-text(x = 5.5, y = 100 * b[, ncol(b)], labels = b[, 1], cex = 1.5)
-dev.off()
+#### Establishment proportion in generations relative to the final introduction event ####
+# pdf("figures/experiment-time-series-establishment-proportion-relative-time-type.pdf", height=5, width=6)
+# par(mar = c(5, 5.5, 1, 1), family = "Helvetica", mgp = c(4, 1, 0))
+# 
+# matplot(x = 1:5, y = 100*t(b[, -1]), 
+#         lty = 1, 
+#         pch = 19, 
+#         lwd = 2, 
+#         col = 1, 
+#         type = "b", 
+#         xlab = "Generations since\nfinal introduction event", 
+#         ylab = "Percent established", 
+#         xaxt = "n", 
+#         yaxt = "n", 
+#         xlim = c(1, 6), 
+#         bty = "L",
+#         cex.lab = 1.5)
+# 
+# axis(side = 1, at = 1:5, cex.axis = 1.5)
+# axis(side = 2, las = 1, cex.axis = 1.5)
+# text(x = 5.5, y = 100 * b[, ncol(b)], labels = b[, 1], cex = 1.5)
+# dev.off()
