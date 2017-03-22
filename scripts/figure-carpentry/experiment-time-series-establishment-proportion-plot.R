@@ -29,28 +29,34 @@ b[3, 2:4] <- NA
 b[4, 2:5] <- NA
 
 #### Through 7 generations ####
-pdf("figures/experiment-time-series-establishment-proportion-absolute-time-type-seven-generations.pdf", height=5, width=6)
-par(mar = c(4.7, 4.7, 1, 1), family = "Helvetica", mgp = c(3.3, 1, 0))
+pdf("figures/experiment-time-series-establishment-proportion-absolute-time-type-seven-generations.pdf", height = 3.14961, width = 3.14961)
+par(mar = c(3.5, 3.5, 0.5, 0.5), family = "Helvetica", mgp = c(2.25, 1, 0))
 
 matplot(x = 1:7, y = 100 * t(b[, c(-1, -9, -10)]), 
         lty = 1, 
         pch = 19, 
         lwd = 2, 
-        col = 1, 
+        col = viridis(4), 
         type = "b", 
         xlab = "Generation", 
         ylab = "Percent established", 
         xaxt = "n", 
         yaxt = "n", 
-        xlim = c(1, 8), 
+        xlim = c(1, 7), 
         ylim = c(75, 102),
-        bty = "L",
-        cex.lab = 1.5)
+        cex = 0.75)
 
-axis(side = 1, at = 1:7, labels = c(1, NA, 3, NA, 5, NA, 7), cex.axis = 1.5)
-axis(side = 2, at = c(80, 90, 100), las = 1, cex.axis = 1.5)
+legend("bottomleft", 
+       legend = c("20x1", "10x2", "4x5", "5x4"), 
+       bty = "n", 
+       col = viridis(4), 
+       pch = 15)
 
-text(x = 7.25, y = 100 * b[, 8], labels = b[, 1], cex = 1.5, pos = 4)
+axis(side = 1, at = 1:7, labels = 1:7)
+axis(side = 2, at = c(80, 90, 100), las = 1)
+
+# No need for the introductionr regime labels if we can have color
+# text(x = 7.25, y = 100 * b[, 8], labels = b[, 1], pos = 4)
 
 dev.off()
 
