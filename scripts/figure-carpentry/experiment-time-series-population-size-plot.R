@@ -86,10 +86,99 @@ time <- c(0, rep(1:9, each=2))
 
 #### Make a 2-panel plot of population size through generation 7 where each panel has a different environment treatment ####
 
-# pdf("figures/experiment-time-series-population-size-seven-generations-environment-facet.pdf", height = 3.14961, width = 3.14961 * 2)
+pdf("figures/experiment-time-series-population-size-seven-generations-environment-facet.pdf", height = 3.14961, width = 3.14961 * 2)
+
+par(mfrow = c(1, 2), mar = c(3.5, 1.5, 2, 0.5), family = "Helvetica", mgp = c(3.3, 1, 0), oma = c(0, 1.5, 0, 0))
+
+
+# Plot populations from the stable environment first
+matplot(x = time[1:15], y = t(data[data$env == "stable", 2:16]),
+        type = "l",
+        lty = "solid",
+        col = adjustcolor("grey", alpha.f= 0.2),
+        las = 1,
+        xlab = NA,
+        ylab = NA,
+        xaxt = "n",
+        yaxt = "n",
+        ylim = c(0, 90),
+        cex.axis = 1)
+
+mtext(side = 3, text = "Stable environment", cex = 1, line = 0.5)
+
+legend("topleft",
+       legend = c("20x1", "10x2", "4x5", "5x4"),
+       bty = "n",
+       col = viridis(4),
+       pch = 15)
+
+axis(side = 1,
+     at = 0:7,
+     cex.axis = 1)
+
+axis(side = 2,
+     las = 1,
+     at = seq(0, 90, by = 30),
+     hadj = 0.6)
+
+
+# Plot a 1 standard error envelope around the mean population abundances
+
+for (j in 5:8)
+{
+
+  polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(viridis(4)[j - 4], alpha.f= 0.5), border = NA)
+}
+
+matplot(time[1:15], t(means_no_zeroes[5:8, 1:15]), add= TRUE, col=viridis(4), type="l", lwd=1.5, lty="solid")
+
+# Second panel is all of the populations in fluctuating environments
+
+matplot(x = time[1:15], y = t(data[data$env == "fluctuating", 2:16]),
+        type = "l",
+        lty = "solid",
+        col = adjustcolor("grey", alpha.f= 0.2),
+        las = 1,
+        xlab = NA,
+        ylab = NA,
+        xaxt = "n",
+        yaxt = "n",
+        ylim = c(0, 90),
+        cex.axis = 1)
+
+mtext(side = 3, text = "Fluctuating environment", cex = 1, line = 0.5)
+
+axis(side = 1,
+     at = 0:7,
+     cex.axis = 1)
+
+axis(side = 2,
+     las = 1,
+     at = seq(0, 90, by = 30),
+     hadj = 0.6)
+
+mtext(side = 1, text = "Generation", outer = TRUE, line = -1.25, cex = 1)
+mtext(side = 2, text = "Population size", outer = TRUE, line = 0.5, cex = 1)
+
+# Plot a 1 standard error envelope around the mean population abundances
+
+for (j in 1:4)
+{
+
+  polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(viridis(4)[j], alpha.f= 0.5), border = NA)
+}
+
+matplot(time[1:15], t(means_no_zeroes[1:4, 1:15]), add= TRUE, col=viridis(4), type="l", lwd=1.5, lty="solid")
+
+dev.off()
+
+#### Make a 2-panel plot of population size through generation 7 where each panel has a different environment treatment and populations that eventually went extinct are highlighted. ####
+
+# pdf("figures/experiment-time-series-population-size-seven-generations-environment-facet-with-extinctions.pdf", height = 3.14961, width = 3.14961 * 2)
 # 
 # par(mfrow = c(1, 2), mar = c(3.5, 1.5, 2, 0.5), family = "Helvetica", mgp = c(3.3, 1, 0), oma = c(0, 1.5, 0, 0))
 # 
+# plotColors <- viridis(4)
 # 
 # # Plot populations from the stable environment first
 # matplot(x = time[1:15], y = t(data[data$env == "stable", 2:16]), 
@@ -99,17 +188,35 @@ time <- c(0, rep(1:9, each=2))
 #         las = 1, 
 #         xlab = NA, 
 #         ylab = NA, 
-#         xaxt = "n", 
+#         xaxt = "n",
 #         yaxt = "n",
 #         ylim = c(0, 90),
 #         cex.axis = 1)
 # 
+# matplot(x = time[1:15], y = t(data[is.na(data$N8) & data$environment == "stable", 2:16]),
+#         type = "l",
+#         col = adjustcolor(magma(5)[4], alpha.f= 0.2),
+#         lty = "solid",
+#         add = TRUE)
+# 
 # mtext(side = 3, text = "Stable environment", cex = 1, line = 0.5)
+# 
+# # legend("topleft", 
+# #        legend = c("20x1", "10x2", "4x5", "5x4", "extinct"), 
+# #        bty = "n", 
+# #        col = c(plotColors, magma(5)[4]), 
+# #        pch = 15)
 # 
 # legend("topleft", 
 #        legend = c("20x1", "10x2", "4x5", "5x4"), 
 #        bty = "n", 
-#        col = viridis(4), 
+#        col = plotColors, 
+#        pch = 15)
+# 
+# legend("topright", 
+#        legend = "extinct by gen. 7", 
+#        bty = "n", 
+#        col = magma(5)[4], 
 #        pch = 15)
 # 
 # axis(side = 1, 
@@ -127,12 +234,14 @@ time <- c(0, rep(1:9, each=2))
 # for (j in 5:8)
 # {
 #   
-#   polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(viridis(4)[j - 4], alpha.f= 0.5), border = NA)
+#   polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(plotColors[j - 4], alpha.f= 0.5), border = NA)
 # }
 # 
-# matplot(time[1:15], t(means_no_zeroes[5:8, 1:15]), add= TRUE, col=viridis(4), type="l", lwd=1.5, lty="solid")
+# matplot(time[1:15], t(means_no_zeroes[5:8, 1:15]), add= TRUE, col=plotColors[1:4], type="l", lwd=1.5, lty="solid")
 # 
 # # Second panel is all of the populations in fluctuating environments
+# 
+# par(mar = c(3.5, 1.5, 2, 1))
 # 
 # matplot(x = time[1:15], y = t(data[data$env == "fluctuating", 2:16]), 
 #         type = "l", 
@@ -141,10 +250,15 @@ time <- c(0, rep(1:9, each=2))
 #         las = 1, 
 #         xlab = NA, 
 #         ylab = NA, 
-#         xaxt = "n", 
+#         xaxt = "n",
 #         yaxt = "n",
-#         ylim = c(0, 90),
-#         cex.axis = 1)
+#         ylim = c(0, 90))
+# 
+# matplot(x = time[1:15], y = t(data[is.na(data$N8) & data$environment == "fluctuating", 2:16]),
+#         type = "l",
+#         col = adjustcolor(magma(5)[4], alpha.f= 0.2),
+#         lty = "solid",
+#         add = TRUE)
 # 
 # mtext(side = 3, text = "Fluctuating environment", cex = 1, line = 0.5)
 # 
@@ -165,126 +279,12 @@ time <- c(0, rep(1:9, each=2))
 # for (j in 1:4)
 # {
 #   
-#   polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(viridis(4)[j], alpha.f= 0.5), border = NA)
+#   polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(plotColors[j], alpha.f= 0.5), border = NA)
 # }
 # 
-# matplot(time[1:15], t(means_no_zeroes[1:4, 1:15]), add= TRUE, col=viridis(4), type="l", lwd=1.5, lty="solid")
+# matplot(time[1:15], t(means_no_zeroes[1:4, 1:15]), add= TRUE, col=plotColors[1:4], type="l", lwd=1.5, lty="solid")
 # 
 # dev.off()
-
-#### Make a 2-panel plot of population size through generation 7 where each panel has a different environment treatment and populations that eventually went extinct are highlighted. ####
-
-pdf("figures/experiment-time-series-population-size-seven-generations-environment-facet-with-extinctions.pdf", height = 3.14961, width = 3.14961 * 2)
-
-par(mfrow = c(1, 2), mar = c(3.5, 1.5, 2, 0.5), family = "Helvetica", mgp = c(3.3, 1, 0), oma = c(0, 1.5, 0, 0))
-
-plotColors <- viridis(4)
-
-# Plot populations from the stable environment first
-matplot(x = time[1:15], y = t(data[data$env == "stable", 2:16]), 
-        type = "l", 
-        lty = "solid", 
-        col = adjustcolor("grey", alpha.f= 0.2), 
-        las = 1, 
-        xlab = NA, 
-        ylab = NA, 
-        xaxt = "n",
-        yaxt = "n",
-        ylim = c(0, 90),
-        cex.axis = 1)
-
-matplot(x = time[1:15], y = t(data[is.na(data$N8) & data$environment == "stable", 2:16]),
-        type = "l",
-        col = adjustcolor(magma(5)[4], alpha.f= 0.2),
-        lty = "solid",
-        add = TRUE)
-
-mtext(side = 3, text = "Stable environment", cex = 1, line = 0.5)
-
-# legend("topleft", 
-#        legend = c("20x1", "10x2", "4x5", "5x4", "extinct"), 
-#        bty = "n", 
-#        col = c(plotColors, magma(5)[4]), 
-#        pch = 15)
-
-legend("topleft", 
-       legend = c("20x1", "10x2", "4x5", "5x4"), 
-       bty = "n", 
-       col = plotColors, 
-       pch = 15)
-
-legend("topright", 
-       legend = "extinct by gen. 7", 
-       bty = "n", 
-       col = magma(5)[4], 
-       pch = 15)
-
-axis(side = 1, 
-     at = 0:7,
-     cex.axis = 1)
-
-axis(side = 2,
-     las = 1,
-     at = seq(0, 90, by = 30),
-     hadj = 0.6)
-
-
-# Plot a 1 standard error envelope around the mean population abundances
-
-for (j in 5:8)
-{
-  
-  polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(plotColors[j - 4], alpha.f= 0.5), border = NA)
-}
-
-matplot(time[1:15], t(means_no_zeroes[5:8, 1:15]), add= TRUE, col=plotColors[1:4], type="l", lwd=1.5, lty="solid")
-
-# Second panel is all of the populations in fluctuating environments
-
-par(mar = c(3.5, 1.5, 2, 1))
-
-matplot(x = time[1:15], y = t(data[data$env == "fluctuating", 2:16]), 
-        type = "l", 
-        lty = "solid", 
-        col = adjustcolor("grey", alpha.f= 0.2), 
-        las = 1, 
-        xlab = NA, 
-        ylab = NA, 
-        xaxt = "n",
-        yaxt = "n",
-        ylim = c(0, 90))
-
-matplot(x = time[1:15], y = t(data[is.na(data$N8) & data$environment == "fluctuating", 2:16]),
-        type = "l",
-        col = adjustcolor(magma(5)[4], alpha.f= 0.2),
-        lty = "solid",
-        add = TRUE)
-
-mtext(side = 3, text = "Fluctuating environment", cex = 1, line = 0.5)
-
-axis(side = 1, 
-     at = 0:7,
-     cex.axis = 1)
-
-axis(side = 2,
-     las = 1,
-     at = seq(0, 90, by = 30),
-     hadj = 0.6)
-
-mtext(side = 1, text = "Generation", outer = TRUE, line = -1.25, cex = 1)
-mtext(side = 2, text = "Population size", outer = TRUE, line = 0.5, cex = 1)
-
-# Plot a 1 standard error envelope around the mean population abundances
-
-for (j in 1:4)
-{
-  
-  polygon(x= c(time[1:15], time[15:1]), y= c((means_no_zeroes[j, 1:15] - se_no_zeroes[j, 1:15]), means_no_zeroes[j, 15:1] + se_no_zeroes[j, 15:1]), col=adjustcolor(plotColors[j], alpha.f= 0.5), border = NA)
-}
-
-matplot(time[1:15], t(means_no_zeroes[1:4, 1:15]), add= TRUE, col=plotColors[1:4], type="l", lwd=1.5, lty="solid")
-
-dev.off()
 
 #### Make time series plot through Generation 7 ####
 # pdf("figures/experiment-time-series-population-size-seven-generations.pdf", height=5, width=6)
