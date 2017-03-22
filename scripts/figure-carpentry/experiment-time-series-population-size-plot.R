@@ -86,9 +86,9 @@ time <- c(0, rep(1:9, each=2))
 
 #### Make a 2-panel plot of population size through generation 7 where each panel has a different environment treatment ####
 
-pdf("figures/experiment-time-series-population-size-seven-generations-environment-facet.pdf", height = 4.53, width = 6.53)
+pdf("figures/experiment-time-series-population-size-seven-generations-environment-facet.pdf", height = 3.14961, width = 3.14961 * 2)
 
-par(mfrow = c(1, 2), mar = c(3.5, 1.5, 2, 1), family = "Helvetica", mgp = c(3.3, 1, 0), oma = c(0, 2, 0, 0))
+par(mfrow = c(1, 2), mar = c(3.5, 1.5, 2, 0.5), family = "Helvetica", mgp = c(3.3, 1, 0), oma = c(0, 1.5, 0, 0))
 
 
 # Plot populations from the stable environment first
@@ -100,7 +100,8 @@ matplot(x = time[1:15], y = t(data[data$env == "stable", 2:16]),
         xlab = NA, 
         ylab = NA, 
         xaxt = "n", 
-        ylim = c(0,80),
+        yaxt = "n",
+        ylim = c(0, 90),
         cex.axis = 1)
 
 mtext(side = 3, text = "Stable environment", cex = 1, line = 0.5)
@@ -109,12 +110,16 @@ legend("topleft",
        legend = c("20x1", "10x2", "4x5", "5x4"), 
        bty = "n", 
        col = viridis(4), 
-       lty = 1,
-       lwd = 3)
+       pch = 15)
 
 axis(side = 1, 
      at = 0:7,
      cex.axis = 1)
+
+axis(side = 2,
+     las = 1,
+     at = seq(0, 90, by = 30),
+     hadj = 0.6)
 
 
 # Plot a 1 standard error envelope around the mean population abundances
@@ -129,8 +134,6 @@ matplot(time[1:15], t(means_no_zeroes[5:8, 1:15]), add= TRUE, col=viridis(4), ty
 
 # Second panel is all of the populations in fluctuating environments
 
-par(mar = c(3.5, 1.5, 2, 1))
-
 matplot(x = time[1:15], y = t(data[data$env == "fluctuating", 2:16]), 
         type = "l", 
         lty = "solid", 
@@ -139,17 +142,23 @@ matplot(x = time[1:15], y = t(data[data$env == "fluctuating", 2:16]),
         xlab = NA, 
         ylab = NA, 
         xaxt = "n", 
-        ylim = c(0,80),
+        yaxt = "n",
+        ylim = c(0, 90),
         cex.axis = 1)
 
 mtext(side = 3, text = "Fluctuating environment", cex = 1, line = 0.5)
-mtext(side = 1, text = "Generation", outer = TRUE, line = -1.25, cex = 1)
-mtext(side = 2, text = "Population size", outer = TRUE, line = 1, cex = 1)
 
 axis(side = 1, 
      at = 0:7,
      cex.axis = 1)
 
+axis(side = 2,
+     las = 1,
+     at = seq(0, 90, by = 30),
+     hadj = 0.6)
+
+mtext(side = 1, text = "Generation", outer = TRUE, line = -1.25, cex = 1)
+mtext(side = 2, text = "Population size", outer = TRUE, line = 0.5, cex = 1)
 
 # Plot a 1 standard error envelope around the mean population abundances
 
