@@ -56,12 +56,14 @@ February 13, 2017
         -   [Tribolium-propagule-pressure-data](#tribolium-propagule-pressure-data)
         -   [Tribolium-source-population-data](#tribolium-source-population-data)
     -   [figures](#figures)
-        -   [experiment-time-series-population-size](#experiment-time-series-population-size)
-        -   [experiment-time-series-population-size-seven-generations](#experiment-time-series-population-size-seven-generations)
-        -   [experiment-time-series-establishment-proportion-absolute-time-type](#experiment-time-series-establishment-proportion-absolute-time-type)
-        -   [experiment-time-series-establishment-proportion-absolute-time-type-seven-generations](#experiment-time-series-establishment-proportion-absolute-time-type-seven-generations)
-        -   [experiment-time-series-establishment-proportion-relative-time-type](#experiment-time-series-establishment-proportion-relative-time-type)
         -   [establishment-probability-experiment-and-simulations](#establishment-probability-experiment-and-simulations)
+        -   [experiment-time-series-establishment-proportion-absolute-time-type-seven-generations](#experiment-time-series-establishment-proportion-absolute-time-type-seven-generations)
+        -   [experiment-time-series-establishment-proportion-absolute-time-type](#experiment-time-series-establishment-proportion-absolute-time-type)
+        -   [experiment-time-series-establishment-proportion-relative-time-type](#experiment-time-series-establishment-proportion-relative-time-type)
+        -   [experiment-time-series-population-size-seven-generations-environment-facet-with-extinctions](#experiment-time-series-population-size-seven-generations-environment-facet-with-extinctions)
+        -   [experiment-time-series-population-size-seven-generations-environment-facet](#experiment-time-series-population-size-seven-generations-environment-facet)
+        -   [experiment-time-series-population-size-seven-generations](#experiment-time-series-population-size-seven-generations)
+        -   [experiment-time-series-population-size](#experiment-time-series-population-size)
         -   [population-size-experiment-and-simulations](#population-size-experiment-and-simulations)
     -   [written-notes](#written-notes)
         -   [NBBg-model-specification](#nbbg-model-specification)
@@ -69,7 +71,7 @@ February 13, 2017
 Abstract
 ========
 
-Colonization of novel habitats is more likely with increasing propagule pressure— the total number of individuals introduced to a site. Two key components of propagule pressure are the number of introduction events and the size of those introduction events. It is unclear which of these components is more important for colonization success, or under what environmental conditions their relative importance might shift. Using demographic simulations paired with a Tribolium flour beetle microcosm experiment, we introduced 20 total individuals into replicated novel habitats of stable or fluctuating quality and manipulated the number and size of introduction events used to distribute them through time. After seven generations, we evaluated how different combinations of the number and size of introductions affected establishment probability, size of established populations, and whether effects depended on the variability of the recipient environment. We found no effect of biologically realistic environmental stochasticity on establishment probability or size of established populations in the demographic simulations. However, there was strong evidence that establishment probability was enhanced with more, smaller introductions. In the microcosm, we similarly found no effect of environmental stochasticity on establishment probability, but unlike the simulations found that populations that established were larger in the stable environment, especially with more introduction events. The microcosm experiment yielded greater overall establishment probability and larger populations compared to the demographic simulations. Genetic mechanisms likely underlie these differences in results and thus deserve more attention in efforts to parse propagule pressure. Our results highlight the importance of preventing further introductions of undesirable species to invaded sites, and suggest conservation efforts should focus on increasing the number of introductions or re-introductions of desirable species rather than increasing the size of those introduction events.
+Predicting whether individuals will colonize a novel habitat is of fundamental ecological interest and is crucial to both conservation efforts and invasive species management. The only consistent predictor of colonization success is the number of individuals introduced, also called propagule pressure. Propagule pressure increases with the number of introductions and the number of individuals per introduction (the size of the introduction), but it is unresolved which process is a stronger driver of colonization success. Furthermore their relative importance may depend upon the environment, with multiple introductions potentially enhancing colonization of fluctuating environments. To evaluate the relative importance of the number and size of introductions and its dependence upon environmental variability, we paired demographic simulations with a microcosm experiment. Using Tribolium flour beetles as a model system, we introduced a fixed number of individuals into replicated novel habitats of stable or fluctuating quality, varying the number of introductions through time and size of each introduction. We evaluated establishment probability and the size of extant populations after 7 generations. In the simulations and microcosms, we found that establishment probability increased with more, smaller introductions, but was not affected by biologically realistic fluctuations in environmental quality. Population size was not significantly affected by environmental variability in the simulations, but populations in the microcosms grew larger in a stable environment, especially with more introduction events. In general, the microcosm experiment yielded higher establishment probability and larger populations than the demographic simulations. We suggest that genetic mechanisms likely underlie these differences and thus deserve more attention in efforts to parse propagule pressure. Our results highlight the importance of preventing further introductions of undesirable species to invaded sites, and suggest conservation efforts should focus on increasing the number of introductions or re-introductions of desirable species rather than increasing the size of those introduction events.
 
 Keywords
 ========
@@ -435,23 +437,11 @@ notes: Anything out of ordinary for the census
 figures
 -------
 
-### experiment-time-series-population-size
+### establishment-probability-experiment-and-simulations
 
 File type: .pdf
 
-The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations 1 and 2. (That is, no population augmentation of generation 1 adults). Also plots mean population size and a 1 standard error envelope around that mean for each introduction regime. Plot through generation 9.
-
-### experiment-time-series-population-size-seven-generations
-
-File type: .pdf
-
-The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations 1 and 2. (That is, no population augmentation of generation 1 adults). Also plots mean population size and a 1 standard error envelope around that mean for each introduction regime. Plot through generation 7.
-
-### experiment-time-series-establishment-proportion-absolute-time-type
-
-File type: .pdf
-
-Establishment proportion of experimental populations as a function of the total number of generations elapsed in the experiment through generation 9.
+Plot of establishment probability results from experiment and simulations assessed at generation 7.
 
 ### experiment-time-series-establishment-proportion-absolute-time-type-seven-generations
 
@@ -459,17 +449,41 @@ File type: .pdf
 
 Establishment proportion of experimental populations as a function of the total number of generations elapsed in the experiment through generation 7.
 
+### experiment-time-series-establishment-proportion-absolute-time-type
+
+File type: .pdf
+
+Establishment proportion of experimental populations as a function of the total number of generations elapsed in the experiment through generation 9.
+
 ### experiment-time-series-establishment-proportion-relative-time-type
 
 File type: .pdf
 
 Establishment proportion of experimental populations as a function of number of generations since the final introduction event.
 
-### establishment-probability-experiment-and-simulations
+### experiment-time-series-population-size-seven-generations-environment-facet-with-extinctions
 
 File type: .pdf
 
-Plot of establishment probability results from experiment and simulations assessed at generation 7.
+Population size through time for all 842 populations faceted by environment treatment. Mean population size and standard error are shown in each facet for each introduction regime. The population size trajectories for populations that go extinct by generation 7 are highlighted in orange.
+
+### experiment-time-series-population-size-seven-generations-environment-facet
+
+File type: .pdf
+
+Population size through time for all 842 populations faceted by environment treatment. Mean population size and standard error are shown in each facet for each introduction regime.
+
+### experiment-time-series-population-size-seven-generations
+
+File type: .pdf
+
+The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations 1 and 2. (That is, no population augmentation of generation 1 adults). Also plots mean population size and a 1 standard error envelope around that mean for each introduction regime. Plot through generation 7.
+
+### experiment-time-series-population-size
+
+File type: .pdf
+
+The population trajectories for the 842 populations that didn't experience a gap in the introduction regime between generations 1 and 2. (That is, no population augmentation of generation 1 adults). Also plots mean population size and a 1 standard error envelope around that mean for each introduction regime. Plot through generation 9.
 
 ### population-size-experiment-and-simulations
 
