@@ -1,0 +1,177 @@
+---
+title: "Population size relative time"
+author: "Michael Koontz"
+date: "2/26/2018"
+output: html_document
+---
+
+# Purpose
+
+A quick outline of the population size analysis when using a relative amount of time since the final introduction event.
+
+```{r setup}
+library(car)
+library(ggplot2)
+library(lme4)
+library(lsmeans)
+library(multcompView)
+library(tidyr)
+library(dplyr)
+
+b <- read.csv("../data/clean-establishment-data.csv")
+b$number <- as.factor(b$number)
+b$block <- as.factor(b$block)
+b$gap <- as.factor(b$gap)
+```
+
+Don't bother assessing the effect of the introduction gap, just filter out those populations
+
+```{r filter_gap}
+b <-
+  b %>% 
+  filter(gap == FALSE)
+
+glimpse(b)
+```
+
+# Exploratory data analysis plot
+
+Visualize how many populations were extant 2 generations after their final introduction event would get us up to Generation 7 (as we reported in the paper). Looking 5 generations is as far as we can look, given the limits of our data collection.
+
+```{r eda_visualization_3_after}
+ggplot(b, aes(x = N_3_after)) +
+  geom_histogram(stat = "count") +
+  facet_grid(environment ~ number)
+```
+
+```{r eda_visualization_5_after}
+ggplot(b, aes(x = N_5_after)) +
+  geom_histogram(stat = "count") +
+  facet_grid(environment ~ number)
+```
+
+
+# Build some models
+
+## Five generations after final introduction event
+
+We will use a simple random effects structure with temporal block as a random intercept effect
+
+### Influence of fixed effects
+
+```{r fixed_effects_interaction}
+# Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
+m6 <- glmer(N_5_after ~ number*environment + (1 | block), data=b, family=poisson, control=glmerControl(optimizer="bobyqa"))
+
+m7 <- update(m6, formula= .~. - number:environment)
+
+anova(m6, m7)
+```
+
+We reject the null hypothesis that the model with the `number*environment` interaction equally as likely than the model without it, so we keep the interaction term and will base all interpretations without averaging across any treatments.
+
+Another way to look at group-level effects like we did with likelihood ratio tests is using a Type II Wald $\chi^2$ test. I think this test is somewhat anti-conservative, but it gives us a good ballpark and corroborates the results from our Likelihood Ratio Test.
+
+```{r wald}
+Anova(m6)
+```
+
+### Interpretation and contrasts
+
+We'll average across the environment treatments and focus on the introduction regime treatments.
+
+```{r interpretation_and_contrasts_visualize}
+# The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period
+final <- m6
+
+results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
+results
+posthoc <- summary(results$lsmeans)
+
+sig_letters <- lsmeans::cld(results, Letters = letters, adjust = "none")$.group[order(cld(results)$number)]
+xvals <- 1:length(posthoc$lsmean)
+min_y <- min(exp(posthoc$asymp.LCL))
+
+plot(x = xvals, y = exp(posthoc$lsmean), 
+     ylim=c(min_y, 50.0), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las=1, 
+     pch=19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Population size",
+     bty="L")
+
+axis(side=1, 
+     at = xvals, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
+
+arrows(x0 = xvals, 
+       y0 = exp(posthoc$asymp.LCL), 
+       y1 = exp(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+text(x = 1:4, y = 47.0, labels = sig_letters)
+
+mtext(side=3, 
+      text="Effect of propagule number on population size\nfive generations after final introduction", 
+      line = 2)
+```
+
+## Two generations after final intro event
+
+This analysis will use generation 7 as the latest possible generation (for the 4x5 intro regime, the 7th generation represents 3 generations after the final introduction.)
+
+```{r three_after}
+final_3after <- glmer(N_3_after ~ number*environment + (1 | block), data=b, family=poisson, control=glmerControl(optimizer="bobyqa"))
+
+Anova(final_3after)
+```
+
+We still find that number of introductions is the only important predictor. Let's plot:
+
+```{r visualize_3_after}
+results_3after <- lsmeans::lsmeans(final_3after, pairwise ~ number, adjust="none")
+results_3after
+posthoc_3after <- summary(results_3after$lsmeans)
+
+sig_letters_3after <- lsmeans::cld(results_3after, Letters = letters, adjust = "none")$.group[order(cld(results_3after)$number)]
+
+xvals_3after <- 1:length(posthoc_3after$lsmean)
+min_y_3after <- min(exp(posthoc_3after$asymp.LCL))
+
+plot(x = xvals_3after, y = exp(posthoc_3after$lsmean), 
+     ylim=c(min_y_3after, 65.0), 
+     xlim = range(xvals_3after) + c(-0.5, 0.5), 
+     las=1, 
+     pch=19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Population size",
+     bty="L")
+
+axis(side=1, 
+     at = xvals_3after, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
+
+arrows(x0 = xvals_3after, 
+       y0 = exp(posthoc_3after$asymp.LCL), 
+       y1 = exp(posthoc_3after$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+text(x = 1:4, y = 60.0, labels = sig_letters_3after)
+
+mtext(side=3, 
+      text="Effect of propagule number on population size\nthree generations after final introduction", 
+      line = 2)
+```
+
+
