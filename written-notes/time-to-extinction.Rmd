@@ -1,0 +1,123 @@
+---
+title: "Time to extinction eda"
+author: "Michael Koontz"
+date: "2/26/2018"
+output: html_document
+---
+
+# Purpose
+
+An exploratory data analysis to test whether the introduction regime or environmental stochasticity affected the time to extinction (max time = 5) for populations of *Tribolium* flour beetles.
+
+```{r setup}
+library(ggplot2)
+library(lme4)
+library(lsmeans)
+library(multcompView)
+library(tidyr)
+library(dplyr)
+
+b <- read.csv("../data/clean-establishment-data.csv")
+
+glimpse(b)
+```
+
+# Time to extinction calculation 
+
+How should we figure out the time to extinction for these populations? Again, we can measure this as time since first introduction or time since final introduction. I'll start with time since final introduction.
+
+We know when populations went *finally* extinct (if they did) from the `when.extinct` column. We also know how many generations it took to complete the introduction regime by the `number` column. In a 20x1 introduction regime, `number` would be 1, and if that population went extinct in the 2nd generation after the initial introduction (the initial introduction being at generation 0), then the `when.extinct` column would be 2. The time to extinction should be 2 in this case. Does it make sense to subtract the `number` column from the `when.extinct` column, then add 1 back? That is, the `when.extinct` column *does* represent the time to extinction for the 20x1 introduction regime.
+
+Another example using a multiply-introduced population. A 10x2 population goes extinct in the 4th generation after the initial introduction. `number` is 2, and `when.extinct` is 4. The time to extinction should be 3 generations after the final introduction. Our math still works: `when.extinct` minus `number` plus 1.
+
+Consider the gaps in the introductions for some populations. This essentially adds another generation to the `number` column, so that's how we can account for it. A 10x2 introduction with a gap was actually introduced across 3 generations (t0, skip t1, and then t2). If it went extinct in generation 4, then `when.extinct` is 4, `number` is 2, `gap` is 1 and the time to extinction should be `when.extinct` minus (`number` plus `gap`) plus 1 = 2.
+
+```{r calculate_time_to_extinction}
+b$time.to.extinction <- b$when.extinct - (b$number + as.numeric(b$gap)) + 1
+glimpse(b)
+```
+
+# Visualization 
+
+Let's visualize the time to extinction
+
+```{r visualize_distribution}
+b %>% 
+  filter(time.to.extinction <= 5) %>% 
+ggplot(aes(x = time.to.extinction)) +
+  geom_histogram() +
+  facet_grid(as.factor(number) ~ environment)
+```
+
+# Model building
+
+Let's remove populations with a gap in the introduction regime. We also need to remove populations that had a `time.to.extinction` greater than or equal to 5, since some introduction regimes couldn't go any higher than 5 (the 4x5) or 6 (the 5x4) or 8 (the 10x2) generations. This would bias the multiple introductions to be artificially low.
+
+```{r model_setup}
+b$number <- as.factor(b$number)
+b$block <- as.factor(b$block)
+b$gap <- as.factor(b$gap)
+
+bb <- subset(b, subset = (gap == FALSE) & time.to.extinction <= 5)
+
+m6 <- glmer(time.to.extinction ~ number*environment + (1 | block), data=bb, family=poisson, control=glmerControl(optimizer="bobyqa"))
+
+m7 <- update(m6, formula= .~. - number:environment)
+
+anova(m6, m7) # No significant interaction of number of introductions and environmental stability
+
+m8 <- update(m7, formula = . ~ . - environment)
+
+anova(m7, m8) # No significant effect of environment
+
+m9 <- update(m7, formula = . ~ . - number)
+
+anova(m7, m9) # Significant effect of number of introductions
+
+# The final model which includes all fixed effects
+final <- m6
+
+#### Analysis 2: Interpretation and contrasts ####
+
+results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
+results
+posthoc <- summary(results$lsmeans)
+```
+
+```{r plot_model}
+
+sig_letters <- lsmeans::cld(results, Letters = letters, sort = FALSE)$.group
+xvals <- 1:length(posthoc$lsmean)
+min_y <- min(exp(posthoc$asymp.LCL))
+
+
+par(mar=c(4,4,3,1))
+
+plot(x = xvals, y = exp(posthoc$lsmean), 
+     ylim = c(0, 10), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las = 1, 
+     pch = 19, 
+     xaxt = "n", 
+     xlab = "Introduction regime", 
+     ylab = "Time to Extinction", 
+     bty = "L")
+
+axis(side = 1, 
+     at = xvals, 
+     labels=c("20x1", "10x2", "5x4", "4x5"), 
+     tick=FALSE)
+
+arrows(x0 = xvals, 
+       y0 = exp(posthoc$asymp.LCL), 
+       y1 = exp(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+text(x = xvals, y = 9, labels = sig_letters)
+```
+
+```
+
