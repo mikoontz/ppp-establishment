@@ -36,10 +36,10 @@ glimpse(b)
 
 # Exploratory data analysis plot
 
-Visualize how many populations were extant 2 generations after their final introduction event would get us up to Generation 7 (as we reported in the paper). Looking 5 generations is as far as we can look, given the limits of our data collection.
+Visualize how many populations were extant 3 generations after their final introduction event would get us up to Generation 7 (as we reported in the paper). Looking 5 generations is as far as we can look, given the limits of our data collection.
 
-```{r eda_visualization_2_after}
-ggplot(b, aes(x = extant_2_after)) +
+```{r eda_visualization_3_after}
+ggplot(b, aes(x = extant_3_after)) +
   geom_histogram(stat = "count") +
   facet_grid(environment ~ number)
 ```
@@ -55,31 +55,31 @@ ggplot(b, aes(x = extant_5_after)) +
 
 We will use a simple random effects structure with temporal block as a random intercept effect
 
-## Influence of fixed effects
+## Five generations after the final introduction event. This uses data all the way up through generation 9 (for the 4x5 intro regime, generation 9 represents 5 generations after the final introduction event)
 
 ```{r fixed_effects_interaction}
 # Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
-m6 <- glmer(extant_5_after ~ number*environment + (1 | block), data=b, family=binomial, control=glmerControl(optimizer="bobyqa"))
+m_5after_1 <- glmer(extant_5_after ~ number*environment + (1 | block), data=b, family=binomial, control=glmerControl(optimizer="bobyqa"))
 
-m7 <- update(m6, formula= .~. - number:environment)
+m_5after_2 <- update(m_5after_1, formula= .~. - number:environment)
 
-anova(m6, m7)
+anova(m_5after_1, m_5after_2)
 ```
 
 We fail to reject the null hypothesis that the model with the `number*environment` interaction equally as likely than the model without it, so we proceed by simplifying the model and dropping the interaction term.
 
 ```{r fixed_effects_environment}
-m8 <- update(m7, formula= .~. -environment)
+m_5after_3 <- update(m_5after_2, formula= .~. -environment)
 
-anova(m7, m8)
+anova(m_5after_3, m_5after_2)
 ```
 
 We fail to reject the null hypothesis that the model with the `environment` predictor is equally as likely as the model without it, so we infer that it may not be an important predictor.
 
 ```{r fixed_effects_number}
-m9 <- update(m8, formula= .~. -number)
+m_5after_4 <- update(m_5after_3, formula= .~. -number)
 
-anova(m8, m9)
+anova(m_5after_4, m_5after_3)
 ```
 
 We reject the null hypothesis that the model with the `number` predictor is equally as likely as the model without it, so that must be an important predictor and we focus our interpretation there.
@@ -87,28 +87,26 @@ We reject the null hypothesis that the model with the `number` predictor is equa
 Another way to look at group-level effects like we did with likelihood ratio tests is using a Type II Wald $\chi^2$ test. I think this test is somewhat anti-conservative, but it gives us a good ballpark and corroborates the results from our Likelihood Ratio Test.
 
 ```{r wald}
-Anova(m6)
+Anova(m_5after_1)
 ```
-
-## Interpretation and contrasts
 
 We'll average across the environment treatments and focus on the introduction regime treatments.
 
 ```{r interpretation_and_contrasts_visualize}
 # The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period
-final <- m6
+final_5after <- m_5after_1
 
-results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
-results
-posthoc <- summary(results$lsmeans)
+results_5after <- lsmeans::lsmeans(final_5after, pairwise ~ number, adjust="none")
+results_5after
+posthoc_5after <- summary(results_5after$lsmeans)
 
-sig_letters <- lsmeans::cld(results, Letters = letters)$.group[order(cld(results)$number)]
-xvals <- 1:length(posthoc$lsmean)
-min_y <- min(plogis(posthoc$asymp.LCL))
+sig_letters_5after <- lsmeans::cld(results_5after, Letters = letters, adjust = "none")$.group[order(cld(results_5after)$number)]
+xvals_5after <- 1:length(posthoc_5after$lsmean)
+min_y_5after <- min(plogis(posthoc_5after$asymp.LCL))
 
-plot(x = xvals, y=plogis(posthoc$lsmean), 
-     ylim=c(min_y, 1.0), 
-     xlim = range(xvals) + c(-0.5, 0.5), 
+plot(x = xvals_5after, y=plogis(posthoc_5after$lsmean), 
+     ylim=c(min_y_5after, 1.0), 
+     xlim = range(xvals_5after) + c(-0.5, 0.5), 
      las=1, 
      pch=19, 
      xaxt="n", 
@@ -117,21 +115,127 @@ plot(x = xvals, y=plogis(posthoc$lsmean),
      bty="L")
 
 axis(side=1, 
-     at = xvals, 
+     at = xvals_5after, 
      labels = c("20x1","10x2","5x4","4x5"), 
      tick = FALSE)
 
-arrows(x0 = xvals, 
-       y0 = plogis(posthoc$asymp.LCL), 
-       y1 = plogis(posthoc$asymp.UCL), 
+arrows(x0 = xvals_5after, 
+       y0 = plogis(posthoc_5after$asymp.LCL), 
+       y1 = plogis(posthoc_5after$asymp.UCL), 
        code = 3, 
        length = 0.1, 
        angle = 90, 
        lwd = 2)
 
-text(x = 1:4, y = 1.0, labels = sig_letters)
+text(x = 1:4, y = 1.0, labels = sig_letters_5after)
 
 mtext(side=3, 
-      text="Effect of propagule number on extinction probability\n5 generations after final introduction", 
+      text="Effect of propagule number on establishment probability\nfive generations after final introduction", 
       line = 2)
 ```
+
+## Three generations after final intro event
+
+```{r three_after}
+m_3after_1 <- glmer(extant_3_after ~ number*environment + (1 | block), data=b, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+m_3after_2 <- update(m_3after_1, . ~ . - number:environment)
+
+anova(m_3after_1, m_3after_2)
+```
+
+It looks like there is a significant interaction between environment and introduction regime now. We won't be averaging our contrasts across the environment treatment this time.
+
+```{r visualize_3_after}
+final_3after <- m_3after_1
+
+Anova(final_3after)
+
+results_3after <- lsmeans::lsmeans(final_3after, pairwise ~ environment*number)
+results_3after
+posthoc_3after <- summary(results_3after$lsmeans)
+
+sig_letters_3after <- lsmeans::cld(results_3after, Letters = letters)$.group[order(cld(results_3after)$number)]
+
+xvals_3after <- 1:length(posthoc_3after$lsmean)
+min_y_3after <- min(plogis(posthoc_3after$asymp.LCL))
+
+plot(x = xvals_3after, y=plogis(posthoc_3after$lsmean), 
+     ylim=c(min_y_3after, 1.05), 
+     xlim = range(xvals_3after) + c(-0.5, 0.5), 
+     las=1, 
+     pch= c(1, 19), 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Establishment probability",
+     bty="L")
+
+axis(side=1, 
+     at = xvals_3after[c(1,3,5,7)] + 0.5, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
+
+arrows(x0 = xvals_3after, 
+       y0 = plogis(posthoc_3after$asymp.LCL), 
+       y1 = plogis(posthoc_3after$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+legend("bottomright", 
+       legend = c("fluctuating", "stable"), 
+       pch = c(1, 19), 
+       bty = "n")
+
+text(x = xvals_3after, y = 1.025, labels = sig_letters_3after)
+
+mtext(side=3, 
+      text="Effect of propagule number on establishment probability\nthree generations after final introduction", 
+      line = 2)
+```
+
+Let's also plot this averaging across the environment treatment for good measure:
+
+```{r avg_across_env}
+results_3after <- lsmeans::lsmeans(final_3after, pairwise ~ number)
+results_3after
+posthoc_3after <- summary(results_3after$lsmeans)
+
+sig_letters_3after <- lsmeans::cld(results_3after, Letters = letters)$.group[order(cld(results_3after)$number)]
+
+xvals_3after <- 1:length(posthoc_3after$lsmean)
+min_y_3after <- min(plogis(posthoc_3after$asymp.LCL))
+
+plot(x = xvals_3after, y=plogis(posthoc_3after$lsmean), 
+     ylim=c(min_y_3after, 1.01), 
+     xlim = range(xvals_3after) + c(-0.5, 0.5), 
+     las=1, 
+     pch= 19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Establishment probability",
+     bty="L")
+
+axis(side=1, 
+     at = xvals_3after + 0.5, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
+
+arrows(x0 = xvals_3after, 
+       y0 = plogis(posthoc_3after$asymp.LCL), 
+       y1 = plogis(posthoc_3after$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+text(x = xvals_3after, y = 1.005, labels = sig_letters_3after)
+
+mtext(side=3, 
+      text="Effect of propagule number on establishment probability\nthree generations after final introduction", 
+      line = 2)
+```
+
+
+
