@@ -1,0 +1,137 @@
+---
+title: "Establishment probability relative time"
+author: "Michael Koontz"
+date: "2/26/2018"
+output: html_document
+---
+
+# Purpose
+
+A quick outline of the establishment probability analysis when using a relative amount of time since the final introduction event.
+
+```{r setup}
+library(car)
+library(ggplot2)
+library(lme4)
+library(lsmeans)
+library(multcompView)
+library(tidyr)
+library(dplyr)
+
+b <- read.csv("../data/clean-establishment-data.csv")
+b$number <- as.factor(b$number)
+b$block <- as.factor(b$block)
+b$gap <- as.factor(b$gap)
+```
+
+Don't bother assessing the effect of the introduction gap, just filter out those populations
+
+```{r filter_gap}
+b <-
+  b %>% 
+  filter(gap == FALSE)
+
+glimpse(b)
+```
+
+# Exploratory data analysis plot
+
+Visualize how many populations were extant 2 generations after their final introduction event would get us up to Generation 7 (as we reported in the paper). Looking 5 generations is as far as we can look, given the limits of our data collection.
+
+```{r eda_visualization_2_after}
+ggplot(b, aes(x = extant_2_after)) +
+  geom_histogram(stat = "count") +
+  facet_grid(environment ~ number)
+```
+
+```{r eda_visualization_5_after}
+ggplot(b, aes(x = extant_5_after)) +
+  geom_histogram(stat = "count") +
+  facet_grid(environment ~ number)
+```
+
+
+# Build some models
+
+We will use a simple random effects structure with temporal block as a random intercept effect
+
+## Influence of fixed effects
+
+```{r fixed_effects_interaction}
+# Use LRT tests to guide interpretation, but all fixed effects will remain in the model in the end
+m6 <- glmer(extant_5_after ~ number*environment + (1 | block), data=b, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+m7 <- update(m6, formula= .~. - number:environment)
+
+anova(m6, m7)
+```
+
+We fail to reject the null hypothesis that the model with the `number*environment` interaction equally as likely than the model without it, so we proceed by simplifying the model and dropping the interaction term.
+
+```{r fixed_effects_environment}
+m8 <- update(m7, formula= .~. -environment)
+
+anova(m7, m8)
+```
+
+We fail to reject the null hypothesis that the model with the `environment` predictor is equally as likely as the model without it, so we infer that it may not be an important predictor.
+
+```{r fixed_effects_number}
+m9 <- update(m8, formula= .~. -number)
+
+anova(m8, m9)
+```
+
+We reject the null hypothesis that the model with the `number` predictor is equally as likely as the model without it, so that must be an important predictor and we focus our interpretation there.
+
+Another way to look at group-level effects like we did with likelihood ratio tests is using a Type II Wald $\chi^2$ test. I think this test is somewhat anti-conservative, but it gives us a good ballpark and corroborates the results from our Likelihood Ratio Test.
+
+```{r wald}
+Anova(m6)
+```
+
+## Interpretation and contrasts
+
+We'll average across the environment treatments and focus on the introduction regime treatments.
+
+```{r interpretation_and_contrasts_visualize}
+# The final model which includes all fixed effects and uses the trimmed dataset without populations that experienced a gap in the introduction period
+final <- m6
+
+results <- lsmeans::lsmeans(final, pairwise ~ number, adjust="none")
+results
+posthoc <- summary(results$lsmeans)
+
+sig_letters <- lsmeans::cld(results, Letters = letters)$.group[order(cld(results)$number)]
+xvals <- 1:length(posthoc$lsmean)
+min_y <- min(plogis(posthoc$asymp.LCL))
+
+plot(x = xvals, y=plogis(posthoc$lsmean), 
+     ylim=c(min_y, 1.0), 
+     xlim = range(xvals) + c(-0.5, 0.5), 
+     las=1, 
+     pch=19, 
+     xaxt="n", 
+     xlab="Introduction regime", 
+     ylab="Establishment probability",
+     bty="L")
+
+axis(side=1, 
+     at = xvals, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE)
+
+arrows(x0 = xvals, 
+       y0 = plogis(posthoc$asymp.LCL), 
+       y1 = plogis(posthoc$asymp.UCL), 
+       code = 3, 
+       length = 0.1, 
+       angle = 90, 
+       lwd = 2)
+
+text(x = 1:4, y = 1.0, labels = sig_letters)
+
+mtext(side=3, 
+      text="Effect of propagule number on extinction probability\n5 generations after final introduction", 
+      line = 2)
+```
