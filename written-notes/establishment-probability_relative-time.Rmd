@@ -17,8 +17,9 @@ library(lsmeans)
 library(multcompView)
 library(tidyr)
 library(dplyr)
+library(here)
 
-b <- read.csv("../data/clean-establishment-data.csv")
+b <- read.csv(here::here("/data/clean-establishment-data.csv"))
 b$number <- as.factor(b$number)
 b$block <- as.factor(b$block)
 b$gap <- as.factor(b$gap)
@@ -237,5 +238,97 @@ mtext(side=3,
       line = 2)
 ```
 
+```{r explore_sim_results}
+#### Read and prepare data from the simulations ####
+sims_results_raw <- read.csv(here::here("data/simulations/simulation_stats_raw.csv"), stringsAsFactors = FALSE)
 
+sims_results_3after <- 
+  sims_results_raw %>% 
+  select(size, number, extant_prop_3after, extant_prop_3after_var, N_3after, N_3after_var)
+
+#### Read samples data to put the equilibrium abundance value on the abundance plot ####
+samps <- read.csv(here::here("data/NBBg-samples/NBBg-samples-combined.csv"))
+
+equilibrium_popSize <- log(samps$R0) / samps$alpha
+
+```
+
+
+```{r}
+sims_establish <- 
+  sims_results_3after %>%
+  select(size, number, extant_prop_3after, extant_prop_3after_var) %>% 
+  gather(key = env, value = establish_prop, -(1:2)) %>% 
+  mutate(env = ifelse(env == "extant_prop_3after", yes = "stable", no = "fluctuating")) %>% 
+  mutate(intro_regime = paste(size, number, sep = "x")) %>% 
+  group_by(number) %>% 
+  summarize(establish_prop = mean(establish_prop))
+
+```
+
+```{r}
+prob_establishment_model <- glmer(extant_3_after ~ number*environment + (1 | block), data=b, family=binomial, control=glmerControl(optimizer="bobyqa"))
+
+establishment_results <- lsmeans::lsmeans(prob_establishment_model, pairwise ~ number, adjust="none")
+establishment_posthoc <- summary(establishment_results$lsmeans)
+
+# Get compact letter display for significant differences across levels
+establishment_sig_letters <- lsmeans::cld(establishment_results, Letters = letters, sort = FALSE, adjust = "none")$.group
+# Remove white space from significance letters object
+establishment_sig_letters <- gsub(establishment_sig_letters, pattern = " ", replacement = "")
+establishment_xvals <- 1:length(establishment_posthoc$lsmean)
+
+# Minimum y value of the plot is the lowest possible value that can be plotted (lowest lower CI or 
+# lowest result from simulations)
+min_y <- min(c(plogis(establishment_posthoc$asymp.LCL)), sims_establish$establish_prop)
+xlim <- range(establishment_xvals) + c(-0.5, 0.5)
+
+# pdf("figures/establishment-probability-experiment-and-simulations.pdf", height = 3.14961, width = 3.14961)
+par(mar = c(3.5, 3.5, 0.5, 0.25), family = "Helvetica", mgp = c(2.25, 1, 0))
+
+plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean), 
+     ylim=c(min_y - 0.03, 1.02), 
+     xlim = xlim, 
+     las=1, 
+     pch=19, 
+     xaxt = "n", 
+     yaxt = "n",
+     xlab = NA, 
+     ylab = "Establishment probability")
+
+mtext(side = 1,
+      text = "Introduction regime",
+      line = 2)
+
+axis(side = 1, 
+     at = establishment_xvals, 
+     labels = c("20x1","10x2","5x4","4x5"), 
+     tick = FALSE,
+     line = -0.5)
+
+axis(side = 2,
+     at = c(0.6, 0.7, 0.8, 0.9, 1.0),
+     las = 1,
+     hadj = 0.75)
+
+segments(x0 = establishment_xvals, 
+         y0 = plogis(establishment_posthoc$asymp.LCL), 
+         y1 = plogis(establishment_posthoc$asymp.UCL), 
+         lwd = 2)
+
+text(x = 1:4, y = 1.02, labels = establishment_sig_letters, pos = 1)
+
+#### Add simulation results to the plot ####
+points(x = establishment_xvals, y = sims_establish$establish_prop,
+       pch = 17)
+
+legend("bottomright",
+       inset = c(0, -0.025),
+       legend = c("microcosm", "simulation"),
+       pch = c(19, 17),
+       bty = "n")
+
+# dev.off()
+
+```
 
