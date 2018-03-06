@@ -1,0 +1,127 @@
+---
+title: "Explore egg contamination"
+author: "Michael Koontz"
+date: "3/3/2018"
+output: html_document
+---
+
+# Purpose
+
+Explore magnitude of egg contamination between generation 3 and generation 7
+
+# Background
+
+Implemented a suggested protocol modification to speed up a slow step in the censusing protocol led to inadvertent egg contamination between populations of the same sub-array (rubber-banded set of up to 10 populations of the same introduction regime/environmental variability treatment). During removals, a box was overturned on a soil sieve over a piece of paper, the growth medium with eggs was sifted through leaving adult beetles on top, the sieve was set aside with beetles still present, and the growth medium + eggs were placed back in the box. Then, without removing beetles from the sieve, the next population was dumped out in the same sieve over top of the original beetles but over a new piece of paper, then the sieve was set aside, then the growth medium + eggs from the new paper was put back in the box. Additional eggs that the adult beetles left inside the sieve laid in the sieve could therefore be transferred to the next population along with that population's growth medium and eggs. At the end of working through 1 subarray (a maximum of 10 populations all from the same introduction regime/environmental variability treatment), adult beetles were removed from the sieve and that sieve was sterilized.
+
+After this was noticed (because some populations of size 1 didn't go extinct as expected), we identified the problem and began to remove adult beetles from the sieve between every population change.
+
+
+```{r setup}
+library(tidyr)
+library(here)
+library(dplyr)
+
+source(here::here('/scripts/data-carpentry/generate-tidy-data.R'))
+
+attributes <- read.csv(here::here('/data/attributes.csv'))
+beetles <- read.csv(here::here('/data/Tribolium-propagule-pressure-data.csv'))
+
+tidyb <- tidy.beetles(beetles = beetles, deal_with_loners = FALSE)
+
+```
+
+Where are the populations that should have gone extinct?
+
+```{r loners}
+# Due to some egg contamination, populations of size 1 sometimes persisted. Make these extinct with this code.
+# Two conditions must be met: Population had 1 individual, no more introductions were coming
+# Make next generation size 0, then make the rest of the columns NA
+# Affected population IDs: 13, 45, 87, 98, 303, 500, 523, 640, 758
+
+# First determine when introductions stopped
+# Total columns in migrants data frame
+Nt <- tidyb$Nt
+migrants <- tidyb$migrants
+Ntp1 <- tidyb$Ntp1
+columns <- ncol(migrants)
+
+# By rows, look for the index of the first non-zero number of migrants.
+idx <- apply(migrants[, (columns:2)], MARGIN=1, FUN=function(x) match(FALSE, x==0))
+
+# The total columns minus this index value represents the last generation whose Ntp1 census data was influenced by migrants
+last.migrants <- columns - idx
+
+loner.col <- rep(NA, nrow(Ntp1))
+
+# For each row, determine the index for the first generation where the population has only 1 individual, but only look at the columns AFTER no more migrants arrive (that is, the (last.migrants + 1) column until the final column)
+# We have to add back in the columns that we skipped (last.migrants columns) to this index value
+# Also, adding 1 to the last.migrants value accounts for the "ID" column
+for (i in 1:nrow(Ntp1))
+{
+  loner.col[i] <- match(1, Ntp1[i, (last.migrants[i] + 1):columns]) + last.migrants[i]
+}
+
+# Indices of populations that had 1 individual after introductions were finished (includes populations that actually did go extinct as well as populations that should have gone extinct)
+loner.idx <- which(!is.na(loner.col))
+
+loner.idx
+```
+
+How many of those populations went extinct as they should have?
+
+```{r proper_extinctions_of_loners}
+extinct.col <- loner.col[loner.idx] + 1
+# Note that the equivalent column in Nt is extinct.col+1
+
+# Column of Ntp1 dataframe for each of the loner indicies that should be NA. All columns after this should be NA as well.
+NA.col <- extinct.col + 1
+counter <- 0
+running_sum <- 0
+culprits <- numeric(length(loner.idx))
+N_after_loner <- numeric(length(loner.idx))
+
+for (j in 1:length(loner.idx))
+{
+  # Only proceed if loner population wasn't in the final generation.
+  if (extinct.col[j] <= columns)
+  {
+    # Only proceed if population didn't go extinct when it should have
+    if (as.numeric(Ntp1[loner.idx[j], extinct.col[j]] > 0))
+      {
+        # Update counter of number of culprit populations
+        counter <- counter + as.numeric(Ntp1[loner.idx[j], extinct.col[j]] > 0)
+        # Add total Ntp1 to running sum
+        running_sum <- running_sum + Ntp1[loner.idx[j], extinct.col[j]]
+        # Flag this population as a culprit
+        culprits[j] <- 1
+        # Note how many individuals the loner population became
+        N_after_loner[j] <- Ntp1[loner.idx[j], extinct.col[j]]
+        
+        #  Force the appropriate Ntp1 time point to extinction
+        Ntp1[loner.idx[j], extinct.col[j]] <- 0
+        
+        # Only proceed if there are still generations after extinction that need to be forced to NAs
+        # This also covers proceeding if there are columns in the Nt dataframe that need to be forced to 0
+        if (NA.col[j] <= columns)
+        {
+          # Force appropriate Nt columns to 0
+          Nt[loner.idx[j], (extinct.col[j]+1):columns] <- 0
+          # Force appropriate Ntp1 columns to NA
+          Ntp1[loner.idx[j], NA.col[j]:columns] <- NA
+        }
+      } # End check on whether loners didn't go extinct
+  } # End check on whether loners occured before end of experiment
+} # End for loop iterating through each loner population
+loners_df <- data.frame(loner.idx, culprits, loner.col = loner.col[!is.na(loner.col)], extinct.col, N_after_loner)
+loners_df
+running_sum
+running_sum / sum(loners_df$culprits)
+mean(loners_df$N_after_loner[which(loners_df$culprits == 1)])
+```
+
+Okay, it looks like contamination in about `r 100*round(mean(loners_df$culprit), 4)`% of populations.
+
+When eggs are added, on average `r round(mean(loners_df$N_after_loner[which(loners_df$culprits == 1)]), 2)` eggs are added with a minimum of `r min(loners_df$N_after_loner[which(loners_df$culprits == 1)])` and a maximum of `r max(loners_df$N_after_loner[which(loners_df$culprits == 1)])`.
+
+
+
