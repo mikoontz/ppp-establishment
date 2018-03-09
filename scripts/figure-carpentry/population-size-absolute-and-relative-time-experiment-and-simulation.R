@@ -39,8 +39,8 @@ min_y <- min(c(exp(popSize_posthoc$asymp.LCL), sims_popSize_absolute$mean_N))
 max_y <- max(exp(popSize_posthoc$asymp.UCL))
 xlim <- range(popSize_xvals) + c(-0.4, 0.4)
 
-# pdf("figures/population-size-absolute-and-relative-time-experiment-and-simulations.pdf", height = 3.14961, width = 3.14961)
-postscript("figures/population-size-absolute-and-relative-time-experiment-and-simulations.eps", height = 3.14961, width = 2 * 3.14961)
+pdf("figures/population-size-absolute-and-relative-time-experiment-and-simulations.pdf", height = 3.14961, width = 2 * 3.14961)
+# postscript("figures/population-size-absolute-and-relative-time-experiment-and-simulations.eps", height = 3.14961, width = 2 * 3.14961)
 par(mar = c(1.5, 1, 0.5, 0), family = "Helvetica", mgp = c(2.25, 1, 0), mfrow = c(1, 2), oma = c(1.5, 2, 0, 2))
 
 plot(x = popSize_xvals, y = exp(popSize_posthoc$lsmean),
@@ -121,8 +121,8 @@ segments(x0 = xlim[1], x1 = xlim[2], y0 = mean(equilibrium_popSize), y1 = mean(e
 
 sims_popSize_relative <- sims_results %>%
   mutate(propagule_number = substr(intro_regime, start = nchar(intro_regime), stop = nchar(intro_regime))) %>%
-  filter(response == "mean_N" & time_type == "absolute") %>%
-  select(propagule_number, env, mean_N = t_equals_7) %>% # Here is where we get the simulation results from GEN 7
+  filter(response == "mean_N" & time_type == "relative") %>%
+  select(propagule_number, env, mean_N = t_equals_3) %>% # Here is where we get the simulation results from GEN 7
   arrange(propagule_number, env)
 
 popSize_model <- glmer(N_3_after ~ number*environment + (1 | block), data=b.trim, family=poisson, control=glmerControl(optimizer="bobyqa"))
