@@ -3,8 +3,8 @@ title: "Establishment probability relative time"
 author: "Michael Koontz"
 date: "2/26/2018"
 output: 
-  html_document: default
   github_document: default
+  html_document: default
 ---
 
 # Purpose
