@@ -290,7 +290,7 @@ mtext(side=3,
 
 ![](population-size_relative-time_files/figure-gfm/interpretation_and_contrasts_visualize-1.png)<!-- -->
 
-## Two generations after final intro event
+## Three generations after final intro event
 
 This analysis will use generation 7 as the latest possible generation
 (for the 4x5 intro regime, the 7th generation represents 3 generations
