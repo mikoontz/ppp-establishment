@@ -49,8 +49,8 @@ establishment_xvals <- 1:length(establishment_posthoc$lsmean)
 min_y <- min(c(plogis(establishment_posthoc$asymp.LCL)), sims_establish_absolute$establish_prop)
 xlim <- range(establishment_xvals) + c(-0.5, 0.5)
 
-# pdf("figures/establishment-probability-absolute-and-relative-time-experiment-and-simulations.pdf", height = 3.14961, width = 2 * 3.14961)
-postscript("figures/establishment-probability-absolute-and-relative-time-experiment-and-simulations.eps", height = 3.14961, width = 2 * 3.14961)
+pdf("figures/establishment-probability-absolute-and-relative-time-experiment-and-simulations.pdf", height = 3.14961, width = 2 * 3.14961)
+# postscript("figures/establishment-probability-absolute-and-relative-time-experiment-and-simulations.eps", height = 3.14961, width = 2 * 3.14961)
 par(mar = c(1.5, 1, 0.5, 0), family = "Helvetica", mgp = c(2.25, 1, 0), mfrow = c(1, 2), oma = c(1.5, 2, 0, 2))
 
 plot(x = establishment_xvals, y = plogis(establishment_posthoc$lsmean), 
@@ -168,8 +168,19 @@ segments(x0 = establishment_xvals,
 text(x = establishment_xvals, y = 1.07, labels = establishment_sig_letters, pos = 1)
 
 #### Add simulation results to the plot ####
-points(x = establishment_xvals, y = sims_establish_relative$establish_prop,
+# points(x = establishment_xvals, y = sims_establish_relative$establish_prop,
+       pch = c(2, 17))
+
+sims_xvals <- offset_xvals(establishment_xvals, offset = 0.05)
+#### Add simulation results to the plot ####
+# segments(x0 = sims_xvals[seq(1, length(sims_xvals), by = 2)], x1 = sims_xvals[seq(2, length(sims_xvals), by = 2)], y0 = sims_popSize$mean_N, lwd = 4)
+
+points(x = establishment_xvals[c(1, 3, 5, 7)], y = sims_establish_relative$establish_prop[c(1, 3, 5, 7)],
+       pch = 2)
+
+points(x = establishment_xvals[c(2, 4, 6, 8)], y = sims_establish_relative$establish_prop[c(2, 4, 6, 8)],
        pch = 17)
+
 
 legend("bottomleft",
        inset = c(0, -0.025),
