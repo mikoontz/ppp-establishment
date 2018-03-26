@@ -200,6 +200,8 @@ Build the model for the microcosm data.
 popSize_model <- glmer(N_3_after ~ number*environment + (1 | block), data=b.trim, family=poisson, control=glmerControl(optimizer="bobyqa"))
 
 Anova(popSize_model)
+
+summary(popSize_model)
 ```
 
 ### Effect of interaction
@@ -303,4 +305,18 @@ points(x = popSize_xvals[c(2, 4, 6, 8)], y = sims_popSize_relative$mean_N[c(2, 4
        pch = 17)
 
 segments(x0 = xlim[1], x1 = xlim[2], y0 = mean(equilibrium_popSize), y1 = mean(equilibrium_popSize), lty = "dashed", lwd = 2)
+```
+
+## Average across environment
+
+```{r avg_across_env_3after}
+popSize_results <- lsmeans::lsmeans(popSize_model, pairwise ~ number, adjust="none")
+popSize_results
+```
+
+## Average across environment
+
+```{r avg_across_regime_3after}
+popSize_results <- lsmeans::lsmeans(popSize_model, pairwise ~ environment, adjust="none")
+popSize_results
 ```

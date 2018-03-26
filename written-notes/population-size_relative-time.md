@@ -82,7 +82,7 @@ library(here)
 ```
 
 ```
-## here() starts at /Users/mikoontz/dev/manuscripts/ppp-establishment
+## here() starts at /Users/mikoontz/dev/manuscripts/parsing-propagule-pressure/ppp-establishment
 ```
 
 ```r
@@ -381,6 +381,54 @@ Anova(popSize_model)
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ```
 
+```r
+summary(popSize_model)
+```
+
+```
+## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: poisson  ( log )
+## Formula: N_3_after ~ number * environment + (1 | block)
+##    Data: b.trim
+## Control: glmerControl(optimizer = "bobyqa")
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##  10858.8  10900.9  -5420.4  10840.8      787 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -6.3574 -2.1283 -0.3471  1.6044 16.3178 
+## 
+## Random effects:
+##  Groups Name        Variance Std.Dev.
+##  block  (Intercept) 0.01251  0.1119  
+## Number of obs: 796, groups:  block, 4
+## 
+## Fixed effects:
+##                           Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)                3.26207    0.05889   55.39  < 2e-16 ***
+## number2                   -0.49279    0.03207  -15.37  < 2e-16 ***
+## number4                    0.56695    0.02407   23.55  < 2e-16 ***
+## number5                    0.53307    0.02346   22.72  < 2e-16 ***
+## environmentstable         -0.14293    0.02670   -5.35 8.59e-08 ***
+## number2:environmentstable  0.38801    0.04482    8.66  < 2e-16 ***
+## number4:environmentstable  0.14197    0.03449    4.12 3.84e-05 ***
+## number5:environmentstable  0.33148    0.03312   10.01  < 2e-16 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) numbr2 numbr4 numbr5 envrnm nmbr2: nmbr4:
+## number2     -0.180                                          
+## number4     -0.240  0.442                                   
+## number5     -0.245  0.451  0.599                            
+## envrnmntstb -0.216  0.397  0.529  0.542                     
+## nmbr2:nvrnm  0.129 -0.715 -0.316 -0.322 -0.596              
+## nmbr4:nvrnm  0.168 -0.308 -0.699 -0.417 -0.775  0.463       
+## nmbr5:nvrnm  0.174 -0.320 -0.427 -0.706 -0.806  0.480  0.625
+```
+
 ### Effect of interaction
 
 
@@ -631,3 +679,76 @@ segments(x0 = xlim[1], x1 = xlim[2], y0 = mean(equilibrium_popSize), y1 = mean(e
 ```
 
 ![](population-size_relative-time_files/figure-html/interpretation_and_contrasts_visualize_3after-1.png)<!-- -->
+
+## Average across environment
+
+
+```r
+popSize_results <- lsmeans::lsmeans(popSize_model, pairwise ~ number, adjust="none")
+```
+
+```
+## NOTE: Results may be misleading due to involvement in interactions
+```
+
+```r
+popSize_results
+```
+
+```
+## $lsmeans
+##  number   lsmean         SE df asymp.LCL asymp.UCL
+##  1      3.190601 0.05750519 NA  3.077893  3.303309
+##  2      2.891816 0.05875992 NA  2.776649  3.006983
+##  4      3.828540 0.05698177 NA  3.716858  3.940222
+##  5      3.889408 0.05681939 NA  3.778044  4.000772
+## 
+## Results are averaged over the levels of: environment 
+## Results are given on the log (not the response) scale. 
+## Confidence level used: 0.95 
+## 
+## $contrasts
+##  contrast    estimate         SE df z.ratio p.value
+##  1 - 2     0.29878523 0.02241201 NA  13.331  <.0001
+##  1 - 4    -0.63793849 0.01722569 NA -37.034  <.0001
+##  1 - 5    -0.69880635 0.01662007 NA -42.046  <.0001
+##  2 - 4    -0.93672372 0.02101078 NA -44.583  <.0001
+##  2 - 5    -0.99759158 0.02052662 NA -48.600  <.0001
+##  4 - 5    -0.06086786 0.01469687 NA  -4.142  <.0001
+## 
+## Results are averaged over the levels of: environment 
+## Results are given on the log (not the response) scale.
+```
+
+## Average across environment
+
+
+```r
+popSize_results <- lsmeans::lsmeans(popSize_model, pairwise ~ environment, adjust="none")
+```
+
+```
+## NOTE: Results may be misleading due to involvement in interactions
+```
+
+```r
+popSize_results
+```
+
+```
+## $lsmeans
+##  environment   lsmean         SE df asymp.LCL asymp.UCL
+##  fluctuating 3.413874 0.05675268 NA  3.302640  3.525107
+##  stable      3.486309 0.05672023 NA  3.375139  3.597478
+## 
+## Results are averaged over the levels of: number 
+## Results are given on the log (not the response) scale. 
+## Confidence level used: 0.95 
+## 
+## $contrasts
+##  contrast                estimate         SE df z.ratio p.value
+##  fluctuating - stable -0.07243526 0.01340417 NA  -5.404  <.0001
+## 
+## Results are averaged over the levels of: number 
+## Results are given on the log (not the response) scale.
+```
